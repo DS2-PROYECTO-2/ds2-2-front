@@ -1,7 +1,15 @@
-import { defineConfig } from 'vite'
+/// <reference types="vitest" />
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  test: {
+    globals: true,
+    environment: 'happy-dom',
+    setupFiles: ['./src/test-setup.ts'],
+    coverage: {
+      thresholds: { statements: 70, lines: 70, functions: 70, branches: 60 }
+    }
+  },
 })
