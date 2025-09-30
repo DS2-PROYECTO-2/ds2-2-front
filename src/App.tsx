@@ -1,11 +1,11 @@
-import DashboardLayout from './components/layout/DashboardLayout';
+import Login from './components/layout/Login';
 
 import './App.css'
 
 function App() {
   return (
     <div className="App">
-      <DashboardLayout />
+      <Login />
     </div>
   );
 }
