@@ -49,7 +49,8 @@ jobs:
 
     - name: Enforce coverage threshold (statements >= 70%)
       if: always()
-      run: node -e "const r=require('./coverage/coverage-summary.json');const p=r.total.statements.pct; if(p<70){console.error('Coverage bajo:',p);process.exit(1)} else {console.log('Coverage OK:',p)}"
+      run: 
+        node -e "const fs=require('fs');const p='./coverage/coverage-summary.json';if(!fs.existsSync(p)){console.error('No existe',p);process.exit(1)}const r=require(p);const pct=r.total.statements.pct; if(pct<70){console.error('Coverage bajo:',pct);process.exit(1)} else {console.log('Coverage OK:',pct)}"
 
     - name: Upload coverage report
       if: always()
