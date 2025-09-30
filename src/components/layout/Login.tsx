@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import BackgroundRainParticles from '../BackgroundRainParticles';
 import "../../styles/Login.css";
 import logo2 from '../../assets/logo2.png'
@@ -7,12 +9,14 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-
   // Estados para errores
   const [errors, setErrors] = useState({
     username: '',
     password: ''
   });
+
+  const { login, isLoading} = useAuth();
+  const navigate = useNavigate();
 
   // Función de validación
   const validateForm = () => {
@@ -37,14 +41,54 @@ const Login = () => {
 
 
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Lógica de login aquí
-
+    
     if (validateForm()) {
-      // Solo proceder si no hay errores
-      console.log('Formulario válido:', { username, password });
-      // Aquí iría la lógica de login
+      try {
+        await login({ username, password });
+        navigate('/dashboard');
+      } catch (error: any) {
+        // Manejar errores específicos del backend
+        try {
+          const errorData = JSON.parse(error.message);
+          
+          // Manejar non_field_errors (errores generales)
+          if (errorData.non_field_errors) {
+            setErrors({
+              username: '',
+              password: errorData.non_field_errors[0] // Mostrar en el campo de contraseña
+            });
+          }
+          // Manejar errores específicos de campos
+          else if (errorData.username) {
+            setErrors({
+              username: errorData.username[0],
+              password: ''
+            });
+          }
+          else if (errorData.password) {
+            setErrors({
+              username: '',
+              password: errorData.password[0]
+            });
+          }
+          else {
+            // Error genérico
+            setErrors({
+              username: '',
+              password: 'Error de autenticación'
+            });
+          }
+          
+        } catch {
+          // Error de conexión o formato inesperado
+          setErrors({
+            username: '',
+            password: 'Error de conexión con el servidor'
+          });
+        }
+      }
     }
   };
 
@@ -66,6 +110,7 @@ const Login = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className={`login-input ${errors.username ? 'error' : ''}`}
+              placeholder="Ingresa tu usuario"
             />
             {errors.username && (
               <span className="error-message">{errors.username}</span>
@@ -80,6 +125,7 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className={`login-input ${errors.password ? 'error' : ''}`}
+              placeholder="Ingresa tu contraseña"
               autoComplete="current-password"
               aria-describedby={errors.password ? 'password-error' : undefined}
             />
@@ -104,8 +150,8 @@ const Login = () => {
           
           
           
-          <button type="submit" className="login-button">
-            Iniciar Sesión
+          <button type="submit" className="login-button" disabled={isLoading}>
+            {isLoading ? 'Cargando...' : 'Iniciar Sesión'}
           </button>
 
           <a href="#" className="forgot-password">Olvidé mi contraseña</a>
