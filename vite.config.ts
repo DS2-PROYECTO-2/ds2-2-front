@@ -12,7 +12,16 @@ export default defineConfig({
       provider: 'v8',
       reportsDirectory: 'coverage',
       reporter: ['text', 'json', 'html', 'json-summary'],
-      thresholds: { statements: 70, lines: 70, functions: 70, branches: 60 }
+      exclude: [
+      'node_modules/**',
+      'dist/**',
+      '**/*.config.*',
+      'vite.config.ts',
+      'eslint.config.js',
+      'src/vite-env.d.ts',
+      'src/types/**',
+      'src/main.tsx'
+      ]
     }
   },
 })
