@@ -59,8 +59,9 @@ const Login = () => {
         
         <form onSubmit={handleSubmit} className="login-form">
           <div className="input-group">
-            <label className="input-label">Usuario</label>
+            <label className="input-label" htmlFor='username'>Usuario</label>
             <input 
+              id="username"
               type="text" 
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -72,8 +73,9 @@ const Login = () => {
           </div>
           
           <div className="input-group">
-            <label className="input-label">Contraseña</label>
-            <input 
+            <label className="input-label" htmlFor='password'>Contraseña</label>
+            <input
+              id="password" 
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
