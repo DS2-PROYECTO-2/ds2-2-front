@@ -40,3 +40,20 @@ jobs:
         test -d dist
         test -f dist/index.html
         echo "✅ Build successful"
+    
+    - name: Run unit tests
+      run: npm run test:run
+
+    - name: Run tests with coverage
+      run: npm run test:coverage
+
+    - name: Enforce coverage threshold (statements >= 70%)
+      if: always()
+      run: node -e "const r=require('./coverage/coverage-summary.json');const p=r.total.statements.pct; if(p<70){console.error('Coverage bajo:',p);process.exit(1)} else {console.log('Coverage OK:',p)}"
+
+    - name: Upload coverage report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage
+        path: coverage

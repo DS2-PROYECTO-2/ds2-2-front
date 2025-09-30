@@ -8,5 +8,8 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     setupFiles: ['./src/test-setup.ts'],
+    coverage: {
+      thresholds: { statements: 70, lines: 70, functions: 70, branches: 60 }
+    }
   },
 })
