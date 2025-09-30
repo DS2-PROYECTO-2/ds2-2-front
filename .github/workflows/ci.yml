@@ -58,3 +58,6 @@ jobs:
       with:
         name: coverage
         path: coverage
+
+    - name: Run integration tests
+      run: npm run test:run -- --reporter=verbose

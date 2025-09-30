@@ -1,10 +1,17 @@
-// src/components/__tests__/Login.validate.test.tsx
 import { render, screen, fireEvent } from '@testing-library/react'
+import { BrowserRouter } from 'react-router-dom'
+import { AuthProvider } from '../../context/AuthContext'
 import Login from '../layout/Login'
 
 describe('Login – validación y envío', () => {
   it('limpia el error de usuario al escribir luego de enviar vacío (revalida en submit)', () => {
-    render(<Login />)
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <Login />
+        </AuthProvider>
+      </BrowserRouter>
+    )
 
     const submit = screen.getByRole('button', { name: /Iniciar Sesión/i })
     fireEvent.click(submit)
