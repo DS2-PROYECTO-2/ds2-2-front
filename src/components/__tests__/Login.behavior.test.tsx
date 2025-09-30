@@ -16,10 +16,13 @@ describe('Login', () => {
 
   it('toggle “Mostrar contraseña” cambia el tipo', () => {
     render(<Login />)
-    const passwordInput = screen.getByLabelText(/Contraseña/i) as HTMLInputElement
-    const toggle = screen.getByLabelText(/Mostrar contraseña/i)
+    const passwordInput = screen.getByLabelText(/^Contraseña$/i) as HTMLInputElement
+    const toggle = screen.getByRole('checkbox', { name: /Mostrar contraseña/i })
+  
     expect(passwordInput.type).toBe('password')
     fireEvent.click(toggle)
     expect(passwordInput.type).toBe('text')
+    fireEvent.click(toggle)
+    expect(passwordInput.type).toBe('password')
   })
 })

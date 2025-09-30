@@ -9,6 +9,9 @@ export default defineConfig({
     environment: 'happy-dom',
     setupFiles: ['./src/test-setup.ts'],
     coverage: {
+      provider: 'v8',
+      reportsDirectory: 'coverage',
+      reporter: ['text', 'json', 'html'],
       thresholds: { statements: 70, lines: 70, functions: 70, branches: 60 }
     }
   },
