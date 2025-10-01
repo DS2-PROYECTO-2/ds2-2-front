@@ -1,26 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { authService } from '../services/authService'
+import { authService, type LoginCredentials } from '../services/authService'
 
-// Definir los tipos aquí en lugar de importarlos
-interface LoginCredentials {
+interface User {
+  id: number
   username: string
-  password: string
-}
-
-interface AuthResponse {
-  message: string
-  token: string
-  user: {
-    id: number
-    username: string
-    email: string
-    role: string
-    is_verified: boolean
-  }
+  email: string
+  role: string
+  is_verified: boolean
 }
 
 interface AuthContextType {
-  user: any | null
+  user: User | null
   isAuthenticated: boolean
   isLoading: boolean
   login: (credentials: LoginCredentials) => Promise<void>
@@ -30,7 +20,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<any | null>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {

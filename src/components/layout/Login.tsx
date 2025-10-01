@@ -48,10 +48,11 @@ const Login = () => {
       try {
         await login({ username, password });
         navigate('/dashboard');
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Manejar errores específicos del backend
         try {
-          const errorData = JSON.parse(error.message);
+          const errorMessage = error instanceof Error ? error.message : String(error)
+          const errorData = JSON.parse(errorMessage)
           
           // Manejar non_field_errors (errores generales)
           if (errorData.non_field_errors) {
