@@ -5,6 +5,27 @@ import BackgroundRainParticles from '../BackgroundRainParticles';
 import "../../styles/Login.css";
 import logo2 from '../../assets/logo2.png'
 
+// Función de validación - FUERA del componente
+const validateForm = (username: string, password: string, setErrors: (errors: {username: string, password: string}) => void) => {
+  const newErrors = {
+    username: '',
+    password: ''
+  };
+
+  // Validar usuario
+  if (!username.trim()) {
+    newErrors.username = 'El usuario es obligatorio';
+  }
+
+  // Validar contraseña
+  if (!password.trim()) {
+    newErrors.password = 'La contraseña es obligatoria';
+  }
+
+  setErrors(newErrors);
+  return !newErrors.username && !newErrors.password;
+};
+
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -18,33 +39,12 @@ const Login = () => {
   const { login, isLoading} = useAuth();
   const navigate = useNavigate();
 
-  // Función de validación
-  const validateForm = () => {
-    const newErrors = {
-      username: '',
-      password: ''
-    };
-
-    // Validar usuario
-    if (!username.trim()) {
-      newErrors.username = 'El usuario es obligatorio';
-    }
-
-    // Validar contraseña
-    if (!password.trim()) {
-      newErrors.password = 'La contraseña es obligatoria';
-    }
-
-    setErrors(newErrors);
-    return !newErrors.username && !newErrors.password;
-  };
-
 
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    if (validateForm()) {
+    if (validateForm(username, password, setErrors)) {
       try {
         await login({ username, password });
         navigate('/dashboard');
@@ -157,7 +157,7 @@ const Login = () => {
 
           <a href="#" className="forgot-password">Olvidé mi contraseña</a>
           
-          <a href="#" className="register-account">
+          <a href="/register" className="register-account">
             ¿Aun no tienes cuenta? Regístrate aquí
           </a>
 
