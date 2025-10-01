@@ -4,13 +4,14 @@ import Register from './components/layout/Register'
 import DashboardLayout from './components/layout/DashboardLayout'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import './App.css'
-
+import ForgotPassword from './components/layout/ForgotPassword';
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <DashboardLayout />

@@ -148,14 +148,18 @@ const Login = () => {
                 </label>
               </div>
           </div>
-          
-          
-          
           <button type="submit" className="login-button" disabled={isLoading}>
             {isLoading ? 'Cargando...' : 'Iniciar Sesión'}
           </button>
-
-          <a href="#" className="forgot-password">Olvidé mi contraseña</a>
+          <div className="form-links">
+            <button 
+              type="button" 
+              onClick={() => navigate('/forgot-password')}
+              className="link-button"
+            >
+              ¿Olvidaste tu contraseña?
+            </button>
+          </div>
           
           <a href="/register" className="register-account">
             ¿Aun no tienes cuenta? Regístrate aquí
