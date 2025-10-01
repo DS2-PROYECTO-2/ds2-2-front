@@ -162,7 +162,6 @@ describe('ForgotPassword - Comportamiento Simplificado', () => {
     it('permite envío después de completar el anterior', () => {
       render(<MockedForgotPassword />);
       
-      const emailInput = screen.getByLabelText('Correo Electrónico');
       const submitButton = screen.getByRole('button', { name: /Enviar Enlace/i });
       
       // El botón debería estar habilitado inicialmente
