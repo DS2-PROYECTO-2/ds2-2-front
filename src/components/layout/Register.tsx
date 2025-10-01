@@ -189,7 +189,7 @@ const handleSubmit = async (
           });
           
           setErrors(newErrors);
-        } catch (parseError) {
+        } catch {
           // Error genérico si no se puede parsear
           setErrors({
             general: 'Error al crear la cuenta. Inténtalo de nuevo.'
