@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
-import { AuthProvider } from '../../context/AuthContext'
+import { AuthProvider } from '../../context/AuthProvider'
 import Login from '../layout/Login'
 
 describe('Login – validación y envío', () => {

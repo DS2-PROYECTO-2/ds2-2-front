@@ -1,23 +1,6 @@
-import React, { createContext, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { authService, type LoginCredentials } from '../services/authService'
-
-interface User {
-  id: number
-  username: string
-  email: string
-  role: string
-  is_verified: boolean
-}
-
-interface AuthContextType {
-  user: User | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  login: (credentials: LoginCredentials) => Promise<void>
-  logout: () => void
-}
-
-export const AuthContext = createContext<AuthContextType | undefined>(undefined)
+import { AuthContext, type User } from './AuthContext'
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
