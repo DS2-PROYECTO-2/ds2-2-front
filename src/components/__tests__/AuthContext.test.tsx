@@ -1,7 +1,8 @@
 import { render, screen, fireEvent} from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { vi } from 'vitest'  // ← Agregar esta importación
-import { AuthProvider, useAuth } from '../../context/AuthContext'
+import { AuthProvider } from '../../context/AuthContext'
+import { useAuth } from '../../hooks/useAuth'
 
 // Componente de prueba que usa el contexto
 const TestComponent = () => {
