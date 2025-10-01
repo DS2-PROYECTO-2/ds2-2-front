@@ -3,11 +3,31 @@ import { useNavigate } from 'react-router-dom';
 import "../../styles/Register.css";
 import BackgroundRainParticles from '../BackgroundRainParticles';
 
+// Interfaces para tipado
+interface FormData {
+  username: string;
+  email: string;
+  password: string;
+  password_confirm: string;
+  first_name: string;
+  last_name: string;
+  identification: string;
+  phone: string;
+}
+
+interface PasswordRequirements {
+  hasUpperCase: boolean;
+  hasLowerCase: boolean;
+  hasNumbers: boolean;
+  hasSpecialChar: boolean;
+  isValid: boolean;
+}
+
 
 
 
 // Función para validar estructura de contraseña
-const validatePasswordStructure = (password: string) => {
+const validatePasswordStructure = (password: string): PasswordRequirements => {
   const hasUpperCase = /[A-Z]/.test(password);
   const hasLowerCase = /[a-z]/.test(password);
   const hasNumbers = /\d/.test(password);
@@ -36,14 +56,14 @@ const checkUsernameExists = async (username: string) => {
 };
 
 // Función para actualizar requisitos de contraseña - FUERA del componente
-const updatePasswordRequirements = (password: string, setPasswordRequirements: (requirements: any) => void) => {
+const updatePasswordRequirements = (password: string, setPasswordRequirements: (requirements: PasswordRequirements) => void) => {
   const validation = validatePasswordStructure(password);
   setPasswordRequirements(validation);
 };
 
 // Función de validación del formulario - FUERA del componente
 const validateForm = async (
-  formData: any,
+  formData: FormData,
   setErrors: (errors: Record<string, string>) => void
 ) => {
   const newErrors: Record<string, string> = {};
@@ -117,7 +137,7 @@ const validateForm = async (
 // Función para manejar cambios en inputs - FUERA del componente
 const handleInputChange = (
   e: React.ChangeEvent<HTMLInputElement>,
-  setFormData: (updater: (prev: any) => any) => void,
+  setFormData: (updater: (prev: FormData) => FormData) => void,
   setErrors: (updater: (prev: Record<string, string>) => Record<string, string>) => void,
   errors: Record<string, string>
 ) => {
@@ -139,7 +159,7 @@ const handleInputChange = (
 // Función para manejar envío del formulario - FUERA del componente
 const handleSubmit = async (
   e: React.FormEvent<HTMLFormElement>,
-  formData: any,
+  formData: FormData,
   setErrors: (errors: Record<string, string>) => void,
   setIsLoading: (loading: boolean) => void,
   navigate: (path: string) => void
@@ -168,7 +188,7 @@ const handleSubmit = async (
 };
 
 const Register = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     username: '',
     email: '',
     password: '',
@@ -184,11 +204,12 @@ const Register = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const [passwordRequirements, setPasswordRequirements] = useState({
+  const [passwordRequirements, setPasswordRequirements] = useState<PasswordRequirements>({
     hasUpperCase: false,
     hasLowerCase: false,
     hasNumbers: false,
-    hasSpecialChar: false
+    hasSpecialChar: false,
+    isValid: false
   });
 
   const navigate = useNavigate();
