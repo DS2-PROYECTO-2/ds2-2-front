@@ -68,8 +68,10 @@ describe('ForgotPassword - Comportamiento Simplificado', () => {
     it('informa al usuario sobre errores de conexión', () => {
       render(<MockedForgotPassword />);
       
+      const emailInput = screen.getByLabelText('Correo Electrónico');
       const submitButton = screen.getByRole('button', { name: /Enviar Enlace/i });
       
+      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.click(submitButton);
       
       // Verificar que se muestra estado de carga
