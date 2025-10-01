@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import "../../styles/Register.css";
 import BackgroundRainParticles from '../BackgroundRainParticles';
 
+
 // Interfaces para tipado
 interface FormData {
   username: string;
@@ -48,12 +49,6 @@ const validateIdentification = (identification: string) => {
   return cleanId.length >= 6 && cleanId.length <= 10;
 };
 
-// Función para verificar si el usuario ya existe (simulada)
-const checkUsernameExists = async (username: string) => {
-  // Simular llamada al API
-  const existingUsernames = ['admin', 'test', 'user', 'demo'];
-  return existingUsernames.includes(username.toLowerCase());
-};
 
 // Función para actualizar requisitos de contraseña - FUERA del componente
 const updatePasswordRequirements = (password: string, setPasswordRequirements: (requirements: PasswordRequirements) => void) => {
@@ -72,13 +67,7 @@ const validateForm = async (
   
   if (!formData.username.trim()) {
       newErrors.username = 'El usuario es obligatorio';
-  } else {
-      // Verificar si el usuario ya existe
-      const usernameExists = await checkUsernameExists(formData.username);
-      if (usernameExists) {
-      newErrors.username = 'Este nombre de usuario ya está en uso';
-      }
-    }
+  } 
 
   if (!formData.email.trim()) {
     newErrors.email = 'El email es obligatorio';
@@ -157,6 +146,7 @@ const handleInputChange = (
 };
 
 // Función para manejar envío del formulario - FUERA del componente
+// Función para manejar envío del formulario - FUERA del componente
 const handleSubmit = async (
   e: React.FormEvent<HTMLFormElement>,
   formData: FormData,
@@ -169,21 +159,50 @@ const handleSubmit = async (
   const isValid = await validateForm(formData, setErrors);
   
   if (isValid) {
-      setIsLoading(true);
-      try {
-      // Aquí iría la llamada al API de registro
-      console.log('Datos de registro:', formData);
-      // Simular llamada al API
-      await new Promise(resolve => setTimeout(resolve, 2000));
+    setIsLoading(true);
+    try {
+      // Importar el servicio de registro
+      const { registerUser } = await import('../../services/registerService');
+      
+      // Llamar a la API
+      const response = await registerUser(formData);
+      
+      // Mostrar mensaje de éxito
+      alert(response.message);
+      
+      // Redirigir al login
       navigate('/login');
-      } catch (error: unknown) {
+    } catch (error: unknown) {
       console.error('Error en registro:', error);
-      setErrors({
+      
+      // Manejar errores de la API
+      if (error instanceof Error) {
+        try {
+          const apiErrors = JSON.parse(error.message);
+          const newErrors: Record<string, string> = {};
+          
+          // Mapear errores de la API a los campos del formulario
+          Object.keys(apiErrors).forEach(key => {
+            if (apiErrors[key] && apiErrors[key].length > 0) {
+              newErrors[key] = apiErrors[key][0]; // Tomar el primer error
+            }
+          });
+          
+          setErrors(newErrors);
+        } catch (parseError) {
+          // Error genérico si no se puede parsear
+          setErrors({
+            general: 'Error al crear la cuenta. Inténtalo de nuevo.'
+          });
+        }
+      } else {
+        setErrors({
           general: 'Error al crear la cuenta. Inténtalo de nuevo.'
-      });
-      } finally {
-      setIsLoading(false);
+        });
       }
+    } finally {
+      setIsLoading(false);
+    }
   }
 };
 
@@ -414,6 +433,12 @@ const Register = () => {
           >
             {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
           </button>
+
+          {errors.general && (
+            <div className="error-message-general">
+                {errors.general}
+            </div>
+          )}
 
           <div className="register-options">
             <p className="login-link">
