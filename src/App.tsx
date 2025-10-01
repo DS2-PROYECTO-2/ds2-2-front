@@ -3,6 +3,7 @@ import Login from './components/layout/Login'
 import DashboardLayout from './components/layout/DashboardLayout'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import './App.css'
+import { AuthProvider } from './context/AuthProvider'
 
 function App() {
   return (

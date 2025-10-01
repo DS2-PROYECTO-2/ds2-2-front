@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { vi } from 'vitest'  // ← Agregar esta importación
-import { AuthProvider } from '../../context/AuthContext'
+import { AuthProvider } from '../../context/AuthProvider'
 import Login from '../layout/Login'
 
 // Mock del fetch para simular respuestas de la API
