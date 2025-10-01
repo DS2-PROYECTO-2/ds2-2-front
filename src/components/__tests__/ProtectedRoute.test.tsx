@@ -1,6 +1,5 @@
 import { render, screen } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
-import { vi } from 'vitest'
 import { AuthProvider } from '../../context/AuthContext'
 import { ProtectedRoute } from '../ProtectedRoute'
 

@@ -32,9 +32,9 @@ export const authService = {
       localStorage.setItem('user', JSON.stringify(response.user))
       
       return response
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Re-lanzar el error para que el componente pueda manejarlo
-      throw new Error(error.message)
+      throw new Error(error instanceof Error ? error.message : String(error))
     }
   },
 
