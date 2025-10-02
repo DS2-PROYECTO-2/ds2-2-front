@@ -71,7 +71,7 @@ const ResetPassword: React.FC = () => {
         } else {
           setError(result.error || 'Token inválido o expirado');
         }
-      } catch (error) {
+      } catch {
         setError('Error de conexión. Inténtalo de nuevo.');
       } finally {
         setIsValidating(false);

@@ -68,7 +68,7 @@ export const validateResetToken = async (token: string): Promise<ValidateTokenRe
     } else {
       return { success: false, error: data.error || 'Token inválido o expirado' };
     }
-  } catch (error) {
+  } catch {
     return { success: false, error: 'Error de conexión' };
   }
 };
