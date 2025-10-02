@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import ResetPassword from '../layout/ResetPassword';
-import { validateResetToken, confirmPasswordReset } from '../../services/passwordService';
+import { validateResetToken } from '../../services/passwordService';
 
 // Mock de react-router-dom
 const mockNavigate = vi.fn();
