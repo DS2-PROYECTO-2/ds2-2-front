@@ -8,6 +8,8 @@ vi.mock('../../services/passwordService', () => ({
   sendForgotPasswordEmail: vi.fn()
 }));
 
+import * as passwordService from '../../services/passwordService';
+
 const MockedForgotPassword = () => (
   <BrowserRouter>
     <ForgotPassword />
@@ -91,8 +93,8 @@ describe('ForgotPassword', () => {
 
   describe('Envío exitoso', () => {
     it('envía el email correctamente', async () => {
-      const { sendForgotPasswordEmail } = await import('../../services/passwordService');
-      vi.mocked(sendForgotPasswordEmail).mockResolvedValue({
+      vi.mocked(passwordService.sendForgotPasswordEmail).mockResolvedValue({
+        success: true,
         message: 'Enlace enviado correctamente'
       });
 
@@ -105,15 +107,15 @@ describe('ForgotPassword', () => {
       fireEvent.click(submitButton);
       
       await waitFor(() => {
-        expect(sendForgotPasswordEmail).toHaveBeenCalledWith({
+        expect(passwordService.sendForgotPasswordEmail).toHaveBeenCalledWith({
           email: 'test@example.com'
         });
       });
     });
 
     it('muestra mensaje de éxito', async () => {
-      const { sendForgotPasswordEmail } = await import('../../services/passwordService');
-      vi.mocked(sendForgotPasswordEmail).mockResolvedValue({
+      vi.mocked(passwordService.sendForgotPasswordEmail).mockResolvedValue({
+        success: true,
         message: 'Se ha enviado un enlace de recuperación a tu correo electrónico.'
       });
 
@@ -133,8 +135,7 @@ describe('ForgotPassword', () => {
 
   describe('Manejo de errores', () => {
     it('muestra error cuando el servicio falla', async () => {
-      const { sendForgotPasswordEmail } = await import('../../services/passwordService');
-      vi.mocked(sendForgotPasswordEmail).mockRejectedValue(new Error('Error de conexión'));
+      vi.mocked(passwordService.sendForgotPasswordEmail).mockRejectedValue(new Error('Error de conexión'));
 
       render(<MockedForgotPassword />);
       
@@ -150,8 +151,7 @@ describe('ForgotPassword', () => {
     });
 
     it('muestra error genérico para errores desconocidos', async () => {
-      const { sendForgotPasswordEmail } = await import('../../services/passwordService');
-      vi.mocked(sendForgotPasswordEmail).mockRejectedValue('Error desconocido');
+      vi.mocked(passwordService.sendForgotPasswordEmail).mockRejectedValue('Error desconocido');
 
       render(<MockedForgotPassword />);
       
@@ -179,8 +179,7 @@ describe('ForgotPassword', () => {
 
   describe('Estados del formulario', () => {
     it('limpia errores al escribir en el email', async () => {
-      const { sendForgotPasswordEmail } = await import('../../services/passwordService');
-      vi.mocked(sendForgotPasswordEmail).mockRejectedValue(new Error('Error de prueba'));
+      vi.mocked(passwordService.sendForgotPasswordEmail).mockRejectedValue(new Error('Error de prueba'));
 
       render(<MockedForgotPassword />);
       
@@ -203,8 +202,7 @@ describe('ForgotPassword', () => {
     });
 
     it('mantiene el estado del email durante el envío', async () => {
-      const { sendForgotPasswordEmail } = await import('../../services/passwordService');
-      vi.mocked(sendForgotPasswordEmail).mockImplementation(() => 
+      vi.mocked(passwordService.sendForgotPasswordEmail).mockImplementation(() => 
         new Promise(resolve => setTimeout(resolve, 100))
       );
 

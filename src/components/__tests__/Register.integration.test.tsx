@@ -18,7 +18,7 @@ describe('Register - Integración con API', () => {
   })
 
   describe('Registro Exitoso', () => {
-    it('registra usuario exitosamente y redirige al login', async () => {
+    it('registra usuario exitosamente y muestra modal de éxito', async () => {
       // Mock de respuesta exitosa de la API
       mockFetch.mockResolvedValueOnce({
         ok: true,

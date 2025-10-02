@@ -3,9 +3,12 @@ import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import ForgotPassword from '../layout/ForgotPassword';
 
-// Mock de fetch global
-const mockFetch = vi.fn();
-global.fetch = mockFetch;
+// Mock del servicio
+vi.mock('../../services/passwordService', () => ({
+  sendForgotPasswordEmail: vi.fn()
+}));
+
+import * as passwordService from '../../services/passwordService';
 
 const MockedForgotPassword = () => (
   <BrowserRouter>
@@ -20,11 +23,9 @@ describe('ForgotPassword - Integración con API', () => {
 
   describe('Envío exitoso', () => {
     it('envía email correctamente a la API', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          message: 'Se ha enviado un enlace de recuperación a tu correo electrónico.'
-        })
+      vi.mocked(passwordService.sendForgotPasswordEmail).mockResolvedValue({
+        success: true,
+        message: 'Se ha enviado un enlace de recuperación a tu correo electrónico.'
       });
 
       render(<MockedForgotPassword />);
@@ -36,25 +37,16 @@ describe('ForgotPassword - Integración con API', () => {
       fireEvent.click(submitButton);
       
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:8000/api/auth/forgot-password/',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email: 'test@example.com' })
-          }
-        );
+        expect(passwordService.sendForgotPasswordEmail).toHaveBeenCalledWith({
+          email: 'test@example.com'
+        });
       });
     });
 
     it('muestra mensaje de éxito tras envío exitoso', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          message: 'Enlace de recuperación enviado exitosamente'
-        })
+      vi.mocked(passwordService.sendForgotPasswordEmail).mockResolvedValue({
+        success: true,
+        message: 'Enlace de recuperación enviado exitosamente'
       });
 
       render(<MockedForgotPassword />);
@@ -73,11 +65,9 @@ describe('ForgotPassword - Integración con API', () => {
 
   describe('Manejo de errores de API', () => {
     it('maneja error 400 - Email no encontrado', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({
-          message: 'No existe una cuenta con este correo electrónico'
-        })
+      vi.mocked(passwordService.sendForgotPasswordEmail).mockResolvedValue({
+        success: false,
+        error: 'No existe una cuenta con este correo electrónico'
       });
 
       render(<MockedForgotPassword />);
@@ -94,11 +84,9 @@ describe('ForgotPassword - Integración con API', () => {
     });
 
     it('maneja error 429 - Demasiados intentos', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({
-          message: 'Demasiados intentos. Inténtalo más tarde'
-        })
+      vi.mocked(passwordService.sendForgotPasswordEmail).mockResolvedValue({
+        success: false,
+        error: 'Demasiados intentos. Inténtalo más tarde'
       });
 
       render(<MockedForgotPassword />);
@@ -115,11 +103,9 @@ describe('ForgotPassword - Integración con API', () => {
     });
 
     it('maneja error 500 - Error del servidor', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({
-          message: 'Error interno del servidor'
-        })
+      vi.mocked(passwordService.sendForgotPasswordEmail).mockResolvedValue({
+        success: false,
+        error: 'Error interno del servidor'
       });
 
       render(<MockedForgotPassword />);
@@ -138,7 +124,7 @@ describe('ForgotPassword - Integración con API', () => {
 
   describe('Manejo de errores de red', () => {
     it('maneja error de conexión', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+      vi.mocked(passwordService.sendForgotPasswordEmail).mockRejectedValue(new Error('Network error'));
 
       render(<MockedForgotPassword />);
       
@@ -154,7 +140,7 @@ describe('ForgotPassword - Integración con API', () => {
     });
 
     it('maneja respuesta inválida de la API', async () => {
-      mockFetch.mockResolvedValueOnce({
+      vi.mocked(passwordService.sendForgotPasswordEmail).mockResolvedValue({
         ok: true,
         json: async () => 'Invalid JSON response'
       });
@@ -169,23 +155,16 @@ describe('ForgotPassword - Integración con API', () => {
       
       // Verificar que se hizo la llamada a la API
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:8000/api/auth/forgot-password/',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email: 'test@example.com' })
-          }
-        );
+        expect(passwordService.sendForgotPasswordEmail).toHaveBeenCalledWith({
+          email: 'test@example.com'
+        });
       });
     });
   });
 
   describe('Estados de carga', () => {
     it('muestra estado de carga durante el envío', async () => {
-      mockFetch.mockImplementation(() => 
+      vi.mocked(passwordService.sendForgotPasswordEmail).mockImplementation(() => 
         new Promise(resolve => setTimeout(resolve, 100))
       );
 
@@ -203,11 +182,9 @@ describe('ForgotPassword - Integración con API', () => {
     });
 
     it('restaura estado normal tras completar envío', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          message: 'Email enviado exitosamente'
-        })
+      vi.mocked(passwordService.sendForgotPasswordEmail).mockResolvedValue({
+        success: true,
+        message: 'Email enviado exitosamente'
       });
 
       render(<MockedForgotPassword />);
@@ -229,9 +206,9 @@ describe('ForgotPassword - Integración con API', () => {
 
   describe('Validación de datos enviados', () => {
     it('envía el email correcto a la API', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ message: 'Success' })
+      vi.mocked(passwordService.sendForgotPasswordEmail).mockResolvedValue({
+        success: true,
+        message: 'Success'
       });
 
       render(<MockedForgotPassword />);
@@ -243,16 +220,9 @@ describe('ForgotPassword - Integración con API', () => {
       fireEvent.click(submitButton);
       
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:8000/api/auth/forgot-password/',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email: 'usuario@ejemplo.com' })
-          }
-        );
+        expect(passwordService.sendForgotPasswordEmail).toHaveBeenCalledWith({
+          email: 'usuario@ejemplo.com'
+        });
       });
     });
 
@@ -263,7 +233,7 @@ describe('ForgotPassword - Integración con API', () => {
       fireEvent.click(submitButton);
       
       // El formulario no debería enviarse si el email está vacío
-      expect(mockFetch).not.toHaveBeenCalled();
+      expect(passwordService.sendForgotPasswordEmail).not.toHaveBeenCalled();
     });
   });
 });

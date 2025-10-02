@@ -5,6 +5,8 @@ import DashboardLayout from './components/layout/DashboardLayout'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import './App.css'
 import ForgotPassword from './components/layout/ForgotPassword';
+import ResetPassword from './components/layout/ResetPassword';
+import AdminApproval from './components/layout/AdminApproval';
 
 function App() {
   return (
@@ -12,6 +14,8 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/admin/approval" element={<AdminApproval />} />
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <DashboardLayout />
