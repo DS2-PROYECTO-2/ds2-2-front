@@ -141,8 +141,8 @@ describe('ForgotPassword - Integración con API', () => {
 
     it('maneja respuesta inválida de la API', async () => {
       vi.mocked(passwordService.sendForgotPasswordEmail).mockResolvedValue({
-        ok: true,
-        json: async () => 'Invalid JSON response'
+        success: true,
+        message: 'Invalid JSON response'
       });
 
       render(<MockedForgotPassword />);
