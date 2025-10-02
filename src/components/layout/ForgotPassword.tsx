@@ -13,20 +13,29 @@ const ForgotPassword: React.FC = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsLoading(true);
-  setError('');
-  setMessage('');
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    setMessage('');
 
-  try {
-    const response = await sendForgotPasswordEmail({ email });
-    setMessage(response.message);
-  } catch (error) {
-    setError(error instanceof Error ? error.message : 'Error de conexión. Inténtalo de nuevo.');
-  } finally {
-    setIsLoading(false);
-  }
-};
+    try {
+      const response = await sendForgotPasswordEmail({ email });
+
+      if (response.success) {
+        setMessage(response.message || 'Si el email existe en nuestro sistema, recibirás un enlace de recuperación.');
+      } else {
+        setError(response.error || 'Error al procesar la solicitud. Inténtalo de nuevo.');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('Error de conexión. Inténtalo de nuevo.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="forgot-password-container">

@@ -86,7 +86,7 @@ describe('ForgotPassword - Comportamiento', () => {
       const { sendForgotPasswordEmail } = await import('../../services/passwordService');
       vi.mocked(sendForgotPasswordEmail)
         .mockRejectedValueOnce(new Error('Error de red'))
-        .mockResolvedValueOnce({ message: 'Email enviado exitosamente' });
+        .mockResolvedValueOnce({ success: true, message: 'Email enviado exitosamente' });
 
       render(<MockedForgotPassword />);
       
@@ -144,6 +144,7 @@ describe('ForgotPassword - Comportamiento', () => {
     it('muestra estado de éxito correctamente', async () => {
       const { sendForgotPasswordEmail } = await import('../../services/passwordService');
       vi.mocked(sendForgotPasswordEmail).mockResolvedValue({
+        success: true,
         message: 'Email enviado exitosamente'
       });
 
@@ -219,8 +220,8 @@ describe('ForgotPassword - Comportamiento', () => {
     it('permite envío después de completar el anterior', async () => {
       const { sendForgotPasswordEmail } = await import('../../services/passwordService');
       vi.mocked(sendForgotPasswordEmail)
-        .mockResolvedValueOnce({ message: 'Primer envío' })
-        .mockResolvedValueOnce({ message: 'Segundo envío' });
+        .mockResolvedValueOnce({ success: true, message: 'Primer envío' })
+        .mockResolvedValueOnce({ success: true, message: 'Segundo envío' });
 
       render(<MockedForgotPassword />);
       

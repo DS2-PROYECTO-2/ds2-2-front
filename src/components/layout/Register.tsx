@@ -145,66 +145,6 @@ const handleInputChange = (
   }
 };
 
-// Función para manejar envío del formulario - FUERA del componente
-// Función para manejar envío del formulario - FUERA del componente
-const handleSubmit = async (
-  e: React.FormEvent<HTMLFormElement>,
-  formData: FormData,
-  setErrors: (errors: Record<string, string>) => void,
-  setIsLoading: (loading: boolean) => void,
-  navigate: (path: string) => void
-) => {
-  e.preventDefault();
-  
-  const isValid = await validateForm(formData, setErrors);
-  
-  if (isValid) {
-    setIsLoading(true);
-    try {
-      // Importar el servicio de registro
-      const { registerUser } = await import('../../services/registerService');
-      
-      // Llamar a la API
-      const response = await registerUser(formData);
-      
-      // Mostrar mensaje de éxito
-      alert(response.message);
-      
-      // Redirigir al login
-      navigate('/login');
-    } catch (error: unknown) {
-      console.error('Error en registro:', error);
-      
-      // Manejar errores de la API
-      if (error instanceof Error) {
-        try {
-          const apiErrors = JSON.parse(error.message);
-          const newErrors: Record<string, string> = {};
-          
-          // Mapear errores de la API a los campos del formulario
-          Object.keys(apiErrors).forEach(key => {
-            if (apiErrors[key] && apiErrors[key].length > 0) {
-              newErrors[key] = apiErrors[key][0]; // Tomar el primer error
-            }
-          });
-          
-          setErrors(newErrors);
-        } catch {
-          // Error genérico si no se puede parsear
-          setErrors({
-            general: 'Error al crear la cuenta. Inténtalo de nuevo.'
-          });
-        }
-      } else {
-        setErrors({
-          general: 'Error al crear la cuenta. Inténtalo de nuevo.'
-        });
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }
-};
 
 const Register = () => {
   const [formData, setFormData] = useState<FormData>({
@@ -222,6 +162,8 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const [passwordRequirements, setPasswordRequirements] = useState<PasswordRequirements>({
     hasUpperCase: false,
@@ -230,6 +172,58 @@ const Register = () => {
     hasSpecialChar: false,
     isValid: false
   });
+
+  // Función para manejar envío del formulario - DENTRO del componente
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    const isValid = await validateForm(formData, setErrors);
+    
+    if (isValid) {
+      setIsLoading(true);
+      try {
+        // Importar el servicio de registro
+        const { registerUser } = await import('../../services/registerService');
+        
+        // Llamar a la API
+        const response = await registerUser(formData);
+        
+        // Mostrar modal de éxito
+        setSuccessMessage(response.message);
+        setShowSuccessModal(true);
+      } catch (error: unknown) {
+        console.error('Error en registro:', error);
+        
+        // Manejar errores de la API
+        if (error instanceof Error) {
+          try {
+            const apiErrors = JSON.parse(error.message);
+            const newErrors: Record<string, string> = {};
+            
+            // Mapear errores de la API a los campos del formulario
+            Object.keys(apiErrors).forEach(key => {
+              if (apiErrors[key] && apiErrors[key].length > 0) {
+                newErrors[key] = apiErrors[key][0]; // Tomar el primer error
+              }
+            });
+            
+            setErrors(newErrors);
+          } catch {
+            // Error genérico si no se puede parsear
+            setErrors({
+              general: 'Error al crear la cuenta. Inténtalo de nuevo.'
+            });
+          }
+        } else {
+          setErrors({
+            general: 'Error de conexión. Inténtalo de nuevo.'
+          });
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
 
   const navigate = useNavigate();
 
@@ -242,7 +236,7 @@ const Register = () => {
           <p className="register-subtitle">Completa tus datos para registrarte</p>
         </div>
         
-        <form onSubmit={(e) => handleSubmit(e, formData, setErrors, setIsLoading, navigate)} className="register-form">
+        <form onSubmit={handleSubmit} className="register-form">
           <div className="form-row">
             <div className="input-group">
               <label className="input-label" htmlFor="first_name">Nombre</label>
@@ -447,6 +441,28 @@ const Register = () => {
           </div>
         </form>
       </div>
+
+      {/* Modal de éxito */}
+      {showSuccessModal && (
+        <div className="success-modal-overlay">
+          <div className="success-modal">
+            <div className="success-modal-content">
+              <div className="success-icon">✅</div>
+              <h3>¡Registro Exitoso!</h3>
+              <p>{successMessage}</p>
+              <button 
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  navigate('/login');
+                }}
+                className="success-modal-button"
+              >
+                Ir al Login
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

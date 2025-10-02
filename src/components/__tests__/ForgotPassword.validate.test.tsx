@@ -8,6 +8,8 @@ vi.mock('../../services/passwordService', () => ({
   sendForgotPasswordEmail: vi.fn()
 }));
 
+import * as passwordService from '../../services/passwordService';
+
 const MockedForgotPassword = () => (
   <BrowserRouter>
     <ForgotPassword />
@@ -152,10 +154,9 @@ describe('ForgotPassword - Validaciones', () => {
     });
 
     it('permite envío después de completar el anterior', async () => {
-      const { sendForgotPasswordEmail } = await import('../../services/passwordService');
-      vi.mocked(sendForgotPasswordEmail)
-        .mockResolvedValueOnce({ message: 'Primer envío' })
-        .mockResolvedValueOnce({ message: 'Segundo envío' });
+      vi.mocked(passwordService.sendForgotPasswordEmail)
+        .mockResolvedValueOnce({ success: true, message: 'Primer envío' })
+        .mockResolvedValueOnce({ success: true, message: 'Segundo envío' });
 
       render(<MockedForgotPassword />);
       
@@ -178,14 +179,13 @@ describe('ForgotPassword - Validaciones', () => {
         expect(screen.getByText('Segundo envío')).toBeInTheDocument();
       });
       
-      expect(sendForgotPasswordEmail).toHaveBeenCalledTimes(2);
+      expect(passwordService.sendForgotPasswordEmail).toHaveBeenCalledTimes(2);
     });
   });
 
   describe('Limpieza de estado', () => {
     it('limpia mensajes de error al cambiar el email', async () => {
-      const { sendForgotPasswordEmail } = await import('../../services/passwordService');
-      vi.mocked(sendForgotPasswordEmail).mockRejectedValue(new Error('Error de prueba'));
+      vi.mocked(passwordService.sendForgotPasswordEmail).mockRejectedValue(new Error('Error de prueba'));
 
       render(<MockedForgotPassword />);
       

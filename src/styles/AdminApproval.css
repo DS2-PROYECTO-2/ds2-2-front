@@ -1,0 +1,190 @@
+.admin-approval-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #F5F5F5 0%, #E5E7EB 100%);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-approval-form {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  width: 100%;
+  max-width: 500px;
+  position: relative;
+  z-index: 2;
+  animation: adminApprovalSlideInUp 0.8s ease-out;
+  text-align: center;
+}
+
+.admin-approval-form .message-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  text-align: center;
+  animation: adminApprovalSlideUp 0.6s ease-out;
+}
+
+.admin-approval-form .message-card.success {
+  border-top: 4px solid #16a34a;
+}
+
+.admin-approval-form .message-card.error {
+  border-top: 4px solid #dc2626;
+}
+
+.admin-approval-form .message-card.info {
+  border-top: 4px solid #DC2626;
+}
+
+.admin-approval-form .status-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  animation: adminApprovalBounce 0.8s ease-out;
+}
+
+.admin-approval-form h2 {
+  color: #333;
+  margin-bottom: 16px;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.admin-approval-form .status-message {
+  color: #666;
+  margin-bottom: 32px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.admin-approval-form .action-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.admin-approval-form .primary-button {
+  background-color: #DC2626;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.admin-approval-form .primary-button:hover {
+  background-color: #B91C1C;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+}
+
+.admin-approval-form .secondary-button {
+  background: none;
+  color: #DC2626;
+  border: 2px solid #DC2626;
+  border-radius: 5px;
+  padding: 10px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.admin-approval-form .secondary-button:hover {
+  background-color: #DC2626;
+  color: white;
+}
+
+.admin-approval-form .loading-state {
+  text-align: center;
+  color: #666;
+}
+
+.admin-approval-form .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(220, 38, 38, 0.3);
+  border-top: 4px solid #DC2626;
+  border-radius: 50%;
+  animation: adminApprovalSpin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+/* Animaciones específicas para evitar conflictos */
+@keyframes adminApprovalSlideInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes adminApprovalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes adminApprovalBounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes adminApprovalSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Estados de mensaje específicos */
+.admin-approval-form .message-card.success .status-icon {
+  color: #16a34a;
+}
+
+.admin-approval-form .message-card.error .status-icon {
+  color: #dc2626;
+}
+
+.admin-approval-form .message-card.info .status-icon {
+  color: #DC2626;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .admin-approval-form {
+    padding: 24px;
+  }
+  
+  .admin-approval-form .action-buttons {
+    flex-direction: column;
+  }
+  
+  .admin-approval-form .primary-button,
+  .admin-approval-form .secondary-button {
+    width: 100%;
+  }
+}
