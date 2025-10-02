@@ -35,21 +35,52 @@ export interface ConfirmPasswordResponse {
 }
 
 export const sendForgotPasswordEmail = async (data: ForgotPasswordData): Promise<ForgotPasswordResponse> => {
-  const response = await fetch('http://localhost:8000/api/auth/password/reset-request/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data)
-  });
+  try {
+    const response = await fetch('http://localhost:8000/api/auth/password/reset-request/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    });
 
-  const result = await response.json();
+    const result = await response.json();
 
-  if (!response.ok) {
-    throw new Error(JSON.stringify(result));
+    if (response.ok) {
+      return {
+        success: true,
+        message: result.message || 'Si el email existe en nuestro sistema, recibirás un enlace de recuperación.'
+      };
+    } else {
+      // Manejar diferentes tipos de errores del backend
+      let errorMessage = 'Error al procesar la solicitud. Inténtalo de nuevo.';
+      
+      if (result.detail) {
+        // Error específico del backend
+        errorMessage = result.detail;
+      } else if (result.error) {
+        // Error en formato estándar
+        errorMessage = result.error;
+      } else if (result.message) {
+        // Mensaje de error
+        errorMessage = result.message;
+      } else if (result.email) {
+        // Error de validación de email
+        errorMessage = Array.isArray(result.email) ? result.email[0] : result.email;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage
+      };
+    }
+  } catch (error) {
+    console.error('Error en sendForgotPasswordEmail:', error);
+    return {
+      success: false,
+      error: 'Error de conexión. Inténtalo de nuevo.'
+    };
   }
-
-  return result;
 };
 
 export const validateResetToken = async (token: string): Promise<ValidateTokenResponse> => {
