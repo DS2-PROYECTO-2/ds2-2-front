@@ -2,13 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { apiClient } from '../api'
 
 describe('apiClient errors', () => {
-  const originalLocation = window.location
   beforeEach(() => {
     vi.restoreAllMocks()
     // Stub de location
-    // @ts-expect-error
+    // @ts-expect-error Borramos location para poder stubear en entorno de tests
     delete window.location
-    // @ts-expect-error
+    // @ts-expect-error Stub de location.href para verificar redirecciones
     window.location = { href: '' }
   })
 
