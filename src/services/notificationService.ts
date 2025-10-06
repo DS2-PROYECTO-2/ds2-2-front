@@ -43,9 +43,9 @@ export const notificationService = {
       // Fallback: no existe endpoint masivo, marcar una por una
       try {
         const items = await this.getNotifications();
-        const unread = (Array.isArray(items) ? items : (items as any)?.notifications || (items as any)?.results || [])
-          .filter((n: any) => !(n.is_read ?? n.read));
-        await Promise.all(unread.map((n: any) => this.markAsRead(n.id)));
+        const list: Notification[] = Array.isArray(items) ? items : (items as unknown as { notifications?: Notification[]; results?: Notification[] }).notifications || (items as unknown as { notifications?: Notification[]; results?: Notification[] }).results || [];
+        const unread = list.filter((n: Notification) => !n.is_read);
+        await Promise.all(unread.map((n: Notification) => this.markAsRead(n.id)));
       } catch {
         // Silencio errores
       }
