@@ -154,13 +154,19 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
   };
 
   const reloadActive = async () => {
-    // recargar entrada activa
-    const res = await getMyActiveEntry();
-    if (res.has_active_entry && res.active_entry) {
-      setActiveEntryId(res.active_entry.id);
-      setActiveEntryRoomId(res.active_entry.roomId ?? null);
-      setActiveEntryRoomName(res.active_entry.roomName ?? null);
-    } else {
+    try {
+      const res = await getMyActiveEntry();
+      if (res.has_active_entry && res.active_entry) {
+        setActiveEntryId(res.active_entry.id);
+        setActiveEntryRoomId(res.active_entry.roomId ?? null);
+        setActiveEntryRoomName(res.active_entry.roomName ?? null);
+      } else {
+        setActiveEntryId(null);
+        setActiveEntryRoomId(null);
+        setActiveEntryRoomName(null);
+      }
+    } catch {
+      // En error, limpiar a estado seguro
       setActiveEntryId(null);
       setActiveEntryRoomId(null);
       setActiveEntryRoomName(null);

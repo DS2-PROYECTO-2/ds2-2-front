@@ -44,25 +44,32 @@ const RoomStatsRow: React.FC = () => {
   const [weeklyCount, setWeeklyCount] = useState(0);
 
   const recalc = async () => {
-    const all: RoomEntryUI[] = await getMyEntries();
-    const { start: weekStart, end: weekEnd } = getWeekRange();
-    const { start: monthStart, end: monthEnd } = getMonthRange();
-  
-    const week = all.filter(e => {
-      const s = new Date(e.startedAt);
-      return s >= weekStart && s <= weekEnd;
-    });
-    const month = all.filter(e => {
-      const s = new Date(e.startedAt);
-      return s >= monthStart && s <= monthEnd;
-    });
-  
-    const weekMin = sumMinutes(week, weekStart, weekEnd);
-    const monthMin = sumMinutes(month, monthStart, monthEnd);
-  
-    setWeekly(formatHM(weekMin));
-    setMonthly(formatHM(monthMin));
-    setWeeklyCount(week.length);
+    try {
+      const all: RoomEntryUI[] = await getMyEntries();
+      const { start: weekStart, end: weekEnd } = getWeekRange();
+      const { start: monthStart, end: monthEnd } = getMonthRange();
+
+      const week = all.filter(e => {
+        const s = new Date(e.startedAt);
+        return s >= weekStart && s <= weekEnd;
+      });
+      const month = all.filter(e => {
+        const s = new Date(e.startedAt);
+        return s >= monthStart && s <= monthEnd;
+      });
+
+      const weekMin = sumMinutes(week, weekStart, weekEnd);
+      const monthMin = sumMinutes(month, monthStart, monthEnd);
+
+      setWeekly(formatHM(weekMin));
+      setMonthly(formatHM(monthMin));
+      setWeeklyCount(week.length);
+    } catch {
+      // Valores seguros si falla el backend
+      setWeekly('0 h 00 min');
+      setMonthly('0 h 00 min');
+      setWeeklyCount(0);
+    }
   };
 
   useEffect(() => { recalc(); }, []);

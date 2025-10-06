@@ -10,6 +10,7 @@ const ForgotPassword: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [existsFlag, setExistsFlag] = useState<boolean | undefined>(undefined);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,10 +20,13 @@ const ForgotPassword: React.FC = () => {
     setMessage('');
 
     try {
-      const response = await sendForgotPasswordEmail({ email });
+      const safeEmail = email.trim();
+      const response = await sendForgotPasswordEmail({ email: safeEmail });
 
       if (response.success) {
-        setMessage(response.message || 'Si el email existe en nuestro sistema, recibirás un enlace de recuperación.');
+        // Mostrar mensaje explícito del backend. Si existe=false, lo tratamos como aviso informativo.
+        setMessage(response.message || (response.exists ? 'Enlace enviado.' : 'El email no está registrado o el usuario no está activo'));
+        setExistsFlag(response.exists);
       } else {
         setError(response.error || 'Error al procesar la solicitud. Inténtalo de nuevo.');
       }
@@ -36,6 +40,7 @@ const ForgotPassword: React.FC = () => {
       setIsLoading(false);
     }
   };
+
 
   return (
     <div className="forgot-password-container">
@@ -58,7 +63,7 @@ const ForgotPassword: React.FC = () => {
           </div>
 
           {message && (
-            <div className="success-message">
+            <div className={existsFlag === false ? 'error-message' : 'success-message'}>
               {message}
             </div>
           )}
@@ -84,6 +89,7 @@ const ForgotPassword: React.FC = () => {
           </button>
         </div>
       </div>
+
     </div>
   );
 };

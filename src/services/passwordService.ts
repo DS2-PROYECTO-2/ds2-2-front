@@ -6,6 +6,8 @@ export interface ForgotPasswordResponse {
   success: boolean;
   message?: string;
   error?: string;
+  exists?: boolean;
+  reset_url?: string;
 }
 
 export interface User {
@@ -36,21 +38,34 @@ export interface ConfirmPasswordResponse {
 
 export const sendForgotPasswordEmail = async (data: ForgotPasswordData): Promise<ForgotPasswordResponse> => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/password/reset-request/`, {
+    const base = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
+    // Intento 1: ruta nueva /api/users/password/reset-request/
+    let response = await fetch(`${base}/api/users/password/reset-request/`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify(data)
     });
+
+    // Fallback si no existe en este backend: usar la ruta anterior /api/auth/password/reset-request/
+    if (response.status === 404) {
+      response = await fetch(`${base}/api/auth/password/reset-request/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data)
+      });
+    }
 
     const result = await response.json();
 
     if (response.ok) {
       return {
         success: true,
-        message: result.message || 'Si el email existe en nuestro sistema, recibirás un enlace de recuperación.'
+        message: result.message || 'Solicitud procesada.',
+        exists: typeof result.exists === 'boolean' ? result.exists : undefined,
+        reset_url: typeof result.reset_url === 'string' ? result.reset_url : undefined,
       };
     } else {
       // Manejar errores específicos del backend
@@ -88,7 +103,7 @@ export const sendForgotPasswordEmail = async (data: ForgotPasswordData): Promise
 
 export const validateResetToken = async (token: string): Promise<ValidateTokenResponse> => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/password/reset-confirm/?token=${token}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'}/api/auth/password/reset-confirm/?token=${token}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -125,7 +140,7 @@ export const confirmPasswordReset = async (
   confirmPassword: string
 ): Promise<ConfirmPasswordResponse> => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/password/reset-confirm/`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'}/api/auth/password/reset-confirm/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
