@@ -75,17 +75,17 @@ const RoomStatsRow: React.FC = () => {
 
   return (
     <div className="stats-row">
-      <div className="content-panel mini">
+      <div className="content-panel mini mini--monthly">
         <div className="mini-card__title">Horas mensuales</div>
         <div className="mini-card__value">{monthly}</div>
         <div className="mini-card__hint">Acumuladas este mes</div>
       </div>
-      <div className="content-panel mini">
+      <div className="content-panel mini mini--weekly">
         <div className="mini-card__title">Horas semanales</div>
         <div className="mini-card__value" style={{ color: '#059669' }}>{weekly}</div>
         <div className="mini-card__hint">Semana actual</div>
       </div>
-      <div className="content-panel mini">
+      <div className="content-panel mini mini--count">
         <div className="mini-card__title">Registros esta semana</div>
         <div className="mini-card__value" style={{ color: '#DC2626' }}>{weeklyCount}</div>
         <div className="mini-card__hint">Entradas creadas</div>

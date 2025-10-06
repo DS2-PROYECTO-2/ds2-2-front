@@ -1,4 +1,176 @@
 /* Variables CSS */
+
+/* ================= Animations (base) ================= */
+@keyframes pop-in {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+@keyframes badge-pop {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes bell-ring {
+  0% { transform: rotate(0deg); }
+  10% { transform: rotate(-15deg); }
+  20% { transform: rotate(12deg); }
+  30% { transform: rotate(-10deg); }
+  40% { transform: rotate(8deg); }
+  50% { transform: rotate(-6deg); }
+  60% { transform: rotate(4deg); }
+  70% { transform: rotate(-2deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes fade-slide-in {
+  0% { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes press {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(1px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes subtle-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(0, 123, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+}
+
+@keyframes title-appear {
+  0% { opacity: 0; transform: translateY(6px); letter-spacing: 0.4px; }
+  100% { opacity: 1; transform: translateY(0); letter-spacing: 0; }
+}
+
+/* Icon press/tap feedback */
+@keyframes icon-tap {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+/* Utility animation classes */
+.animate-pop { animation: pop-in 1400ms ease-out; }
+.animate-fade-in { animation: fade-slide-in 760ms ease-out; }
+.animate-press { animation: press 120ms ease-in-out; }
+.animate-pulse { animation: subtle-pulse 1500ms ease-out infinite; }
+
+/* Notification bell and badge animations */
+.notification-bell .notification-badge.badge-anim {
+  animation: badge-pop 280ms ease-out;
+}
+
+.notification-bell .bell-button.icon-anim {
+  animation: bell-ring 600ms ease-in-out;
+  transform-origin: 50% 0%;
+}
+
+/* Dropdown animation */
+.notification-dropdown {
+  animation: fade-slide-in 640ms ease-out;
+}
+
+/* Buttons micro-interactions */
+.primary-btn, .bell-button, .mark-all-read-btn, .refresh-btn, .content-panel .btn, button {
+  transition: transform 120ms ease, box-shadow 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.primary-btn:hover,
+.bell-button:hover,
+.mark-all-read-btn:hover,
+.refresh-btn:hover,
+.content-panel .btn:hover,
+button:hover {
+  transform: translateY(-1px);
+}
+
+.primary-btn:active,
+.bell-button:active,
+.mark-all-read-btn:active,
+.refresh-btn:active,
+.content-panel .btn:active,
+button:active {
+  transform: translateY(0);
+}
+
+/* Animación de iconos al presionar (íconos SVG dentro de botones) */
+.primary-btn:active svg,
+.bell-button:active svg,
+.mark-all-read-btn:active svg,
+.refresh-btn:active svg,
+.content-panel .btn:active svg,
+button:active svg {
+  animation: icon-tap 220ms ease-in-out;
+  transform-origin: 50% 50%;
+}
+
+/* Ripple effect for primary buttons */
+.primary-btn {
+  position: relative;
+  overflow: hidden;
+}
+.primary-btn::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 9999px;
+  transform: scale(1);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 500ms ease, opacity 600ms ease;
+}
+.primary-btn:active::after {
+  opacity: 1;
+  transform: scale(24);
+}
+
+/* Section titles subtle animation */
+.content-panel .panel-title,
+.main-content h2,
+.main-content h3,
+.notification-header h3 {
+  animation: title-appear 800ms ease-out;
+}
+
+/* ================= Dashboard-specific animations ================= */
+/* Panels */
+.content-panel {
+  will-change: transform, opacity;
+}
+.content-panel.reveal.is-visible {
+  animation: fade-slide-in 1040ms ease-out;
+}
+
+/* Sidebar navigation */
+.left-sidebar .nav-item {
+  transition: background-color 160ms ease, color 160ms ease, transform 120ms ease;
+}
+.left-sidebar .nav-item:hover {
+  transform: translateX(2px);
+}
+.left-sidebar .nav-item.active {
+  animation: subtle-pulse 1800ms ease-out 1;
+}
+
+/* RoomHistory: resaltar item actualizado */
+.room-history .history-item.highlighted {
+  animation: pop-in 220ms ease-out, subtle-pulse 1600ms ease-out 1;
+}
+
+/* Notificaciones: item unread y al marcar leído */
+.notification-list .notification-item.unread {
+  animation: fade-slide-in 720ms ease-out;
+}
+.notification-list .notification-item.read-transition {
+  animation: fade-slide-in 640ms ease-out reverse;
+}
 :root {
     --primary-red: #DC2626;
     --primary-red-light: #EF4444;
@@ -26,7 +198,15 @@
   
   /* Sidebar izquierdo */
   .left-sidebar {
-    background: linear-gradient(135deg, var(--primary-red), var(--primary-red-dark));
+    /* Degradado rojo con capas y brillo sutil para evitar apariencia plana */
+    background:
+      radial-gradient(800px 280px at -120px -120px, rgba(255,255,255,0.12), rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0) 45%),
+      /* textura sutil en diagonal */
+      repeating-linear-gradient(135deg, rgba(255,255,255,0.035) 0 2px, rgba(255,255,255,0) 2px 7px),
+      /* degradado principal con más contraste */
+      linear-gradient(200deg, #ef4444 0%, #dc2626 35%, #b91c1c 100%);
+    background-blend-mode: screen, normal, soft-light, normal;
     padding: 2rem 1rem;
     display: flex;
     flex-direction: column;
@@ -35,6 +215,17 @@
     position: relative;
     z-index: 1000;
     
+  }
+
+  /* Vignette y brillo superior para mayor profundidad */
+  .left-sidebar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1000px 380px at 80px 40px, rgba(255,255,255,0.20), rgba(255,255,255,0.04) 40%, rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.04) 14%, rgba(0,0,0,0.15) 100%);
+    pointer-events: none;
   }
   
   .sidebar-header {
@@ -270,10 +461,17 @@
     gap: 1rem; 
   }
 
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
 .panel-title { 
   font-size: 1.25rem;
   font-weight: 600;
-  margin-bottom: .5rem; 
+  margin: 0;
 }
 
 .panel-actions { 
@@ -314,6 +512,12 @@
   min-width: 80px; /* Usuario y documento */
 }
 
+/* Ancho específico para inputs de usuario y documento */
+.field:nth-child(4) input,
+.field:nth-child(5) input {
+  width: 170px;
+}
+
 /* En pantallas muy pequeñas, permitir scroll horizontal */
 @media (max-width: 768px) {
   .panel-filters {
@@ -333,7 +537,14 @@
   }
   
   .field:nth-child(4), .field:nth-child(5) {
-    min-width: 70px;
+    min-width: 60px;
+  }
+  
+  /* Ancho específico para inputs de usuario y documento en móvil */
+  .field:nth-child(4) input,
+  .field:nth-child(5) input {
+    width: 100px;
+    max-width: 100px;
   }
 }
 
@@ -419,20 +630,23 @@
 
 .notification-badge {
   position: absolute;
-  top: -1px;
-  right: -1px;
+  top: -2px;
+  right: -2px;
   background: #ff4444;
   color: white;
   border-radius: 50%;
-  width: 14px;
-  height: 14px;
-  font-size: 0.6rem;
+  min-width: 16px;
+  height: 16px;
+  font-size: 0.7rem;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  border: 1px solid var(--primary-red);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  line-height: 1;
+  padding: 0 2px;
 }
 
 .notification-dropdown {
@@ -463,6 +677,60 @@
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--gray-800);
+}
+
+.notification-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.refresh-btn {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background: var(--gray-200);
+}
+
+/* Refresh indicator styles */
+.refresh-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 1rem;
+  font-size: 0.875rem;
+  color: var(--primary-blue);
+  font-weight: 500;
+}
+
+/* Ocultar indicador de "ACTUALIZANDO" en paneles */
+.refresh-indicator { display: none !important; }
+
+.refresh-spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  font-size: 1rem;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .mark-all-read-btn {
@@ -620,6 +888,38 @@
   z-index: 1;
 }
 
+/* Textura para panel de listado (RoomHistory) */
+.panel-list {
+  position: relative;
+  /* Textura de micro-puntos + brillo sutil superior-derecha */
+  background:
+    radial-gradient(350px 180px at 85% 0%, rgba(255,255,255,0.55), rgba(255,255,255,0.35) 40%, rgba(255,255,255,0) 65%),
+    radial-gradient(circle at 1px 1px, rgba(0,0,0,0.035) 1px, rgba(0,0,0,0) 1.2px);
+  background-size:
+    auto,
+    8px 8px; /* tamaño del patrón de puntos */
+  background-repeat: no-repeat, repeat;
+}
+
+/* Marca de agua para panel de registro de sala (lado derecho) */
+.panel-room { position: relative; overflow: hidden; }
+.panel-room::before {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  width: 160px;
+  height: 160px;
+  transform: translateY(-50%);
+  opacity: 0.10;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: right center;
+  pointer-events: none;
+  /* Ícono vectorial tipo "arrow-right-on-rectangle" (entrada/salida) */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 24 24' fill='none' stroke='%23222' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M8 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2'/><path d='M15 17l5-5-5-5'/><path d='M20 12H9'/></svg>");
+}
+
 .table-scroll {
   max-height: 420px;           /* ajusta a tu gusto */
   overflow-y: auto;
@@ -719,9 +1019,18 @@
   30%  { background: #bbf7d0; box-shadow: 0 4px 18px rgba(34,197,94,.25); }
   100% { background: transparent; box-shadow: none; }
 }
-.row-highlight { animation: newRowPulse 1800ms ease forwards; }
+@keyframes row-pop-in { 
+  0% { opacity: 0; transform: translateY(8px) scale(0.98); }
+  60% { opacity: 1; transform: translateY(0) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.row-highlight { 
+  animation: newRowPulse 1800ms ease forwards, row-pop-in 650ms ease-out;
+}
 
-.row-highlight > td { animation: newRowPulse 1800ms ease forwards; }
+.row-highlight > td { 
+  animation: newRowPulse 1800ms ease forwards, row-pop-in 650ms ease-out;
+}
 
 /* Fila de mini-panels (cada uno es un content-panel independiente) */
 .stats-row {
@@ -737,6 +1046,67 @@
   min-height: 0 !important;
 
   
+}
+
+/* Watermarks para mini-panels (icono sutil alineado a la izquierda) */
+.content-panel.mini { position: relative; overflow: hidden; }
+.content-panel.mini::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  width: 110px;
+  height: 110px;
+  transform: translateY(-50%);
+  opacity: 0.16;
+  filter: grayscale(20%);
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: left center;
+  pointer-events: none;
+}
+
+/* segunda marca sutil para dar más textura */
+.content-panel.mini::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  bottom: 12px;
+  width: 56px;
+  height: 56px;
+  opacity: 0.06;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: left bottom;
+  pointer-events: none;
+}
+
+/* Ocultar la segunda marca (solo dejar el icono grande) */
+.content-panel.mini::after { display: none !important; }
+
+/* Mensuales: icono de calendario */
+.mini--monthly::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 24 24' fill='none' stroke='%23222' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='4' width='18' height='18' rx='2' ry='2'/><line x1='16' y1='2' x2='16' y2='6'/><line x1='8' y1='2' x2='8' y2='6'/><line x1='3' y1='10' x2='21' y2='10'/><rect x='7' y='14' width='3' height='3' rx='0.5'/></svg>");
+}
+.mini--monthly::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 24 24' fill='none' stroke='%23222' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='4' width='18' height='18' rx='2' ry='2'/><line x1='16' y1='2' x2='16' y2='6'/><line x1='8' y1='2' x2='8' y2='6'/><line x1='3' y1='10' x2='21' y2='10'/></svg>");
+}
+
+/* Semanales: icono de reloj */
+.mini--weekly::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 24 24' fill='none' stroke='%23059669' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><polyline points='12 6 12 12 16 14'/></svg>");
+}
+.mini--weekly::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 24 24' fill='none' stroke='%23059669' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><polyline points='12 6 12 12 16 14'/></svg>");
+}
+
+/* Conteo: icono de lista/check */
+.mini--count::before {
+  /* Cambiado a portapapeles con checklist */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='110' height='110' viewBox='0 0 24 24' fill='none' stroke='%23DC2626' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M16 4h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/><rect x='8' y='2' width='8' height='4' rx='1'/><path d='M9 10l2 2 4-4'/><path d='M9 16h6'/></svg>");
+}
+.mini--count::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 24 24' fill='none' stroke='%23DC2626' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'><line x1='3' y1='21' x2='21' y2='21'/><rect x='6' y='12' width='3' height='7' rx='1'/><rect x='11' y='9' width='3' height='10' rx='1'/><rect x='16' y='5' width='3' height='14' rx='1'/></svg>");
 }
 
 /* Tipografías de las mini tarjetas (reutiliza tus clases) */
@@ -773,21 +1143,44 @@
 @keyframes scaleIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
 
 /* 2) Sidebars al cargar */
-.left-sidebar { animation: slideInLeft 480ms ease-out both; }
+.left-sidebar { animation: slideInLeft 840ms ease-out both; }
+/* Añadir animación de entrada para el sidebar derecho */
+.right-sidebar { animation: slideInRight 900ms ease-out both; }
 
 /* 3) Panels centrales con “stagger” (escalonadas) */
 .main-content > .content-panel {
-  animation: fadeSlideUp 520ms ease-out both;
+  animation: fadeSlideUp 1600ms ease-out both;
 }
 .main-content > .content-panel:nth-child(1) { animation-delay: 80ms; }
 .main-content > .content-panel:nth-child(2) { animation-delay: 140ms; }
 .main-content > .content-panel:nth-child(3) { animation-delay: 200ms; }
 
 /* 4) Mini-panels (si usas stats-row con content-panel.mini) */
-.stats-row .content-panel.mini { animation: scaleIn 420ms ease-out both; }
+.stats-row .content-panel.mini { animation: scaleIn 1300ms ease-out both; }
 .stats-row .content-panel.mini:nth-child(1) { animation-delay: 60ms; }
 .stats-row .content-panel.mini:nth-child(2) { animation-delay: 120ms; }
 .stats-row .content-panel.mini:nth-child(3) { animation-delay: 180ms; }
+
+/* 4.1) Filas de tablas con aparición suave y escalonada */
+.table tbody tr { animation: fadeSlideUp 600ms ease-out both; }
+.table tbody tr:nth-child(1) { animation-delay: 40ms; }
+.table tbody tr:nth-child(2) { animation-delay: 80ms; }
+.table tbody tr:nth-child(3) { animation-delay: 120ms; }
+.table tbody tr:nth-child(4) { animation-delay: 160ms; }
+.table tbody tr:nth-child(5) { animation-delay: 200ms; }
+.table tbody tr:nth-child(6) { animation-delay: 240ms; }
+.table tbody tr:nth-child(7) { animation-delay: 280ms; }
+.table tbody tr:nth-child(8) { animation-delay: 320ms; }
+.table tbody tr:nth-child(9) { animation-delay: 360ms; }
+.table tbody tr:nth-child(10) { animation-delay: 400ms; }
+
+/* 4.2) Controles de filtro con aparición suave escalonada */
+.panel-filters .field { animation: fadeSlideUp 800ms ease-out both; }
+.panel-filters .field:nth-child(1) { animation-delay: 40ms; }
+.panel-filters .field:nth-child(2) { animation-delay: 80ms; }
+.panel-filters .field:nth-child(3) { animation-delay: 120ms; }
+.panel-filters .field:nth-child(4) { animation-delay: 160ms; }
+.panel-filters .field:nth-child(5) { animation-delay: 200ms; }
 
 /* 5) Micro-interacciones sutiles al pasar el mouse */
 .content-panel:hover { transition: box-shadow .25s ease, transform .2s ease; transform: translateY(-1px); box-shadow: var(--shadow-md); }
@@ -801,5 +1194,5 @@
   .content-panel, .content-panel.mini { transform: none !important; }
 }
 
-.reveal { opacity: 0; transform: translateY(12px); transition: opacity .5s ease, transform .5s ease; }
+.reveal { opacity: 0; transform: translateY(12px); transition: opacity 1.4s ease, transform 1.4s ease; }
 .reveal.is-visible { opacity: 1; transform: translateY(0); }

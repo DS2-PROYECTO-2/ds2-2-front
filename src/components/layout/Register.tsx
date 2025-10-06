@@ -173,6 +173,43 @@ const Register = () => {
     isValid: false
   });
 
+  // Handlers para campos numéricos (evitar letras y 'e')
+  const onNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'];
+    if (allowedKeys.includes(e.key)) return;
+    if (!/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const onNumericPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const paste = e.clipboardData.getData('text');
+    if (/[^0-9]/.test(paste)) {
+      e.preventDefault();
+      const target = e.target as HTMLInputElement;
+      const digits = paste.replace(/\D/g, '');
+      const start = target.selectionStart ?? target.value.length;
+      const end = target.selectionEnd ?? start;
+      const maxLen = target.maxLength > 0 ? target.maxLength : undefined;
+      const next = (target.value.slice(0, start) + digits + target.value.slice(end));
+      const finalValue = maxLen ? next.slice(0, maxLen) : next;
+      const name = target.name as keyof FormData;
+      setFormData(prev => ({ ...prev, [name]: finalValue }));
+      if (errors[name as string]) {
+        setErrors(prev => ({ ...prev, [name as string]: '' }));
+      }
+    }
+  };
+
+  const onNumericChange = (name: keyof FormData, maxLen?: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, '');
+    const value = typeof maxLen === 'number' ? digits.slice(0, maxLen) : digits;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name as string]) {
+      setErrors(prev => ({ ...prev, [name as string]: '' }));
+    }
+  };
+
   // Función para manejar envío del formulario - DENTRO del componente
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -192,7 +229,7 @@ const Register = () => {
         setSuccessMessage(response.message);
         setShowSuccessModal(true);
       } catch (error: unknown) {
-        console.error('Error en registro:', error);
+        // Error de registro capturado
         
         // Manejar errores de la API
         if (error instanceof Error) {
@@ -200,14 +237,25 @@ const Register = () => {
             const apiErrors = JSON.parse(error.message);
             const newErrors: Record<string, string> = {};
             
-            // Mapear errores de la API a los campos del formulario
+            // Mapear errores específicos del backend
             Object.keys(apiErrors).forEach(key => {
-              if (apiErrors[key] && apiErrors[key].length > 0) {
-                newErrors[key] = apiErrors[key][0]; // Tomar el primer error
+              if (apiErrors[key] && Array.isArray(apiErrors[key]) && apiErrors[key].length > 0) {
+                // Tomar el primer error del array
+                newErrors[key] = apiErrors[key][0];
+              } else if (typeof apiErrors[key] === 'string') {
+                // Error directo como string
+                newErrors[key] = apiErrors[key];
               }
             });
             
-            setErrors(newErrors);
+            // Si no hay errores específicos de campo, mostrar error general
+            if (Object.keys(newErrors).length === 0) {
+              setErrors({
+                general: 'Error al crear la cuenta. Inténtalo de nuevo.'
+              });
+            } else {
+              setErrors(newErrors);
+            }
           } catch {
             // Error genérico si no se puede parsear
             setErrors({
@@ -309,8 +357,12 @@ const Register = () => {
                 id="identification"
                 name="identification"
                 type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={formData.identification}
-                onChange={(e) => handleInputChange(e, setFormData, setErrors, errors)}
+                onChange={onNumericChange('identification', 10)}
+                onKeyDown={onNumericKeyDown}
+                onPaste={onNumericPaste}
                 className={`register-input ${errors.identification ? 'error' : ''}`}
                 placeholder="Entre 6 y 10 dígitos"
                 maxLength={10}
@@ -325,9 +377,13 @@ const Register = () => {
             <input
               id="phone"
               name="phone"
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => handleInputChange(e, setFormData, setErrors, errors)}
+                type="tel"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={formData.phone}
+                onChange={onNumericChange('phone')}
+                onKeyDown={onNumericKeyDown}
+                onPaste={onNumericPaste}
               className={`register-input ${errors.phone ? 'error' : ''}`}
               placeholder="Número de teléfono"
             />

@@ -4,38 +4,57 @@ import { authService, type LoginCredentials } from '../services/authService'
 import { AuthContext, type User } from './AuthContext'
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
+  // Cargar usuario inicial desde localStorage para evitar parpadeo
+  const getInitialUser = (): User | null => {
+    try {
+      const userStr = localStorage.getItem('user');
+      return userStr ? JSON.parse(userStr) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const [user, setUser] = useState<User | null>(getInitialUser())
   const [token, setToken] = useState<string | null>(localStorage.getItem('authToken'))
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isHydrated, setIsHydrated] = useState(false) // Estado de hidratación
 
   const setAuth = useCallback((auth: {token: string|null, user: User|null}) => {
     setToken(auth.token)
     setUser(auth.user)
   }, [])
 
+  // Marcar como hidratado después del primer render
+  useEffect(() => {
+    setIsHydrated(true);
+  }, [])
+
   useEffect(() => {
     const bootstrap = async () => {
       const token = localStorage.getItem('authToken');
       if (!token) {
-        setIsLoading(false);
         return;
       }
       
-      try {
-        // Cargar perfil del usuario
-        const userData = await authService.getProfile();
-        setAuth({ token, user: userData });
-      } catch {
-        // Token inválido, limpiar
-        authService.logout();
-        setAuth({ token: null, user: null });
-      } finally {
-        setIsLoading(false);
+      // Solo hacer bootstrap si hay token pero no hay usuario
+      if (token && !user) {
+        setIsLoading(true);
+        try {
+          // Cargar perfil del usuario desde el backend
+          const userData = await authService.getProfile();
+          setAuth({ token, user: userData });
+        } catch {
+          // Token inválido, limpiar
+          authService.logout();
+          setAuth({ token: null, user: null });
+        } finally {
+          setIsLoading(false);
+        }
       }
     };
     
     bootstrap();
-  }, [setAuth])
+  }, [setAuth, user])
 
   const login = async (credentials: LoginCredentials) => {
     setIsLoading(true)
@@ -60,6 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       token,
       isAuthenticated: !!user,
       isLoading,
+      isHydrated,
       login,
       logout,
       setAuth

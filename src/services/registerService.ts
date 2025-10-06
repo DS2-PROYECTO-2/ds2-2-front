@@ -46,7 +46,10 @@ export const registerUser = async (data: Omit<RegisterData, 'role'>): Promise<Re
   const result = await response.json();
 
   if (!response.ok) {
-    throw new Error(JSON.stringify(result));
+    // El backend devuelve errores en formato { "field": ["error message"] }
+    // Convertir a formato que el componente pueda manejar
+    const errorDetails = result;
+    throw new Error(JSON.stringify(errorDetails));
   }
 
   return result;

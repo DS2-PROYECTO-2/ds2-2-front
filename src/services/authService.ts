@@ -25,18 +25,11 @@ export interface AuthError {
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    try {
-      const response = await apiClient.post<LoginCredentials, AuthResponse>('/api/auth/login/', credentials)
-      
-      // Guardar token y usuario en localStorage
-      localStorage.setItem('authToken', response.token)
-      localStorage.setItem('user', JSON.stringify(response.user))
-      
-      return response
-    } catch (error: unknown) {
-      // Re-lanzar el error para que el componente pueda manejarlo
-      throw new Error(error instanceof Error ? error.message : String(error))
-    }
+    const response = await apiClient.post<LoginCredentials, AuthResponse>('/api/auth/login/', credentials)
+    // Guardar token y usuario en localStorage
+    localStorage.setItem('authToken', response.token)
+    localStorage.setItem('user', JSON.stringify(response.user))
+    return response
   },
 
   logout() {

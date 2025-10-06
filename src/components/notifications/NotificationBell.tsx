@@ -10,17 +10,22 @@ const NotificationBell: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [markingAll, setMarkingAll] = useState(false);
+  const [dropdownRef, setDropdownRef] = useState<HTMLDivElement | null>(null);
+  const [animateBell, setAnimateBell] = useState(false);
+  const prevUnreadRef = React.useRef<number>(0);
 
   const loadNotifications = async () => {
     try {
       setLoading(true);
-      const notifs = await notificationService.getNotifications();
-      const localUnreadCount = notifs.filter(n => !n.is_read).length;
+      const backendNotifs = await notificationService.getNotifications();
       
-      setNotifications(notifs);
-      setUnreadCount(localUnreadCount);
-    } catch (error) {
-      console.error('Error loading notifications:', error);
+      setNotifications(backendNotifs);
+      
+      const unreadCount = backendNotifs.filter(n => !n.is_read).length;
+      setUnreadCount(unreadCount);
+      
+    } catch {
+      // Silencio errores en pruebas/offline
     } finally {
       setLoading(false);
     }
@@ -33,8 +38,8 @@ const NotificationBell: React.FC = () => {
         prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
+    } catch {
+      // Silencio errores en pruebas/offline
     }
   };
 
@@ -55,8 +60,8 @@ const NotificationBell: React.FC = () => {
       // Actualizar el estado local
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
       setUnreadCount(0);
-    } catch (error) {
-      console.error('Error marking all as read:', error);
+    } catch {
+      // Silencio errores en pruebas/offline
     } finally {
       setMarkingAll(false);
     }
@@ -64,9 +69,88 @@ const NotificationBell: React.FC = () => {
 
   useEffect(() => {
     loadNotifications();
-    // Recargar notificaciones cada 30 segundos
-    const interval = setInterval(loadNotifications, 30000);
-    return () => clearInterval(interval);
+  }, []);
+
+  // Reproducir animación del timbre al incrementar las no leídas
+  useEffect(() => {
+    const prevUnread = prevUnreadRef.current;
+    if (unreadCount > 0 && unreadCount > prevUnread) {
+      setAnimateBell(true);
+      const timeout = setTimeout(() => setAnimateBell(false), 650); // debe coincidir con CSS ~600ms
+      return () => clearTimeout(timeout);
+    }
+    prevUnreadRef.current = unreadCount;
+  }, [unreadCount]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadNotifications();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    const handleWindowFocus = () => loadNotifications();
+    window.addEventListener('focus', handleWindowFocus);
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'room-event' || e.key === 'notifications-updated') {
+        loadNotifications();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleWindowFocus);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, []);
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isOpen && dropdownRef && !dropdownRef.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, dropdownRef]);
+
+  // Escuchar eventos de entrada/salida de salas para actualizar notificaciones
+  useEffect(() => {
+    const handleRoomEntry = (event: CustomEvent) => {
+      const { roomName, userName } = event.detail || {};
+      
+      if (roomName && userName) {
+        // Actualizar inmediatamente
+        loadNotifications();
+      }
+    };
+
+    const handleRoomExit = (event: CustomEvent) => {
+      const { roomName, userName } = event.detail || {};
+      
+      if (roomName && userName) {
+        // Actualizar inmediatamente
+        loadNotifications();
+      }
+    };
+
+    window.addEventListener('room-entry-added', handleRoomEntry);
+    window.addEventListener('room-entry-exited', handleRoomExit);
+    
+    return () => {
+      window.removeEventListener('room-entry-added', handleRoomEntry);
+      window.removeEventListener('room-entry-exited', handleRoomExit);
+    };
   }, []);
 
 
@@ -81,37 +165,58 @@ const NotificationBell: React.FC = () => {
     });
   };
 
-  // Solo mostrar para admins
-  if (user?.role !== 'admin') {
+  // Mostrar para usuarios autenticados (admins y monitores)
+  if (!user) {
     return null;
   }
+
 
   return (
     <div className="notification-bell">
       <button
-        className={`bell-button ${unreadCount > 0 ? 'has-notifications' : ''}`}
-        onClick={() => setIsOpen(!isOpen)}
+        className={`bell-button ${unreadCount > 0 ? 'has-notifications' : ''} ${animateBell ? 'icon-anim' : ''}`}
+        onClick={() => {
+          setIsOpen(!isOpen);
+          if (!isOpen) {
+            loadNotifications();
+          }
+        }}
         title={`${unreadCount} notificaciones no leídas`}
       >
         {unreadCount > 0 ? <BellRing size={20} /> : <Bell size={20} />}
         {unreadCount > 0 && (
-          <span className="notification-badge">{unreadCount}</span>
+          <span className="notification-badge badge-anim">
+            {unreadCount}
+          </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="notification-dropdown">
+        <div 
+          ref={setDropdownRef}
+          className="notification-dropdown animate-fade-in"
+        >
           <div className="notification-header">
             <h3>Notificaciones</h3>
-            {unreadCount > 0 && (
+            <div className="notification-actions">
               <button 
-                className="mark-all-read-btn"
-                onClick={markAllAsRead}
-                disabled={markingAll}
+                className="refresh-btn"
+                onClick={loadNotifications}
+                disabled={loading}
+                title="Actualizar notificaciones"
               >
-                {markingAll ? 'Limpiando...' : 'Limpiar'}
+                {loading ? '⟳' : '↻'}
               </button>
-            )}
+              {unreadCount > 0 && (
+                <button 
+                  className="mark-all-read-btn"
+                  onClick={markAllAsRead}
+                  disabled={markingAll}
+                >
+                  {markingAll ? 'Limpiando...' : 'Limpiar'}
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="notification-list">

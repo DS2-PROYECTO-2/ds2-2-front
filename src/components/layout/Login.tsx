@@ -35,6 +35,7 @@ const Login = () => {
     username: '',
     password: ''
   });
+  const [generalError, setGeneralError] = useState('');
 
   const { login, isLoading} = useAuth();
   const navigate = useNavigate();
@@ -44,6 +45,10 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
+    // Limpiar errores previos
+    setErrors({ username: '', password: '' });
+    setGeneralError('');
+    
     if (validateForm(username, password, setErrors)) {
       try {
         await login({ username, password });
@@ -51,43 +56,56 @@ const Login = () => {
       } catch (error: unknown) {
         // Manejar errores específicos del backend
         try {
-          const errorMessage = error instanceof Error ? error.message : String(error)
-          const errorData = JSON.parse(errorMessage)
-          
-          // Manejar non_field_errors (errores generales)
-          if (errorData.non_field_errors) {
-            setErrors({
-              username: '',
-              password: errorData.non_field_errors[0] // Mostrar en el campo de contraseña
-            });
-          }
-          // Manejar errores específicos de campos
-          else if (errorData.username) {
-            setErrors({
-              username: errorData.username[0],
-              password: ''
-            });
-          }
-          else if (errorData.password) {
-            setErrors({
-              username: '',
-              password: errorData.password[0]
-            });
-          }
-          else {
-            // Error genérico
-            setErrors({
-              username: '',
-              password: 'Error de autenticación'
-            });
+          // El error viene del apiClient con estructura ApiError
+          if (error && typeof error === 'object' && 'data' in error) {
+            const apiError = error as { status: number; data: unknown; message: string };
+            const errorData = apiError.data as Record<string, unknown>;
+            
+            // Manejar non_field_errors (errores generales)
+            if (errorData.non_field_errors && Array.isArray(errorData.non_field_errors)) {
+              setErrors({
+                username: '',
+                password: errorData.non_field_errors[0] as string
+              });
+            }
+            // Manejar errores específicos de campos
+            else if (errorData.username && Array.isArray(errorData.username)) {
+              setErrors({
+                username: errorData.username[0] as string,
+                password: ''
+              });
+            }
+            else if (errorData.password && Array.isArray(errorData.password)) {
+              setErrors({
+                username: '',
+                password: errorData.password[0] as string
+              });
+            }
+            // Manejar errores de autenticación específicos
+            else if (apiError.status === 401) {
+              setGeneralError('Credenciales incorrectas. Verifica tu usuario y contraseña.');
+            }
+            else if (apiError.status === 400) {
+              setGeneralError('Datos de entrada inválidos. Verifica tu información.');
+            }
+            else if (apiError.status === 403) {
+              setGeneralError('Tu cuenta no tiene permisos para acceder.');
+            }
+            else if (apiError.status === 500) {
+              setGeneralError('Error interno del servidor. Inténtalo más tarde.');
+            }
+            else {
+              // Usar el mensaje del apiClient
+              setGeneralError(apiError.message || 'Error de autenticación');
+            }
+          } else {
+            // Error de conexión o formato inesperado
+            setGeneralError('Error de conexión con el servidor');
           }
           
         } catch {
           // Error de conexión o formato inesperado
-          setErrors({
-            username: '',
-            password: 'Error de conexión con el servidor'
-          });
+          setGeneralError('Error de conexión con el servidor');
         }
       }
     }
@@ -103,6 +121,11 @@ const Login = () => {
         </div>
         
         <form onSubmit={handleSubmit} className="login-form">
+          {generalError && (
+            <div className="error-message-general">
+              {generalError}
+            </div>
+          )}
           <div className="input-group">
             <label className="input-label" htmlFor='username'>Usuario</label>
             <input 

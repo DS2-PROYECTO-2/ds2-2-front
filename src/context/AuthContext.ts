@@ -11,12 +11,13 @@ interface User {
 
 interface AuthContextType {
   user: User | null
-  token: string | null  // ← AGREGAR
+  token: string | null
   isAuthenticated: boolean
   isLoading: boolean
+  isHydrated: boolean
   login: (credentials: LoginCredentials) => Promise<void>
   logout: () => void
-  setAuth: (auth: {token: string|null, user: User|null}) => void  // ← AGREGAR
+  setAuth: (auth: {token: string|null, user: User|null}) => void
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)

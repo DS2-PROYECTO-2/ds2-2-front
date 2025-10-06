@@ -8,7 +8,7 @@ import { useAuth } from '../../hooks/useAuth';
 
 
 const DashboardLayout: React.FC = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isHydrated } = useAuth();
   const [historyReloadKey, setHistoryReloadKey] = useState(0);
   const [activeSection, setActiveSection] = useState('home');
 
@@ -22,14 +22,14 @@ const DashboardLayout: React.FC = () => {
             {user?.role === 'monitor' && (
               <>
                 <RoomStatsRow />
-                <div className="content-panel">
+                <div className="content-panel panel-room">
                   <RoomPanel onChanged={() => setHistoryReloadKey(k => k + 1)} />
                 </div>
               </>
             )}
             
             {/* Todos ven el historial */}
-            <div className="content-panel" style={{ marginTop: user?.role === 'monitor' ? '1rem' : '0' }}>
+            <div className="content-panel panel-list" style={{ marginTop: user?.role === 'monitor' ? '1rem' : '0' }}>
               <RoomHistory reloadKey={historyReloadKey} />
             </div>
           </>
@@ -70,8 +70,12 @@ const DashboardLayout: React.FC = () => {
     return () => io.disconnect();
   }, []);
 
+  // El RoomHistory ahora maneja las actualizaciones en tiempo real para todos los usuarios
+  // El reloadKey solo se usa para actualizaciones manuales desde el RoomPanel (monitores)
 
-  if (isLoading) {
+
+  // Mostrar loading solo si está cargando Y no está hidratado
+  if (isLoading && !isHydrated) {
     return (
       <div className="dashboard-layout">
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -81,7 +85,8 @@ const DashboardLayout: React.FC = () => {
     );
   }
 
-  if (!user) {
+  // Solo mostrar "No autenticado" si está hidratado y no hay usuario
+  if (isHydrated && !user) {
     return (
       <div className="dashboard-layout">
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
