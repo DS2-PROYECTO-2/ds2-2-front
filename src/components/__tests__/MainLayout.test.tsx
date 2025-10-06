@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '../../context/AuthProvider';
 import MainLayout from '../layout/MainLayout';
-import { useAuth } from '../../hooks/useAuth';
+// useAuth is mocked globally
 import { vi } from 'vitest';
 
 // Mock de useAuth
@@ -97,7 +97,7 @@ describe('MainLayout', () => {
   it('muestra estadísticas para monitores', async () => {
     // Mock useAuth para retornar un monitor
     const { useAuth } = await import('../../hooks/useAuth');
-    (useAuth as any).mockReturnValue({
+    (useAuth as jest.MockedFunction<typeof useAuth>).mockReturnValue({
       user: { ...mockUser, role: 'monitor' },
       isLoading: false,
       login: vi.fn(),

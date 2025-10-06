@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '../../context/AuthProvider';
 import NotificationBell from '../notifications/NotificationBell';
-import { useAuth } from '../../hooks/useAuth';
+// useAuth is mocked globally
 import { vi } from 'vitest';
 
 // Mock del servicio de notificaciones
@@ -61,7 +61,7 @@ describe('NotificationBell', () => {
   it('no renderiza para usuarios no admin', async () => {
     // Mock useAuth para retornar un monitor
     const { useAuth } = await import('../../hooks/useAuth');
-    (useAuth as any).mockReturnValue({
+    (useAuth as jest.MockedFunction<typeof useAuth>).mockReturnValue({
       user: { ...mockUser, role: 'monitor' },
       isLoading: false,
       login: vi.fn(),
@@ -83,7 +83,7 @@ describe('NotificationBell', () => {
   it('muestra el contador de notificaciones no leídas', async () => {
     // Asegurar que el mock retorne un admin
     const { useAuth } = await import('../../hooks/useAuth');
-    (useAuth as any).mockReturnValue({
+    (useAuth as jest.MockedFunction<typeof useAuth>).mockReturnValue({
       user: { id: 1, username: 'admin', email: 'admin@test.com', role: 'admin' },
       isLoading: false,
       login: vi.fn(),
@@ -107,7 +107,7 @@ describe('NotificationBell', () => {
   it('abre el dropdown al hacer clic', async () => {
     // Asegurar que el mock retorne un admin
     const { useAuth } = await import('../../hooks/useAuth');
-    (useAuth as any).mockReturnValue({
+    (useAuth as jest.MockedFunction<typeof useAuth>).mockReturnValue({
       user: { id: 1, username: 'admin', email: 'admin@test.com', role: 'admin' },
       isLoading: false,
       login: vi.fn(),
