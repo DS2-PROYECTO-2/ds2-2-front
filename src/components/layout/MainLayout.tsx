@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import LeftSidebar from './LeftSidebar';
-import "../../styles/dashboard.css";
+import '../../styles/dashboard.css';
 import RoomPanel from '../rooms/RoomPanel';
 import RoomHistory from '../rooms/RoomHistory';
 import RoomStatsRow from '../rooms/RoomStatsRow';
 import { useAuth } from '../../hooks/useAuth';
 
+interface MainLayoutProps {
+  children: React.ReactNode;
+}
 
-const DashboardLayout: React.FC = () => {
-  const { user, isLoading } = useAuth();
-  const [historyReloadKey, setHistoryReloadKey] = useState(0);
+const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [activeSection, setActiveSection] = useState('home');
+  const [historyReloadKey, setHistoryReloadKey] = useState(0);
+  const { user } = useAuth();
 
   // Componentes de las diferentes secciones
   const renderSection = () => {
@@ -56,40 +59,9 @@ const DashboardLayout: React.FC = () => {
           </div>
         );
       default:
-        return null;
+        return children;
     }
   };
-
-  useEffect(() => {
-    const els = document.querySelectorAll('.content-panel');
-    els.forEach(el => el.classList.add('reveal'));
-    const io = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('is-visible'); });
-    }, { threshold: 0.12 });
-    els.forEach(el => io.observe(el));
-    return () => io.disconnect();
-  }, []);
-
-
-  if (isLoading) {
-    return (
-      <div className="dashboard-layout">
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-          <div>Cargando...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="dashboard-layout">
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-          <div>No autenticado</div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="dashboard-layout">
@@ -101,5 +73,4 @@ const DashboardLayout: React.FC = () => {
   );
 };
 
-export default DashboardLayout;
-
+export default MainLayout;

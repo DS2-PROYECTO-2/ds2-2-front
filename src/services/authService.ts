@@ -1,4 +1,5 @@
 import { apiClient } from '../utils/api'
+import type { User } from '../context/AuthContext'
 
 export interface LoginCredentials {
   username: string
@@ -25,7 +26,7 @@ export interface AuthError {
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      const response = await apiClient.post('/api/auth/login/', credentials)
+      const response = await apiClient.post<LoginCredentials, AuthResponse>('/api/auth/login/', credentials)
       
       // Guardar token y usuario en localStorage
       localStorage.setItem('authToken', response.token)
@@ -54,5 +55,10 @@ export const authService = {
 
   isAuthenticated() {
     return !!this.getToken()
-  }
+  },
+
+  async getProfile(): Promise<User> {
+    const response = await apiClient.get<User>('/api/auth/profile/');
+    return response;
+  },
 }
