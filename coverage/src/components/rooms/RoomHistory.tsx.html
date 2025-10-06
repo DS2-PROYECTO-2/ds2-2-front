@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">55.52% </span>
+                <span class="strong">60.59% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>186/335</span>
+                <span class='fraction'>203/335</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">43.75% </span>
+                <span class="strong">42.42% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>14/32</span>
+                <span class='fraction'>14/33</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">55.52% </span>
+                <span class="strong">60.59% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>186/335</span>
+                <span class='fraction'>203/335</span>
             </div>
         
             
@@ -534,23 +534,23 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -587,13 +587,13 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
@@ -947,25 +947,25 @@ const RoomHistory: React.FC&lt;Props&gt; = ({ reloadKey }) =&gt; {
         user?.role === 'admin' 
           ? getAllEntries(<span class="branch-0 cbranch-no" title="branch not covered" >)  // Admin ve todos sin filtros</span>
 <span class="cstat-no" title="statement not covered" >          : getMyEntries()    // Monitor ve solo los suyos</span>
-      ]<span class="branch-0 cbranch-no" title="branch not covered" >);</span>
+      ]);
       
-<span class="cstat-no" title="statement not covered" >      console.log('📊 RoomHistory: Datos cargados:', { </span>
-<span class="cstat-no" title="statement not covered" >        rooms: roomsData.length, </span>
-<span class="cstat-no" title="statement not covered" >        entries: entriesData.length </span>
-<span class="cstat-no" title="statement not covered" >      });</span>
+      console.log('📊 RoomHistory: Datos cargados:', { 
+        rooms: roomsData.length, 
+        entries: entriesData.length 
+      });
       
-<span class="cstat-no" title="statement not covered" >      setRooms(roomsData);</span>
-<span class="cstat-no" title="statement not covered" >      setEntries(entriesData);</span>
-<span class="cstat-no" title="statement not covered" >    } catch (err) {</span>
+      setRooms(roomsData);
+      setEntries(entriesData);
+<span class="branch-0 cbranch-no" title="branch not covered" >    } catch (err) {</span>
 <span class="cstat-no" title="statement not covered" >      setError(parseErr(err));</span>
-<span class="cstat-no" title="statement not covered" >    } finally {</span>
-<span class="cstat-no" title="statement not covered" >      setLoading(false);</span>
-<span class="cstat-no" title="statement not covered" >      if (showRefreshAnimation) {</span>
+    } finally {
+      setLoading(false);
+      if (showRefreshAnimation) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
 <span class="cstat-no" title="statement not covered" >        console.log('🎬 RoomHistory: Desactivando animación en 1 segundo');</span>
         // Mantener la animación por un momento para que se vea
 <span class="cstat-no" title="statement not covered" >        setTimeout(() =&gt; setIsRefreshing(false), 1000);</span>
 <span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
+    }
   }, [user?.role]);
 &nbsp;
   // Función para cargar con filtros (solo para admin)
@@ -1000,15 +1000,15 @@ const RoomHistory: React.FC&lt;Props&gt; = ({ reloadKey }) =&gt; {
           to: toFormatted,
           document: filterDocument || undefined
         })
-      ]<span class="branch-0 cbranch-no" title="branch not covered" >);</span>
+      ]);
       
-<span class="cstat-no" title="statement not covered" >      setRooms(roomsData);</span>
-<span class="cstat-no" title="statement not covered" >      setEntries(entriesData);</span>
-<span class="cstat-no" title="statement not covered" >    } catch (err) {</span>
+      setRooms(roomsData);
+      setEntries(entriesData);
+<span class="branch-0 cbranch-no" title="branch not covered" >    } catch (err) {</span>
 <span class="cstat-no" title="statement not covered" >      setError(parseErr(err));</span>
-<span class="cstat-no" title="statement not covered" >    } finally {</span>
-<span class="cstat-no" title="statement not covered" >      setLoading(false);</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
+    } finally {
+      setLoading(false);
+    }
   }, [user?.role, filterRoomId, filterFrom, filterTo, filterDocument]);
 &nbsp;
   useEffect(() =&gt; { 
@@ -1315,7 +1315,7 @@ export default RoomHistory;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-06T17:05:46.361Z
+                at 2025-10-06T17:19:05.688Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
