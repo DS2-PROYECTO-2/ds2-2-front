@@ -1,6 +1,7 @@
 import { render } from '@testing-library/react'
 import DashboardLayout from './DashboardLayout'
 import { AuthProvider } from '../../context/AuthProvider'
+import { vi } from 'vitest'
 
 // Mock del hook useAuth
 vi.mock('../../hooks/useAuth', () => ({
