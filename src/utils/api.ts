@@ -76,15 +76,16 @@ export const apiClient = {
     return handleResponse(res);
   },
 
-  async patch<TReq = unknown, TRes = unknown>(endpoint: string, data: TReq): Promise<TRes> {
+  async patch<TReq = unknown, TRes = unknown>(endpoint: string, data?: TReq): Promise<TRes> {
+    const hasBody = data !== undefined;
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PATCH',
       headers: {
-        'Content-Type': 'application/json',
+        ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
         ...getAuthHeaders(),
       },
       credentials: 'include',
-      body: JSON.stringify(data),
+      ...(hasBody ? { body: JSON.stringify(data) } as RequestInit : {}),
     });
     return handleResponse(res);
   },

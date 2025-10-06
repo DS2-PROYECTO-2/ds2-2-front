@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.33% </span>
+                <span class="strong">88.88% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>9/27</span>
+                <span class='fraction'>24/27</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>5/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">83.33% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>5/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.33% </span>
+                <span class="strong">88.88% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>9/27</span>
+                <span class='fraction'>24/27</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -146,12 +146,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -159,22 +164,17 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">import { apiClient } from '../utils/api'
 import type { User } from '../context/AuthContext'
 &nbsp;
@@ -201,36 +201,36 @@ export interface AuthError {
 }
 &nbsp;
 export const authService = {
-<span class="fstat-no" title="function not covered" >  async login(credentials: LoginCredentials): Promise&lt;AuthResponse&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    const response = await apiClient.post&lt;LoginCredentials, AuthResponse&gt;('/api/auth/login/', credentials)</span>
+  async login(credentials: LoginCredentials): Promise&lt;AuthResponse&gt; {
+    const response = await apiClient.post&lt;LoginCredentials, AuthResponse&gt;('/api/auth/login/', credentials)
     // Guardar token y usuario en localStorage
-<span class="cstat-no" title="statement not covered" >    localStorage.setItem('authToken', response.token)</span>
-<span class="cstat-no" title="statement not covered" >    localStorage.setItem('user', JSON.stringify(response.user))</span>
-<span class="cstat-no" title="statement not covered" >    return response</span>
-<span class="cstat-no" title="statement not covered" >  },</span>
+    localStorage.setItem('authToken', response.token)
+    localStorage.setItem('user', JSON.stringify(response.user))
+    return response
+  },
 &nbsp;
-<span class="fstat-no" title="function not covered" >  logout() {</span>
-<span class="cstat-no" title="statement not covered" >    localStorage.removeItem('authToken')</span>
-<span class="cstat-no" title="statement not covered" >    localStorage.removeItem('user')</span>
-<span class="cstat-no" title="statement not covered" >  },</span>
+  logout() {
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('user')
+  },
 &nbsp;
 <span class="fstat-no" title="function not covered" >  getCurrentUser() {</span>
 <span class="cstat-no" title="statement not covered" >    const user = localStorage.getItem('user')</span>
 <span class="cstat-no" title="statement not covered" >    return user ? JSON.parse(user) : null</span>
 <span class="cstat-no" title="statement not covered" >  },</span>
 &nbsp;
-<span class="fstat-no" title="function not covered" >  getToken() {</span>
-<span class="cstat-no" title="statement not covered" >    return localStorage.getItem('authToken')</span>
-<span class="cstat-no" title="statement not covered" >  },</span>
+  getToken() {
+    return localStorage.getItem('authToken')
+  },
 &nbsp;
-<span class="fstat-no" title="function not covered" >  isAuthenticated() {</span>
-<span class="cstat-no" title="statement not covered" >    return !!this.getToken()</span>
-<span class="cstat-no" title="statement not covered" >  },</span>
+  isAuthenticated() {
+    return !!this.getToken()
+  },
 &nbsp;
-<span class="fstat-no" title="function not covered" >  async getProfile(): Promise&lt;User&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    const response = await apiClient.get&lt;User&gt;('/api/auth/profile/');</span>
-<span class="cstat-no" title="statement not covered" >    return response;</span>
-<span class="cstat-no" title="statement not covered" >  },</span>
+  async getProfile(): Promise&lt;User&gt; {
+    const response = await apiClient.get&lt;User&gt;('/api/auth/profile/');
+    return response;
+  },
 }</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -238,7 +238,7 @@ export const authService = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-06T17:05:46.361Z
+                at 2025-10-06T17:19:05.688Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

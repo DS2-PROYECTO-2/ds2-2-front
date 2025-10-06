@@ -126,8 +126,9 @@ const NotificationBell: React.FC = () => {
 
   // Escuchar eventos de entrada/salida de salas para actualizar notificaciones
   useEffect(() => {
-    const handleRoomEntry = (event: CustomEvent) => {
-      const { roomName, userName } = event.detail || {};
+    const handleRoomEntry = (event: Event) => {
+      const custom = event as CustomEvent;
+      const { roomName, userName } = custom.detail || {};
       
       if (roomName && userName) {
         // Actualizar inmediatamente
@@ -135,8 +136,9 @@ const NotificationBell: React.FC = () => {
       }
     };
 
-    const handleRoomExit = (event: CustomEvent) => {
-      const { roomName, userName } = event.detail || {};
+    const handleRoomExit = (event: Event) => {
+      const custom = event as CustomEvent;
+      const { roomName, userName } = custom.detail || {};
       
       if (roomName && userName) {
         // Actualizar inmediatamente
@@ -144,12 +146,12 @@ const NotificationBell: React.FC = () => {
       }
     };
 
-    window.addEventListener('room-entry-added', handleRoomEntry);
-    window.addEventListener('room-entry-exited', handleRoomExit);
+    window.addEventListener('room-entry-added', handleRoomEntry as EventListener);
+    window.addEventListener('room-entry-exited', handleRoomExit as EventListener);
     
     return () => {
-      window.removeEventListener('room-entry-added', handleRoomEntry);
-      window.removeEventListener('room-entry-exited', handleRoomExit);
+      window.removeEventListener('room-entry-added', handleRoomEntry as EventListener);
+      window.removeEventListener('room-entry-exited', handleRoomExit as EventListener);
     };
   }, []);
 
