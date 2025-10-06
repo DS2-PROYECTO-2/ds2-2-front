@@ -18,11 +18,24 @@ const NotificationBell: React.FC = () => {
     try {
       setLoading(true);
       const backendNotifs = await notificationService.getNotifications();
-      
-      setNotifications(backendNotifs);
-      
-      const unreadCount = backendNotifs.filter(n => !n.is_read).length;
-      setUnreadCount(unreadCount);
+
+      // Normalizar distintas formas de respuesta a un array seguro
+      const normalized: Notification[] = Array.isArray(backendNotifs)
+        ? backendNotifs
+        : (backendNotifs as unknown as { notifications?: Notification[]; results?: Notification[] })?.notifications
+            || (backendNotifs as unknown as { notifications?: Notification[]; results?: Notification[] })?.results
+            || [];
+
+      setNotifications(normalized);
+
+      // Intentar contador confiable desde backend; si falla, calcular localmente
+      try {
+        const serverUnread = await notificationService.getUnreadCount();
+        setUnreadCount(serverUnread);
+      } catch {
+        const localUnread = normalized.filter(n => !n.is_read).length;
+        setUnreadCount(localUnread);
+      }
       
     } catch {
       // Silencio errores en pruebas/offline
@@ -37,7 +50,12 @@ const NotificationBell: React.FC = () => {
       setNotifications(prev => 
         prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
       );
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      try {
+        const serverUnread = await notificationService.getUnreadCount();
+        setUnreadCount(serverUnread);
+      } catch {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
     } catch {
       // Silencio errores en pruebas/offline
     }
@@ -59,7 +77,12 @@ const NotificationBell: React.FC = () => {
       
       // Actualizar el estado local
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-      setUnreadCount(0);
+      try {
+        const serverUnread = await notificationService.getUnreadCount();
+        setUnreadCount(serverUnread);
+      } catch {
+        setUnreadCount(0);
+      }
     } catch {
       // Silencio errores en pruebas/offline
     } finally {
@@ -224,7 +247,7 @@ const NotificationBell: React.FC = () => {
           <div className="notification-list">
             {loading ? (
               <div className="loading">Cargando notificaciones...</div>
-            ) : notifications.length === 0 ? (
+            ) : !Array.isArray(notifications) || notifications.length === 0 ? (
               <div className="no-notifications">No hay notificaciones</div>
             ) : (
               notifications.map(notification => (

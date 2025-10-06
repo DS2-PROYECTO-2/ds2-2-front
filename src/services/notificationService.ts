@@ -21,7 +21,11 @@ export interface HoursExceededNotification {
 export const notificationService = {
   // Obtener notificaciones del admin
   async getNotifications(): Promise<Notification[]> {
-    const response = await apiClient.get('/api/notifications/list/') as { notifications: Notification[] };
+    // Endpoint oficial: /api/notifications/list/
+    const response = await apiClient.get<Notification[] | { notifications?: Notification[] }>(
+      '/api/notifications/list/'
+    );
+    if (Array.isArray(response)) return response;
     return response.notifications || [];
   },
 
@@ -32,7 +36,20 @@ export const notificationService = {
 
   // Marcar todas como leídas
   async markAllAsRead(): Promise<void> {
-    return apiClient.patch('/api/notifications/mark-all-read/');
+    try {
+      // Intento 1: endpoint masivo del backend
+      await apiClient.patch('/api/notifications/mark-all-read/');
+    } catch {
+      // Fallback: no existe endpoint masivo, marcar una por una
+      try {
+        const items = await this.getNotifications();
+        const unread = (Array.isArray(items) ? items : (items as any)?.notifications || (items as any)?.results || [])
+          .filter((n: any) => !(n.is_read ?? n.read));
+        await Promise.all(unread.map((n: any) => this.markAsRead(n.id)));
+      } catch {
+        // Silencio errores
+      }
+    }
   },
 
   // Enviar notificación de horas excedidas (ya no necesario - automático)
@@ -44,5 +61,18 @@ export const notificationService = {
   async getUnreadCount(): Promise<number> {
     const response = await apiClient.get<{ unread_count?: number }>('/api/notifications/unread-count/');
     return response.unread_count ?? 0;
-  }
+  },
+
+  // Extras útiles según backend
+  async getUnread(): Promise<Notification[]> {
+    const response = await apiClient.get<Notification[] | { notifications?: Notification[] }>(
+      '/api/notifications/unread/'
+    );
+    if (Array.isArray(response)) return response;
+    return response.notifications || [];
+  },
+
+  async getSummary(): Promise<{ total?: number; unread?: number } & Record<string, unknown>> {
+    return apiClient.get('/api/notifications/summary/');
+  },
 };
