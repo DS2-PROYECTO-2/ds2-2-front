@@ -14,7 +14,7 @@ describe('RouteGuards', () => {
   it('RequireRoles permite acceso a admin', () => {
     const { container } = render(
       <BrowserRouter>
-        <RequireRoles roles={['admin']}> <div id="ok" /> </RequireRoles>
+        <RequireRoles roles={['admin']} children={<div id="ok" />} />
       </BrowserRouter>
     )
     expect(container.querySelector('#ok')).not.toBeNull()
@@ -23,7 +23,7 @@ describe('RouteGuards', () => {
   it('RequireVerified permite acceso a verificados', () => {
     const { container } = render(
       <BrowserRouter>
-        <RequireVerified> <div id="ok" /> </RequireVerified>
+        <RequireVerified children={<div id="ok" />} />
       </BrowserRouter>
     )
     expect(container.querySelector('#ok')).not.toBeNull()
