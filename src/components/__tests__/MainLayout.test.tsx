@@ -10,12 +10,13 @@ const mockUser = {
   id: 1,
   username: 'admin',
   email: 'admin@test.com',
-  role: 'admin'
+  role: 'admin',
+  is_verified: true
 };
 
 vi.mock('../../hooks/useAuth', () => ({
   useAuth: vi.fn(() => ({
-    user: { id: 1, username: 'admin', email: 'admin@test.com', role: 'admin' },
+    user: { id: 1, username: 'admin', email: 'admin@test.com', role: 'admin', is_verified: true },
     isLoading: false,
     login: vi.fn(),
     logout: vi.fn(),

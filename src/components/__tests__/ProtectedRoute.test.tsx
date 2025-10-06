@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from '../../context/AuthProvider'
 import { ProtectedRoute } from '../ProtectedRoute'
+import { vi } from 'vitest'
 
 // Mock del authService
 vi.mock('../../services/authService', () => ({

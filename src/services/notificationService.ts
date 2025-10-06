@@ -21,7 +21,7 @@ export interface HoursExceededNotification {
 export const notificationService = {
   // Obtener notificaciones del admin
   async getNotifications(): Promise<Notification[]> {
-    const response = await apiClient.get('/api/notifications/list/');
+    const response = await apiClient.get('/api/notifications/list/') as { notifications: Notification[] };
     return response.notifications || [];
   },
 
