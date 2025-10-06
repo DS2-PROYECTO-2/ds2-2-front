@@ -35,10 +35,13 @@ const mockUser = {
 vi.mock('../../hooks/useAuth', () => ({
   useAuth: vi.fn(() => ({
     user: { id: 1, username: 'admin', email: 'admin@test.com', role: 'admin', is_verified: true },
+    token: 'token',
     isLoading: false,
+    isHydrated: true,
     login: vi.fn(),
     logout: vi.fn(),
-    isAuthenticated: true
+    isAuthenticated: true,
+    setAuth: vi.fn()
   }))
 }));
 
@@ -47,7 +50,7 @@ describe('NotificationBell', () => {
     vi.clearAllMocks();
   });
 
-  it('renderiza el componente para usuarios admin', () => {
+  it('renderiza el componente para usuarios admin', async () => {
     render(
       <BrowserRouter>
         <AuthProvider>
@@ -56,18 +59,23 @@ describe('NotificationBell', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByRole('button')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('button')).toBeInTheDocument();
+    })
   });
 
   it('también renderiza para monitores (no admin)', async () => {
     // Mock useAuth para retornar un monitor
     const { useAuth } = await import('../../hooks/useAuth');
-    (useAuth as jest.MockedFunction<typeof useAuth>).mockReturnValue({
+    (useAuth as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       user: { ...mockUser, role: 'monitor' },
+      token: 'token',
       isLoading: false,
+      isHydrated: true,
       login: vi.fn(),
       logout: vi.fn(),
-      isAuthenticated: true
+      isAuthenticated: true,
+      setAuth: vi.fn()
     });
 
     const { container } = render(
@@ -78,18 +86,23 @@ describe('NotificationBell', () => {
       </BrowserRouter>
     );
 
-    expect(container.firstChild).not.toBeNull();
+    await waitFor(() => {
+      expect(container.firstChild).not.toBeNull();
+    })
   });
 
   it('muestra el contador de notificaciones no leídas', async () => {
     // Asegurar que el mock retorne un admin
     const { useAuth } = await import('../../hooks/useAuth');
-    (useAuth as jest.MockedFunction<typeof useAuth>).mockReturnValue({
-      user: { id: 1, username: 'admin', email: 'admin@test.com', role: 'admin' },
+    (useAuth as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+      user: { id: 1, username: 'admin', email: 'admin@test.com', role: 'admin', is_verified: true },
+      token: 'token',
       isLoading: false,
+      isHydrated: true,
       login: vi.fn(),
       logout: vi.fn(),
-      isAuthenticated: true
+      isAuthenticated: true,
+      setAuth: vi.fn()
     });
 
     render(
@@ -108,12 +121,15 @@ describe('NotificationBell', () => {
   it('abre el dropdown al hacer clic', async () => {
     // Asegurar que el mock retorne un admin
     const { useAuth } = await import('../../hooks/useAuth');
-    (useAuth as jest.MockedFunction<typeof useAuth>).mockReturnValue({
-      user: { id: 1, username: 'admin', email: 'admin@test.com', role: 'admin' },
+    (useAuth as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+      user: { id: 1, username: 'admin', email: 'admin@test.com', role: 'admin', is_verified: true },
+      token: 'token',
       isLoading: false,
+      isHydrated: true,
       login: vi.fn(),
       logout: vi.fn(),
-      isAuthenticated: true
+      isAuthenticated: true,
+      setAuth: vi.fn()
     });
 
     render(

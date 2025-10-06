@@ -42,12 +42,14 @@ describe('ResetPassword', () => {
     mockSearchParams.delete('token');
   });
 
-  it('renderiza el componente correctamente', () => {
+  it('renderiza el componente correctamente', async () => {
     mockSearchParams.set('token', 'test-token');
     
     render(<MockedResetPassword />);
-    
-    expect(screen.getByTestId('background-particles')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('background-particles')).toBeInTheDocument();
+    });
   });
 
   it('muestra error cuando no hay token', async () => {
@@ -59,12 +61,14 @@ describe('ResetPassword', () => {
     });
   });
 
-  it('muestra estado de carga mientras valida el token', () => {
+  it('muestra estado de carga mientras valida el token', async () => {
     mockSearchParams.set('token', 'test-token');
     
     render(<MockedResetPassword />);
-    
-    expect(screen.getByText('Validando token...')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText('Validando token...')).toBeInTheDocument();
+    })
   });
 
   it('permite al usuario volver al login', async () => {

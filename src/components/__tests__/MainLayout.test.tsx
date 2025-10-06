@@ -17,10 +17,13 @@ const mockUser = {
 vi.mock('../../hooks/useAuth', () => ({
   useAuth: vi.fn(() => ({
     user: { id: 1, username: 'admin', email: 'admin@test.com', role: 'admin', is_verified: true },
+    token: 'token',
     isLoading: false,
+    isHydrated: true,
     login: vi.fn(),
     logout: vi.fn(),
-    isAuthenticated: true
+    isAuthenticated: true,
+    setAuth: vi.fn()
   }))
 }));
 
@@ -98,12 +101,15 @@ describe('MainLayout', () => {
   it('muestra estadísticas para monitores', async () => {
     // Mock useAuth para retornar un monitor
     const { useAuth } = await import('../../hooks/useAuth');
-    (useAuth as jest.MockedFunction<typeof useAuth>).mockReturnValue({
+    (useAuth as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       user: { ...mockUser, role: 'monitor' },
+      token: 'token',
       isLoading: false,
+      isHydrated: true,
       login: vi.fn(),
       logout: vi.fn(),
-      isAuthenticated: true
+      isAuthenticated: true,
+      setAuth: vi.fn()
     });
 
     render(
