@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '../../context/AuthProvider';
 import MainLayout from '../layout/MainLayout';
+import { useAuth } from '../../hooks/useAuth';
 import { vi } from 'vitest';
 
 // Mock de useAuth
@@ -13,10 +14,13 @@ const mockUser = {
 };
 
 vi.mock('../../hooks/useAuth', () => ({
-  useAuth: () => ({
-    user: mockUser,
-    isLoading: false
-  })
+  useAuth: vi.fn(() => ({
+    user: { id: 1, username: 'admin', email: 'admin@test.com', role: 'admin' },
+    isLoading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
+    isAuthenticated: true
+  }))
 }));
 
 // Mock de LeftSidebar
@@ -90,11 +94,15 @@ describe('MainLayout', () => {
     expect(screen.getByText('Inventario')).toBeInTheDocument();
   });
 
-  it('muestra estadísticas para monitores', () => {
+  it('muestra estadísticas para monitores', async () => {
     // Mock useAuth para retornar un monitor
-    vi.mocked(vi.importMock('../../hooks/useAuth')).useAuth.mockReturnValue({
+    const { useAuth } = await import('../../hooks/useAuth');
+    (useAuth as any).mockReturnValue({
       user: { ...mockUser, role: 'monitor' },
-      isLoading: false
+      isLoading: false,
+      login: vi.fn(),
+      logout: vi.fn(),
+      isAuthenticated: true
     });
 
     render(

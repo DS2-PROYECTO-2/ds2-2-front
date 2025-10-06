@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '../../context/AuthProvider';
 import NotificationBell from '../notifications/NotificationBell';
+import { useAuth } from '../../hooks/useAuth';
 import { vi } from 'vitest';
 
 // Mock del servicio de notificaciones
@@ -31,10 +32,13 @@ const mockUser = {
 };
 
 vi.mock('../../hooks/useAuth', () => ({
-  useAuth: () => ({
-    user: mockUser,
-    isLoading: false
-  })
+  useAuth: vi.fn(() => ({
+    user: { id: 1, username: 'admin', email: 'admin@test.com', role: 'admin' },
+    isLoading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
+    isAuthenticated: true
+  }))
 }));
 
 describe('NotificationBell', () => {
@@ -54,11 +58,15 @@ describe('NotificationBell', () => {
     expect(screen.getByRole('button')).toBeInTheDocument();
   });
 
-  it('no renderiza para usuarios no admin', () => {
+  it('no renderiza para usuarios no admin', async () => {
     // Mock useAuth para retornar un monitor
-    vi.mocked(vi.importMock('../../hooks/useAuth')).useAuth.mockReturnValue({
+    const { useAuth } = await import('../../hooks/useAuth');
+    (useAuth as any).mockReturnValue({
       user: { ...mockUser, role: 'monitor' },
-      isLoading: false
+      isLoading: false,
+      login: vi.fn(),
+      logout: vi.fn(),
+      isAuthenticated: true
     });
 
     const { container } = render(
@@ -73,6 +81,16 @@ describe('NotificationBell', () => {
   });
 
   it('muestra el contador de notificaciones no leídas', async () => {
+    // Asegurar que el mock retorne un admin
+    const { useAuth } = await import('../../hooks/useAuth');
+    (useAuth as any).mockReturnValue({
+      user: { id: 1, username: 'admin', email: 'admin@test.com', role: 'admin' },
+      isLoading: false,
+      login: vi.fn(),
+      logout: vi.fn(),
+      isAuthenticated: true
+    });
+
     render(
       <BrowserRouter>
         <AuthProvider>
@@ -87,6 +105,16 @@ describe('NotificationBell', () => {
   });
 
   it('abre el dropdown al hacer clic', async () => {
+    // Asegurar que el mock retorne un admin
+    const { useAuth } = await import('../../hooks/useAuth');
+    (useAuth as any).mockReturnValue({
+      user: { id: 1, username: 'admin', email: 'admin@test.com', role: 'admin' },
+      isLoading: false,
+      login: vi.fn(),
+      logout: vi.fn(),
+      isAuthenticated: true
+    });
+
     render(
       <BrowserRouter>
         <AuthProvider>

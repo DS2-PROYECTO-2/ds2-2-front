@@ -1,8 +1,20 @@
-import { render, screen, fireEvent} from '@testing-library/react'
+import { render, screen, fireEvent, waitFor} from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { vi } from 'vitest'  // ← Agregar esta importación
 import { AuthProvider } from '../../context/AuthProvider'
 import { useAuth } from '../../hooks/useAuth'
+
+// Mock del authService
+vi.mock('../../services/authService', () => ({
+  authService: {
+    getProfile: vi.fn().mockResolvedValue({ username: 'testuser', role: 'admin' }),
+    login: vi.fn().mockResolvedValue({ token: 'test-token', user: { username: 'testuser', role: 'admin' } }),
+    logout: vi.fn().mockImplementation(() => {
+      localStorage.removeItem('user');
+      localStorage.removeItem('authToken');
+    })
+  }
+}))
 
 // Componente de prueba que usa el contexto
 const TestComponent = () => {
@@ -39,7 +51,7 @@ describe('AuthContext', () => {
     expect(screen.getByTestId('authenticated')).toHaveTextContent('false')
   })
 
-  it('mantiene usuario autenticado al recargar', () => {
+  it('mantiene usuario autenticado al recargar', async () => {
     localStorage.setItem('user', JSON.stringify({ username: 'testuser' }))
     localStorage.setItem('authToken', 'abc123')
 
@@ -51,11 +63,13 @@ describe('AuthContext', () => {
       </BrowserRouter>
     )
 
-    expect(screen.getByTestId('user')).toHaveTextContent('testuser')
-    expect(screen.getByTestId('authenticated')).toHaveTextContent('true')
+    await waitFor(() => {
+      expect(screen.getByTestId('user')).toHaveTextContent('testuser')
+      expect(screen.getByTestId('authenticated')).toHaveTextContent('true')
+    })
   })
 
-  it('limpia datos al hacer logout', () => {
+  it('limpia datos al hacer logout', async () => {
     localStorage.setItem('user', JSON.stringify({ username: 'testuser' }))
     localStorage.setItem('authToken', 'abc123')
 
@@ -69,8 +83,11 @@ describe('AuthContext', () => {
 
     fireEvent.click(screen.getByText('Logout'))
 
-    expect(screen.getByTestId('user')).toHaveTextContent('No user')
-    expect(screen.getByTestId('authenticated')).toHaveTextContent('false')
+    await waitFor(() => {
+      expect(screen.getByTestId('user')).toHaveTextContent('No user')
+      expect(screen.getByTestId('authenticated')).toHaveTextContent('false')
+    })
+    
     expect(localStorage.getItem('user')).toBeNull()
     expect(localStorage.getItem('authToken')).toBeNull()
   })
