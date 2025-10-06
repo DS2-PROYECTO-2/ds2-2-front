@@ -100,8 +100,10 @@ export async function exitEntry(entryId: number, notes?: string) {
     // Manejo alternativo
     
     // Si el error es que la entrada no se encuentra para el usuario actual
-    if (error?.data?.error?.includes('Entrada no encontrada') || 
-        error?.data?.details?.includes('No se encontró entrada')) {
+    const err = error as { data?: { error?: string; details?: string } } | null | undefined;
+    const errMsg = err?.data?.error ?? '';
+    const errDetails = err?.data?.details ?? '';
+    if (errMsg.includes('Entrada no encontrada') || errDetails.includes('No se encontró entrada')) {
       // Intento alternativo si no se encuentra la entrada
       
       try {
