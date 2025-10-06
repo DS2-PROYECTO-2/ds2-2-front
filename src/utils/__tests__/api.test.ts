@@ -4,7 +4,7 @@ import { apiClient } from '../api'
 describe('apiClient', () => {
   it('get maneja 200', async () => {
     vi.spyOn(global, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
-    const res = await apiClient.get('/x') as any
+    const res = await apiClient.get<{ ok: boolean }>('/x')
     expect(res.ok).toBe(true)
   })
 
