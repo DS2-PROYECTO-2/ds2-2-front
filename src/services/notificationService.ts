@@ -42,7 +42,7 @@ export const notificationService = {
 
   // Obtener contador de notificaciones no leídas
   async getUnreadCount(): Promise<number> {
-    const response = await apiClient.get('/api/notifications/unread-count/');
-    return response.unread_count || 0;
+    const response = await apiClient.get<{ unread_count?: number }>('/api/notifications/unread-count/');
+    return response.unread_count ?? 0;
   }
 };
