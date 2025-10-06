@@ -20,3 +20,4 @@ const BlankPage: React.FC<BlankPageProps> = ({ title, description }) => {
 };
 
 export default BlankPage;
+

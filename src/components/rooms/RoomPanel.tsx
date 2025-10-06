@@ -18,6 +18,9 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
   const [activeEntryRoomId, setActiveEntryRoomId] = useState<number | null>(null);
   const [activeEntryRoomName, setActiveEntryRoomName] = useState<string | null>(null);
   const mustSelectActiveRoom = !!activeEntryId && activeEntryRoomId !== null && selectedRoomId !== '' && Number(selectedRoomId) !== Number(activeEntryRoomId);
+  
+  // Debug: Log del estado del botón
+  // Debug removido para consola limpia
   const [, setMonthlyHours] = useState<number>(0);
   const [, setWeeklyHours] = useState<number>(0);
   const [, setWeeklyCount] = useState<number>(0);
@@ -145,23 +148,24 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
           date: today.toISOString().split('T')[0]
         });
       }
-    } catch (error) {
-      console.error('Error checking hours limit:', error);
+    } catch {
+      // Error silencioso para no ensuciar consola en producción
     }
   };
 
   const reloadActive = async () => {
-  const res = await getMyActiveEntry();
-  if (res.has_active_entry && res.active_entry) {
-    setActiveEntryId(res.active_entry.id);
-    setActiveEntryRoomId(res.active_entry.roomId ?? res.active_entry.roomId ?? null);
-    setActiveEntryRoomName(res.active_entry.roomName ?? null);
-  } else {
-    setActiveEntryId(null);
-    setActiveEntryRoomId(null);
-    setActiveEntryRoomName(null);
-  }
-};
+    // recargar entrada activa
+    const res = await getMyActiveEntry();
+    if (res.has_active_entry && res.active_entry) {
+      setActiveEntryId(res.active_entry.id);
+      setActiveEntryRoomId(res.active_entry.roomId ?? null);
+      setActiveEntryRoomName(res.active_entry.roomName ?? null);
+    } else {
+      setActiveEntryId(null);
+      setActiveEntryRoomId(null);
+      setActiveEntryRoomName(null);
+    }
+  };
 
   const loadRooms = async () => {
     setError(null);
@@ -186,11 +190,23 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
   }, [recalcStats]);
 
   const onRegister = async () => {
-    if (!selectedRoomId || loading) return;
+    if (!selectedRoomId || loading) {
+      return;
+    }
     setLoading(true); setError(null);
     try {
       const created = await createEntry(selectedRoomId); // { message, entry }
-      await reloadActive();
+      
+      // Usar la información de la entrada creada directamente
+      if (created && (created as { entry?: { id: number; room: number } }).entry) {
+        const entry = (created as { entry: { id: number; room: number } }).entry;
+        setActiveEntryId(entry.id);
+        setActiveEntryRoomId(entry.room);
+        setActiveEntryRoomName(rooms.find(r => r.id === entry.room)?.name || `Sala ${entry.room}`);
+      } else {
+        // Fallback: intentar recargar desde el backend
+        await reloadActive();
+      }
       
       // Verificar límite de horas después del registro
       await checkHoursLimit();
@@ -199,9 +215,17 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
       
       const newId = (created as { entry?: { id: number }; id?: number })?.entry?.id ?? (created as { id?: number })?.id ?? null;
       if (newId != null) {
-        window.dispatchEvent(
-          new CustomEvent('room-entry-added', { detail: { id: Number(newId) } })
-        );
+        // Obtener información de la sala y el usuario para la notificación
+        const roomName = rooms.find(r => r.id === selectedRoomId)?.name || `Sala ${selectedRoomId}`;
+        const userName = user?.username || 'Monitor';
+        
+        const evtDetail = { id: Number(newId), roomName, userName };
+        window.dispatchEvent(new CustomEvent('room-entry-added', { detail: evtDetail }));
+        try {
+          localStorage.setItem('room-event', JSON.stringify({ type: 'entry', ...evtDetail, ts: Date.now() }));
+        } catch {
+          // Ignorar errores de almacenamiento (modo privado, sin cuota, etc.)
+        }
       }
     } catch (e) {
       setError(parseErrorMessage(e));
@@ -223,7 +247,7 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
       selectedRoomId !== activeEntryRoomId;
   
     if (mustSelectActiveRoom) {
-      
+      setError(`Debes seleccionar la sala ${activeEntryRoomName ?? activeEntryRoomId} para registrar la salida.`);
       return;
     }
   
@@ -234,6 +258,18 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
       await recalcStats();
       onChanged?.();
       window.dispatchEvent(new CustomEvent('room-stats-reload'));
+      
+      // Obtener información de la sala y el usuario para la notificación
+      const roomName = rooms.find(r => r.id === activeEntryRoomId)?.name || `Sala ${activeEntryRoomId}`;
+      const userName = user?.username || 'Monitor';
+      
+      const exitDetail = { id: activeEntryId, roomName, userName };
+      window.dispatchEvent(new CustomEvent('room-entry-exited', { detail: exitDetail }));
+      try {
+        localStorage.setItem('room-event', JSON.stringify({ type: 'exit', ...exitDetail, ts: Date.now() }));
+      } catch {
+        // Ignorar errores de almacenamiento (modo privado, sin cuota, etc.)
+      }
     } catch (e) {
       setError(parseErrorMessage(e));
     } finally {
@@ -266,14 +302,9 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
         </label>
 
         {activeEntryId ? (
-          <>
-          
-        
-          
           <button className="primary-btn danger" onClick={onExit} disabled={loading}>
             Registrar salida
           </button>
-          </>
         ) : (
           <button className="primary-btn" onClick={onRegister} disabled={loading || mustSelectActiveRoom}>
             Registrarse

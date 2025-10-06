@@ -113,8 +113,8 @@ const ResetPassword: React.FC = () => {
         const errorMessage = result.error || result.message || 'Error al actualizar la contraseña';
         setError(errorMessage);
       }
-    } catch (error) {
-      console.error('Error completo:', error);
+    } catch {
+      // Error silencioso para no ensuciar consola
       setError('Error de conexión. Inténtalo de nuevo.');
     } finally {
       setIsLoading(false);

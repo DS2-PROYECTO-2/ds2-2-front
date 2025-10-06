@@ -25,14 +25,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             {user?.role === 'monitor' && (
               <>
                 <RoomStatsRow />
-                <div className="content-panel">
+                <div className="content-panel panel-room">
                   <RoomPanel onChanged={() => setHistoryReloadKey(k => k + 1)} />
                 </div>
               </>
             )}
             
             {/* Todos ven el historial */}
-            <div className="content-panel" style={{ marginTop: user?.role === 'monitor' ? '1rem' : '0' }}>
+            <div className="content-panel panel-list" style={{ marginTop: user?.role === 'monitor' ? '1rem' : '0' }}>
               <RoomHistory reloadKey={historyReloadKey} />
             </div>
           </>

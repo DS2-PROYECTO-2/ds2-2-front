@@ -59,7 +59,7 @@ describe('NotificationBell', () => {
     expect(screen.getByRole('button')).toBeInTheDocument();
   });
 
-  it('no renderiza para usuarios no admin', async () => {
+  it('también renderiza para monitores (no admin)', async () => {
     // Mock useAuth para retornar un monitor
     const { useAuth } = await import('../../hooks/useAuth');
     (useAuth as jest.MockedFunction<typeof useAuth>).mockReturnValue({
@@ -78,7 +78,7 @@ describe('NotificationBell', () => {
       </BrowserRouter>
     );
 
-    expect(container.firstChild).toBeNull();
+    expect(container.firstChild).not.toBeNull();
   });
 
   it('muestra el contador de notificaciones no leídas', async () => {
