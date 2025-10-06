@@ -2,6 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { authService, type LoginCredentials } from '../authService'
 import * as api from '../../utils/api'
 
+interface AuthResponseMock {
+  token: string
+  user: { id: number; username: string; email: string; role: string; is_verified: boolean }
+  message: string
+}
+
 describe('authService', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
@@ -10,7 +16,7 @@ describe('authService', () => {
 
   it('login guarda token y user', async () => {
     const creds: LoginCredentials = { username: 'u', password: 'p' }
-    vi.spyOn(api.apiClient, 'post').mockResolvedValueOnce({ token: 't', user: { id: 1, username: 'u', email: 'e', role: 'admin', is_verified: true }, message: 'ok' } as any)
+    vi.spyOn(api.apiClient, 'post').mockResolvedValueOnce({ token: 't', user: { id: 1, username: 'u', email: 'e', role: 'admin', is_verified: true }, message: 'ok' } as AuthResponseMock)
     const res = await authService.login(creds)
     expect(res.token).toBe('t')
     expect(localStorage.getItem('authToken')).toBe('t')
@@ -26,7 +32,7 @@ describe('authService', () => {
   })
 
   it('getProfile usa apiClient.get', async () => {
-    vi.spyOn(api.apiClient, 'get').mockResolvedValueOnce({ id: 1, username: 'u', email: 'e', role: 'admin', is_verified: true } as any)
+    vi.spyOn(api.apiClient, 'get').mockResolvedValueOnce({ id: 1, username: 'u', email: 'e', role: 'admin', is_verified: true })
     const user = await authService.getProfile()
     expect(user.username).toBe('u')
   })
