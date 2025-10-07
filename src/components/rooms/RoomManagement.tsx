@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, Monitor, AlertTriangle, CheckCircle, AlertCircle } 
 import type { Room, Computer, Report } from '../../types/index';
 import { roomManagementService } from '../../services/roomManagementService';
 import { useAuth } from '../../hooks/useAuth';
+import { getMyActiveEntry } from '../../services/roomEntryService';
 import RoomModal from './RoomModal';
 import ComputerModal from './ComputerModal';
 import ReportModal from './ReportModal';
@@ -78,6 +79,7 @@ export default function RoomManagement() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [activeEntryRoomId, setActiveEntryRoomId] = useState<number | null>(null);
 
   // Cargar datos de la API
   useEffect(() => {
@@ -158,6 +160,31 @@ export default function RoomManagement() {
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+
+  // Cargar y mantener la sala activa del monitor (para restricciones de acceso)
+  useEffect(() => {
+    const loadActive = async () => {
+      try {
+        const res = await getMyActiveEntry();
+        if (res.has_active_entry && res.active_entry) {
+          setActiveEntryRoomId(res.active_entry.roomId ?? null);
+        } else {
+          setActiveEntryRoomId(null);
+        }
+      } catch {
+        setActiveEntryRoomId(null);
+      }
+    };
+    loadActive();
+    const refreshOnEvents = () => { loadActive(); };
+    window.addEventListener('room-entry-added', refreshOnEvents as EventListener);
+    window.addEventListener('room-entry-exited', refreshOnEvents as EventListener);
+    return () => {
+      window.removeEventListener('room-entry-added', refreshOnEvents as EventListener);
+      window.removeEventListener('room-entry-exited', refreshOnEvents as EventListener);
     };
   }, []);
 
@@ -303,11 +330,33 @@ export default function RoomManagement() {
   };
 
   const handleViewComputer = (computer: Computer) => {
+    if (user?.role === 'monitor') {
+      const compRoomNum = Number(computer.roomId);
+      if (activeEntryRoomId == null) {
+        showNotification('Debes tener una entrada activa para ver equipos.', 'error');
+        return;
+      }
+      if (Number.isFinite(compRoomNum) && compRoomNum !== activeEntryRoomId) {
+        showNotification('Solo puedes acceder a equipos de tu sala activa.', 'error');
+        return;
+      }
+    }
     setSelectedComputer(computer);
     setShowReportModal(true);
   };
 
-  const handleReportFault = (computer: Computer) => {
+  const handleReportFault = async (computer: Computer) => {
+    if (user?.role === 'monitor') {
+      const compRoomNum = Number(computer.roomId);
+      if (activeEntryRoomId == null) {
+        showNotification('Debes registrar tu entrada en una sala antes de reportar.', 'error');
+        return;
+      }
+      if (Number.isFinite(compRoomNum) && compRoomNum !== activeEntryRoomId) {
+        showNotification('Solo puedes reportar fallas en la sala donde estás registrado.', 'error');
+        return;
+      }
+    }
     setSelectedComputer(computer);
     setShowFaultReportModal(true);
   };
