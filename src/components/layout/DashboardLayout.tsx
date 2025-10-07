@@ -1,16 +1,42 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import LeftSidebar from './LeftSidebar';
 import "../../styles/dashboard.css";
 import RoomPanel from '../rooms/RoomPanel';
 import RoomHistory from '../rooms/RoomHistory';
 import RoomStatsRow from '../rooms/RoomStatsRow';
+import RoomManagement from '../rooms/RoomManagement';
 import { useAuth } from '../../hooks/useAuth';
 
 
 const DashboardLayout: React.FC = () => {
   const { user, isLoading, isHydrated } = useAuth();
   const [historyReloadKey, setHistoryReloadKey] = useState(0);
-  const [activeSection, setActiveSection] = useState('home');
+  const location = useLocation();
+  const [confirmConfig, setConfirmConfig] = useState<null | {
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+  }>(null);
+  
+  // Determinar la sección activa basada en la ruta
+  const getActiveSection = () => {
+    const path = location.pathname;
+    if (path === '/inventory') return 'inventory';
+    if (path === '/reports') return 'reports';
+    if (path === '/settings') return 'settings';
+    return 'home';
+  };
+  
+  const [activeSection, setActiveSection] = useState(getActiveSection());
+
+  // Actualizar la sección activa cuando cambie la ruta
+  useEffect(() => {
+    setActiveSection(getActiveSection());
+  }, [location.pathname]);
 
   // Componentes de las diferentes secciones
   const renderSection = () => {
@@ -35,12 +61,7 @@ const DashboardLayout: React.FC = () => {
           </>
         );
       case 'inventory':
-        return (
-          <div className="content-panel">
-            <h2>Inventario</h2>
-            <p>Gestión de inventario de salas</p>
-          </div>
-        );
+        return <RoomManagement />;
       case 'reports':
         return (
           <div className="content-panel">
@@ -68,6 +89,24 @@ const DashboardLayout: React.FC = () => {
     }, { threshold: 0.12 });
     els.forEach(el => io.observe(el));
     return () => io.disconnect();
+  }, []);
+
+  // Listener global para confirmaciones de la app
+  useEffect(() => {
+    const onConfirmEvent = (e: Event) => {
+      const custom = e as CustomEvent;
+      const detail = custom.detail || {};
+      setConfirmConfig({
+        title: detail.title || 'Confirmación',
+        message: detail.message || '¿Confirmar la acción?',
+        confirmText: detail.confirmText || 'Confirmar',
+        cancelText: detail.cancelText || 'Cancelar',
+        onConfirm: detail.onConfirm,
+        onCancel: detail.onCancel,
+      });
+    };
+    window.addEventListener('app-confirm' as any, onConfirmEvent as EventListener);
+    return () => window.removeEventListener('app-confirm' as any, onConfirmEvent as EventListener);
   }, []);
 
   // El RoomHistory ahora maneja las actualizaciones en tiempo real para todos los usuarios
@@ -102,6 +141,33 @@ const DashboardLayout: React.FC = () => {
       <main className="main-content">
         {renderSection()}
       </main>
+
+      {confirmConfig && (
+        <div className="modal-overlay" onClick={() => { confirmConfig.onCancel?.(); setConfirmConfig(null); }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">{confirmConfig.title}</h2>
+            </div>
+            <div className="modal-body">
+              <p>{confirmConfig.message}</p>
+            </div>
+            <div className="modal-actions">
+              <button
+                className="btn btn-cancel"
+                onClick={() => { confirmConfig.onCancel?.(); setConfirmConfig(null); }}
+              >
+                {confirmConfig.cancelText || 'Cancelar'}
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => { confirmConfig.onConfirm?.(); setConfirmConfig(null); }}
+              >
+                {confirmConfig.confirmText || 'Confirmar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

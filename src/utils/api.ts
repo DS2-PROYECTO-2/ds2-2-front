@@ -89,4 +89,15 @@ export const apiClient = {
     });
     return handleResponse(res);
   },
+
+  async delete<T = unknown>(endpoint: string): Promise<T> {
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'DELETE',
+      headers: {
+        ...getAuthHeaders(),
+      },
+      credentials: 'include',
+    });
+    return handleResponse(res);
+  },
 };

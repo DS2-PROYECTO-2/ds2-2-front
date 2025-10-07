@@ -659,8 +659,9 @@ button:active svg {
   border: 1px solid var(--gray-200);
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  z-index: 999999;
+  z-index: 9999999;
   overflow: hidden;
+  isolation: isolate;
 }
 
 .notification-header {

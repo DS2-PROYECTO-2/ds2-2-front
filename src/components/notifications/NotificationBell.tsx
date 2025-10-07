@@ -13,9 +13,24 @@ const NotificationBell: React.FC = () => {
   const [dropdownRef, setDropdownRef] = useState<HTMLDivElement | null>(null);
   const [animateBell, setAnimateBell] = useState(false);
   const prevUnreadRef = React.useRef<number>(0);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
+  const lastLoadTimeRef = React.useRef<number>(0);
 
   const loadNotifications = async () => {
+    // Evitar cargas múltiples simultáneas
+    if (isLoadingNotifications) {
+      return;
+    }
+    
+    // Debounce: evitar cargas muy frecuentes (mínimo 1 segundo entre cargas)
+    const now = Date.now();
+    if (now - lastLoadTimeRef.current < 1000) {
+      return;
+    }
+    lastLoadTimeRef.current = now;
+    
     try {
+      setIsLoadingNotifications(true);
       setLoading(true);
       const backendNotifs = await notificationService.getNotifications();
 
@@ -36,11 +51,18 @@ const NotificationBell: React.FC = () => {
         const localUnread = normalized.filter(n => !n.is_read).length;
         setUnreadCount(localUnread);
       }
+      // Disparar sincronización para otras vistas (cards) al actualizar notificaciones
+      try {
+        const ts = String(Date.now());
+        localStorage.setItem('notifications-updated', ts);
+        window.dispatchEvent(new StorageEvent('storage', { key: 'notifications-updated', newValue: ts, storageArea: localStorage }));
+      } catch {}
       
     } catch {
       // Silencio errores en pruebas/offline
     } finally {
       setLoading(false);
+      setIsLoadingNotifications(false);
     }
   };
 
@@ -56,6 +78,11 @@ const NotificationBell: React.FC = () => {
       } catch {
         setUnreadCount(prev => Math.max(0, prev - 1));
       }
+      try {
+        const ts = String(Date.now());
+        localStorage.setItem('notifications-updated', ts);
+        window.dispatchEvent(new StorageEvent('storage', { key: 'notifications-updated', newValue: ts, storageArea: localStorage }));
+      } catch {}
     } catch {
       // Silencio errores en pruebas/offline
     }
@@ -83,6 +110,11 @@ const NotificationBell: React.FC = () => {
       } catch {
         setUnreadCount(0);
       }
+      try {
+        const ts = String(Date.now());
+        localStorage.setItem('notifications-updated', ts);
+        window.dispatchEvent(new StorageEvent('storage', { key: 'notifications-updated', newValue: ts, storageArea: localStorage }));
+      } catch {}
     } catch {
       // Silencio errores en pruebas/offline
     } finally {
