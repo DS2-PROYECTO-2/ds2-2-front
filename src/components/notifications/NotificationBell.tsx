@@ -56,11 +56,9 @@ const NotificationBell: React.FC = () => {
         const ts = String(Date.now());
         localStorage.setItem('notifications-updated', ts);
         window.dispatchEvent(new StorageEvent('storage', { key: 'notifications-updated', newValue: ts, storageArea: localStorage }));
-      } catch {}
+      } catch { void 0; }
       
-    } catch {
-      // Silencio errores en pruebas/offline
-    } finally {
+    } catch { void 0; } finally {
       setLoading(false);
       setIsLoadingNotifications(false);
     }
@@ -82,10 +80,8 @@ const NotificationBell: React.FC = () => {
         const ts = String(Date.now());
         localStorage.setItem('notifications-updated', ts);
         window.dispatchEvent(new StorageEvent('storage', { key: 'notifications-updated', newValue: ts, storageArea: localStorage }));
-      } catch {}
-    } catch {
-      // Silencio errores en pruebas/offline
-    }
+      } catch { void 0; }
+    } catch { void 0; }
   };
 
   const markAllAsRead = async () => {
@@ -114,10 +110,8 @@ const NotificationBell: React.FC = () => {
         const ts = String(Date.now());
         localStorage.setItem('notifications-updated', ts);
         window.dispatchEvent(new StorageEvent('storage', { key: 'notifications-updated', newValue: ts, storageArea: localStorage }));
-      } catch {}
-    } catch {
-      // Silencio errores en pruebas/offline
-    } finally {
+      } catch { void 0; }
+    } catch { void 0; } finally {
       setMarkingAll(false);
     }
   };

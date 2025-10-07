@@ -14,7 +14,7 @@ describe('ReportModal admin actions', () => {
   ] as Report[];
 
   it('muestra botón Eliminar y dispara onDeleteReport', async () => {
-    const onDeleteReport = vi.fn<[], Promise<void>>().mockResolvedValue(undefined);
+    const onDeleteReport = vi.fn<(reportId: string) => Promise<void>>().mockResolvedValue(undefined);
     // Interceptar dispatchEvent para confirmar automáticamente
     const origDispatch = window.dispatchEvent;
     vi.spyOn(window, 'dispatchEvent').mockImplementation(((evt: Event) => {

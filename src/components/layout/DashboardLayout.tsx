@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import LeftSidebar from './LeftSidebar';
 import "../../styles/dashboard.css";
@@ -24,20 +24,20 @@ const DashboardLayout: React.FC = () => {
   const [toasts, setToasts] = useState<Array<{ id: number; message: string; type: 'success' | 'error' }>>([]);
   
   // Determinar la sección activa basada en la ruta
-  const getActiveSection = () => {
+  const getActiveSection = useCallback(() => {
     const path = location.pathname;
     if (path === '/inventory') return 'inventory';
     if (path === '/reports') return 'reports';
     if (path === '/settings') return 'settings';
     return 'home';
-  };
+  }, [location.pathname]);
   
   const [activeSection, setActiveSection] = useState(getActiveSection());
 
   // Actualizar la sección activa cuando cambie la ruta
   useEffect(() => {
     setActiveSection(getActiveSection());
-  }, [location.pathname]);
+  }, [getActiveSection]);
 
   // Componentes de las diferentes secciones
   const renderSection = () => {

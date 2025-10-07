@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { apiClient } from '../utils/api';
 import type { Room, Computer, Report } from '../types/index';
 
@@ -74,7 +75,7 @@ async function fetchUserNameById(userId: string | number): Promise<string | null
         return userNameCache[id];
       }
     } catch {
-      // intentar siguiente
+      // noop
     }
   }
   return null;
@@ -181,7 +182,7 @@ export const roomManagementService = {
           });
         });
       } else {
-        console.warn('apiEquipment no es un array:', apiEquipment);
+        // noop
       }
 
       // Asignar equipos a las salas
@@ -223,7 +224,7 @@ export const roomManagementService = {
           }
         });
       } else {
-        console.warn('apiReports no es un array:', apiReports);
+        // noop
       }
 
       return { rooms, reports };
@@ -390,7 +391,7 @@ export const roomManagementService = {
           await apiClient.delete(`/api/equipment/equipment/?serial_number=${equipmentId}`);
           // logs removidos
           return;
-        } catch (secondError) {
+        } catch {
           // logs removidos
           throw firstError;
         }
@@ -537,7 +538,7 @@ export const roomManagementService = {
         // Intento 2: PUT completo (algunos backends lo requieren)
         try {
           await apiClient.patch(`/api/equipment/reports/${reportId}/`, undefined);
-        } catch {}
+        } catch { /* noop */ }
         try {
           // fallback con PUT a una ruta común
           await fetch(`${(import.meta as any).env.VITE_API_URL || 'http://127.0.0.1:8000'}/api/equipment/reports/${reportId}/`, {
@@ -552,7 +553,7 @@ export const roomManagementService = {
             body: JSON.stringify(payload)
           });
           return;
-        } catch {}
+        } catch { /* noop */ }
 
         // Intento 3: Endpoints de acción específicos
         try {
@@ -562,7 +563,7 @@ export const roomManagementService = {
             await apiClient.post(`/api/equipment/reports/${reportId}/reopen/`, {} as any);
           }
           return;
-        } catch (secondError) {
+        } catch {
           // Re-lanzar el primer error para tener más contexto del endpoint principal
           throw firstError;
         }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Monitor, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
 import type { Room, Computer, Report } from '../../types/index';
 import { roomManagementService } from '../../services/roomManagementService';
@@ -9,7 +9,7 @@ import ReportModal from './ReportModal';
 import FaultReportModal from './FaultReportModal';
 import './RoomManagement.css';
 
-export default function RoomManagement(): JSX.Element {
+export default function RoomManagement() {
   const { user } = useAuth();
 
   // Funciones de permisos
@@ -144,9 +144,7 @@ export default function RoomManagement(): JSX.Element {
                 // Forzar refresco de vistas
                 setSelectedRoom(prev => (prev ? { ...prev } : prev));
                 setRooms(prev => [...prev]);
-              } catch (err) {
-                // silencioso
-              }
+          } catch { /* silencioso */ }
             })();
           }
         } catch (error) {
@@ -169,7 +167,7 @@ export default function RoomManagement(): JSX.Element {
     if (selectedRoom) {
       setSelectedRoom(prev => (prev ? { ...prev } : prev));
     }
-  }, [reports]);
+  }, [reports, selectedRoom]);
 
   // Recalcular conteos de pendientes por equipo cada vez que cambian los reportes
   useEffect(() => {
@@ -326,12 +324,12 @@ export default function RoomManagement(): JSX.Element {
         if (fresh) {
           setReports(prev => prev.map(r => r.id === reportId ? { ...r, status: fresh.status } : r));
         }
-      } catch {}
+      } catch { /* noop */ }
       // Refrescar lista completa de reportes en esta pestaña
       try {
         const latest = await roomManagementService.getReports();
         setReports(latest);
-      } catch {}
+      } catch { /* noop */ }
       console.log(`Reporte ${reportId} actualizado a estado: ${newStatus}`);
       // Emitir actualización en tiempo real
       emitRealTimeUpdate('report-updated', { reportId, newStatus });
@@ -355,7 +353,7 @@ export default function RoomManagement(): JSX.Element {
       try {
         const latest = await roomManagementService.getReports();
         setReports(latest);
-      } catch {}
+      } catch { /* noop */ }
       // Emitir evento para otras vistas/pestañas
       emitRealTimeUpdate('report-deleted', { reportId });
       showNotification('Reporte eliminado', 'success');
@@ -393,7 +391,7 @@ export default function RoomManagement(): JSX.Element {
       try {
         const latest = await roomManagementService.getReports();
         setReports(latest);
-      } catch {}
+      } catch { /* noop */ }
       
       // Emitir actualización en tiempo real
       emitRealTimeUpdate('report-created', {

@@ -129,18 +129,19 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
       });
       
       // Calcular horas trabajadas hoy (variable local no usada a futuro)
-      let totalHours = 0;
+      let _totalHours = 0;
       const now = new Date();
       
       for (const entry of todayEntries) {
         const startTime = new Date(entry.startedAt);
         const endTime = entry.endedAt ? new Date(entry.endedAt) : now;
         const hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
-        totalHours += hours;
+        _totalHours += hours;
       }
+      void _totalHours;
       
-      // Si excede 8 horas, enviar notificación (comentado para evitar duplicados)
-      // if (totalHours >= 8) {
+      // Si excede 8 horas, marcar bandera interna (sin notificación)
+      // if (_totalHours >= 8) {
       //   await notificationService.notifyHoursExceeded({
       //     monitor_id: user?.id || 0,
       //     monitor_name: user?.username || 'Monitor',
