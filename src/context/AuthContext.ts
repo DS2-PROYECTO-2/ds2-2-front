@@ -7,6 +7,7 @@ interface User {
   email: string
   role: string
   is_verified: boolean
+  full_name?: string
 }
 
 interface AuthContextType {

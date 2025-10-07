@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">60.46% </span>
+                <span class="strong">62% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>156/258</span>
+                <span class='fraction'>155/250</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">48.83% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>21/43</span>
+                <span class='fraction'>21/42</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">60.46% </span>
+                <span class="strong">62% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>156/258</span>
+                <span class='fraction'>155/250</span>
             </div>
         
             
@@ -386,12 +386,13 @@
 <a name='L321'></a><a href='#L321'>321</a>
 <a name='L322'></a><a href='#L322'>322</a>
 <a name='L323'></a><a href='#L323'>323</a>
-<a name='L324'></a><a href='#L324'>324</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L324'></a><a href='#L324'>324</a>
+<a name='L325'></a><a href='#L325'>325</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -526,16 +527,17 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -714,7 +716,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { fetchRooms, type Room } from '../../services/roomService';
 import { createEntry, exitEntry, getMyActiveEntry } from '../../services/roomEntryService';
 import { getMyEntries, type RoomEntryUI } from '../../services/roomEntryService';
-import { notificationService } from '../../services/notificationService';
+// import { notificationService } from '../../services/notificationService'; // Removido para evitar notificaciones duplicadas
 &nbsp;
 type Props = { onChanged?: () =&gt; void };
 &nbsp;
@@ -839,26 +841,27 @@ const RoomPanel: React.FC&lt;Props&gt; = ({ onChanged }) =&gt; {
 <span class="cstat-no" title="statement not covered" >        return entryDate &gt;= todayStart &amp;&amp; entryDate &lt;= todayEnd;</span>
       });
       
-      // Calcular horas trabajadas hoy
-      let totalHours = 0;
+      // Calcular horas trabajadas hoy (variable local no usada a futuro)
+      let _totalHours = 0;
       const now = new Date();
       
       for (const entry of todayEntries) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
 <span class="cstat-no" title="statement not covered" >        const startTime = new Date(entry.startedAt);</span>
 <span class="cstat-no" title="statement not covered" >        const endTime = entry.endedAt ? new Date(entry.endedAt) : now;</span>
 <span class="cstat-no" title="statement not covered" >        const hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);</span>
-<span class="cstat-no" title="statement not covered" >        totalHours += hours;</span>
+<span class="cstat-no" title="statement not covered" >        _totalHours += hours;</span>
 <span class="cstat-no" title="statement not covered" >      }</span>
+      void _totalHours;
       
-      // Si excede 8 horas, enviar notificación
-      if (totalHours &gt;= 8) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
-<span class="cstat-no" title="statement not covered" >        await notificationService.notifyHoursExceeded({</span>
-<span class="cstat-no" title="statement not covered" >          monitor_id: user?.id || 0,</span>
-<span class="cstat-no" title="statement not covered" >          monitor_name: user?.username || 'Monitor',</span>
-<span class="cstat-no" title="statement not covered" >          hours_worked: Math.round(totalHours * 100) / 100,</span>
-<span class="cstat-no" title="statement not covered" >          date: today.toISOString().split('T')[0]</span>
-<span class="cstat-no" title="statement not covered" >        });</span>
-<span class="cstat-no" title="statement not covered" >      }</span>
+      // Si excede 8 horas, marcar bandera interna (sin notificación)
+      // if (_totalHours &gt;= 8) {
+      //   await notificationService.notifyHoursExceeded({
+      //     monitor_id: user?.id || 0,
+      //     monitor_name: user?.username || 'Monitor',
+      //     hours_worked: Math.round(totalHours * 100) / 100,
+      //     date: today.toISOString().split('T')[0]
+      //   });
+      // }
 <span class="branch-0 cbranch-no" title="branch not covered" >    } catch {</span>
       // Error silencioso para no ensuciar consola en producción
 <span class="cstat-no" title="statement not covered" >    }</span>
@@ -1039,7 +1042,7 @@ export default RoomPanel;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-06T20:15:48.202Z
+                at 2025-10-07T18:26:00.247Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

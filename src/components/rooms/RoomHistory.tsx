@@ -20,10 +20,7 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
   const [highlightedEntryId, setHighlightedEntryId] = useState<number | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Debug: Log cuando cambie isRefreshing
-  useEffect(() => {
-    console.log('🎬 RoomHistory: isRefreshing cambió:', isRefreshing);
-  }, [isRefreshing]);
+  // logs removidos
 
   const parseErr = (e: unknown) => (e && typeof e === 'object' && 'message' in e ? (e as { message: string }).message : 'Error al cargar historial');
 
@@ -38,9 +35,9 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
 
   // Función para cargar datos básicos (sin filtros)
   const load = useCallback(async (showRefreshAnimation = false) => {
-    console.log('🔄 RoomHistory: Cargando datos...', { showRefreshAnimation });
+    // logs removidos
     if (showRefreshAnimation) {
-      console.log('🎬 RoomHistory: Activando animación de actualización');
+      // logs removidos
       setIsRefreshing(true);
     } else {
       setLoading(true);
@@ -54,10 +51,7 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
           : getMyEntries()    // Monitor ve solo los suyos
       ]);
       
-      console.log('📊 RoomHistory: Datos cargados:', { 
-        rooms: roomsData.length, 
-        entries: entriesData.length 
-      });
+      // logs removidos
       
       setRooms(roomsData);
       setEntries(entriesData);
@@ -66,7 +60,7 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
     } finally {
       setLoading(false);
       if (showRefreshAnimation) {
-        console.log('🎬 RoomHistory: Desactivando animación en 1 segundo');
+        // logs removidos
         // Mantener la animación por un momento para que se vea
         setTimeout(() => setIsRefreshing(false), 1000);
       }

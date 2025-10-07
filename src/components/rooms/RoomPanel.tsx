@@ -3,7 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { fetchRooms, type Room } from '../../services/roomService';
 import { createEntry, exitEntry, getMyActiveEntry } from '../../services/roomEntryService';
 import { getMyEntries, type RoomEntryUI } from '../../services/roomEntryService';
-import { notificationService } from '../../services/notificationService';
+// import { notificationService } from '../../services/notificationService'; // Removido para evitar notificaciones duplicadas
 
 type Props = { onChanged?: () => void };
 
@@ -128,26 +128,27 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
         return entryDate >= todayStart && entryDate <= todayEnd;
       });
       
-      // Calcular horas trabajadas hoy
-      let totalHours = 0;
+      // Calcular horas trabajadas hoy (variable local no usada a futuro)
+      let _totalHours = 0;
       const now = new Date();
       
       for (const entry of todayEntries) {
         const startTime = new Date(entry.startedAt);
         const endTime = entry.endedAt ? new Date(entry.endedAt) : now;
         const hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
-        totalHours += hours;
+        _totalHours += hours;
       }
+      void _totalHours;
       
-      // Si excede 8 horas, enviar notificación
-      if (totalHours >= 8) {
-        await notificationService.notifyHoursExceeded({
-          monitor_id: user?.id || 0,
-          monitor_name: user?.username || 'Monitor',
-          hours_worked: Math.round(totalHours * 100) / 100,
-          date: today.toISOString().split('T')[0]
-        });
-      }
+      // Si excede 8 horas, marcar bandera interna (sin notificación)
+      // if (_totalHours >= 8) {
+      //   await notificationService.notifyHoursExceeded({
+      //     monitor_id: user?.id || 0,
+      //     monitor_name: user?.username || 'Monitor',
+      //     hours_worked: Math.round(totalHours * 100) / 100,
+      //     date: today.toISOString().split('T')[0]
+      //   });
+      // }
     } catch {
       // Error silencioso para no ensuciar consola en producción
     }

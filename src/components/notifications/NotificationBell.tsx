@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Bell, BellRing } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { notificationService, type Notification } from '../../services/notificationService';
@@ -13,9 +13,24 @@ const NotificationBell: React.FC = () => {
   const [dropdownRef, setDropdownRef] = useState<HTMLDivElement | null>(null);
   const [animateBell, setAnimateBell] = useState(false);
   const prevUnreadRef = React.useRef<number>(0);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
+  const lastLoadTimeRef = React.useRef<number>(0);
 
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
+    // Evitar cargas múltiples simultáneas
+    if (isLoadingNotifications) {
+      return;
+    }
+    
+    // Debounce: evitar cargas muy frecuentes (mínimo 1 segundo entre cargas)
+    const now = Date.now();
+    if (now - lastLoadTimeRef.current < 1000) {
+      return;
+    }
+    lastLoadTimeRef.current = now;
+    
     try {
+      setIsLoadingNotifications(true);
       setLoading(true);
       const backendNotifs = await notificationService.getNotifications();
 
@@ -36,13 +51,18 @@ const NotificationBell: React.FC = () => {
         const localUnread = normalized.filter(n => !n.is_read).length;
         setUnreadCount(localUnread);
       }
+      // Disparar sincronización para otras vistas (cards) al actualizar notificaciones
+      try {
+        const ts = String(Date.now());
+        localStorage.setItem('notifications-updated', ts);
+        window.dispatchEvent(new StorageEvent('storage', { key: 'notifications-updated', newValue: ts, storageArea: localStorage }));
+      } catch { void 0; }
       
-    } catch {
-      // Silencio errores en pruebas/offline
-    } finally {
+    } catch { void 0; } finally {
       setLoading(false);
+      setIsLoadingNotifications(false);
     }
-  };
+  }, [isLoadingNotifications]);
 
   const markAsRead = async (notificationId: number) => {
     try {
@@ -56,9 +76,12 @@ const NotificationBell: React.FC = () => {
       } catch {
         setUnreadCount(prev => Math.max(0, prev - 1));
       }
-    } catch {
-      // Silencio errores en pruebas/offline
-    }
+      try {
+        const ts = String(Date.now());
+        localStorage.setItem('notifications-updated', ts);
+        window.dispatchEvent(new StorageEvent('storage', { key: 'notifications-updated', newValue: ts, storageArea: localStorage }));
+      } catch { void 0; }
+    } catch { void 0; }
   };
 
   const markAllAsRead = async () => {
@@ -83,16 +106,19 @@ const NotificationBell: React.FC = () => {
       } catch {
         setUnreadCount(0);
       }
-    } catch {
-      // Silencio errores en pruebas/offline
-    } finally {
+      try {
+        const ts = String(Date.now());
+        localStorage.setItem('notifications-updated', ts);
+        window.dispatchEvent(new StorageEvent('storage', { key: 'notifications-updated', newValue: ts, storageArea: localStorage }));
+      } catch { void 0; }
+    } catch { void 0; } finally {
       setMarkingAll(false);
     }
   };
 
   useEffect(() => {
     loadNotifications();
-  }, []);
+  }, [loadNotifications]);
 
   // Reproducir animación del timbre al incrementar las no leídas
   useEffect(() => {
@@ -128,7 +154,7 @@ const NotificationBell: React.FC = () => {
       window.removeEventListener('focus', handleWindowFocus);
       window.removeEventListener('storage', handleStorage);
     };
-  }, []);
+  }, [loadNotifications]);
 
   // Cerrar dropdown al hacer clic fuera
   useEffect(() => {
@@ -176,7 +202,7 @@ const NotificationBell: React.FC = () => {
       window.removeEventListener('room-entry-added', handleRoomEntry as EventListener);
       window.removeEventListener('room-entry-exited', handleRoomExit as EventListener);
     };
-  }, []);
+  }, [loadNotifications]);
 
 
   const formatDate = (dateString: string) => {

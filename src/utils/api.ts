@@ -21,13 +21,16 @@ async function handleResponse(response: Response) {
 
   if (!response.ok) {
     // Manejo automático de 401/403
-    if (response.status === 401) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-    }
-    if (response.status === 403) {
-      window.location.href = '/403';
+    const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
+    if (isBrowser) {
+      if (response.status === 401) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
+      if (response.status === 403) {
+        window.location.href = '/403';
+      }
     }
     
     let msg = '';
@@ -86,6 +89,17 @@ export const apiClient = {
       },
       credentials: 'include',
       ...(hasBody ? { body: JSON.stringify(data) } as RequestInit : {}),
+    });
+    return handleResponse(res);
+  },
+
+  async delete<T = unknown>(endpoint: string): Promise<T> {
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'DELETE',
+      headers: {
+        ...getAuthHeaders(),
+      },
+      credentials: 'include',
     });
     return handleResponse(res);
   },

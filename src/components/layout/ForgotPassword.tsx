@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/ForgotPassword.css';
 import { sendForgotPasswordEmail } from '../../services/passwordService';
@@ -12,12 +12,18 @@ const ForgotPassword: React.FC = () => {
   const [error, setError] = useState('');
   const [existsFlag, setExistsFlag] = useState<boolean | undefined>(undefined);
   const navigate = useNavigate();
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
-    setMessage('');
+    if (mountedRef.current) setIsLoading(true);
+    if (mountedRef.current) setError('');
+    if (mountedRef.current) setMessage('');
 
     try {
       const safeEmail = email.trim();
@@ -25,19 +31,19 @@ const ForgotPassword: React.FC = () => {
 
       if (response.success) {
         // Mostrar mensaje explícito del backend. Si existe=false, lo tratamos como aviso informativo.
-        setMessage(response.message || (response.exists ? 'Enlace enviado.' : 'El email no está registrado o el usuario no está activo'));
-        setExistsFlag(response.exists);
+        if (mountedRef.current) setMessage(response.message || (response.exists ? 'Enlace enviado.' : 'El email no está registrado o el usuario no está activo'));
+        if (mountedRef.current) setExistsFlag(response.exists);
       } else {
-        setError(response.error || 'Error al procesar la solicitud. Inténtalo de nuevo.');
+        if (mountedRef.current) setError(response.error || 'Error al procesar la solicitud. Inténtalo de nuevo.');
       }
     } catch (error) {
       if (error instanceof Error) {
-        setError(error.message);
+        if (mountedRef.current) setError(error.message);
       } else {
-        setError('Error de conexión. Inténtalo de nuevo.');
+        if (mountedRef.current) setError('Error de conexión. Inténtalo de nuevo.');
       }
     } finally {
-      setIsLoading(false);
+      if (mountedRef.current) setIsLoading(false);
     }
   };
 
