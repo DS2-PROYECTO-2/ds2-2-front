@@ -141,7 +141,7 @@ export const roomManagementService = {
         }
       }
       
-      console.log('Processed apiRooms:', apiRooms);
+      // logs removidos
       
       const rooms: Room[] = apiRooms.map((apiRoom: any) => ({
         id: apiRoom.id.toString(),

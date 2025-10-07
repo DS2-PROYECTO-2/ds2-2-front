@@ -1,19 +1,17 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ReportModal from '../rooms/ReportModal';
+import type { Computer, Report } from '../../types';
 import { vi } from 'vitest';
 
 vi.mock('../../hooks/useAuth', () => ({
   useAuth: () => ({ user: { role: 'admin' } })
 }));
 
-type TestComputer = { id: string; roomId: string; number: number; serial: string; status: 'operational' | 'maintenance' | 'out_of_service' };
-type TestReport = { id: string; computerId: string; reporter: string; issues: string[]; description: string; date: string; status: 'pending' | 'resolved' };
-
 describe('ReportModal admin actions', () => {
-  const computer: TestComputer = { id: '1', roomId: 'r1', number: 1, serial: 'S1', status: 'operational' };
-  const reports: TestReport[] = [
+  const computer: Computer = { id: '1', roomId: 'r1', number: 1, serial: 'S1', status: 'operational' } as Computer;
+  const reports: Report[] = [
     { id: '10', computerId: '1', reporter: 'Admin', issues: ['hardware'], description: 'x', date: '01/01/2025, 12:00', status: 'pending' }
-  ];
+  ] as Report[];
 
   it('muestra botón Eliminar y dispara onDeleteReport', async () => {
     const onDeleteReport = vi.fn<[], Promise<void>>().mockResolvedValue(undefined);
@@ -28,7 +26,7 @@ describe('ReportModal admin actions', () => {
     }) as unknown as typeof window.dispatchEvent);
 
     render(
-      <ReportModal computer={computer as any} reports={reports as any} onClose={() => {}} onDeleteReport={onDeleteReport} />
+      <ReportModal computer={computer} reports={reports} onClose={() => {}} onDeleteReport={onDeleteReport} />
     );
 
     const btn = await screen.findByText('🗑 Eliminar');

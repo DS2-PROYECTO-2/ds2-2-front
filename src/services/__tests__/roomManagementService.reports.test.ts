@@ -21,7 +21,7 @@ describe('roomManagementService reports parsing', () => {
           resolved: false,
         },
       ],
-    } as unknown as any);
+    } as unknown as { results: unknown[] });
 
     const res = await roomManagementService.getReports();
     expect(res).toHaveLength(1);

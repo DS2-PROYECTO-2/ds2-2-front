@@ -128,7 +128,7 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
         return entryDate >= todayStart && entryDate <= todayEnd;
       });
       
-      // Calcular horas trabajadas hoy
+      // Calcular horas trabajadas hoy (variable local no usada a futuro)
       let totalHours = 0;
       const now = new Date();
       

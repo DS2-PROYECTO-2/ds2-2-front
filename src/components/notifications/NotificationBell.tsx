@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Bell, BellRing } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { notificationService, type Notification } from '../../services/notificationService';
@@ -16,7 +16,7 @@ const NotificationBell: React.FC = () => {
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
   const lastLoadTimeRef = React.useRef<number>(0);
 
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     // Evitar cargas múltiples simultáneas
     if (isLoadingNotifications) {
       return;
@@ -64,7 +64,7 @@ const NotificationBell: React.FC = () => {
       setLoading(false);
       setIsLoadingNotifications(false);
     }
-  };
+  }, [isLoadingNotifications]);
 
   const markAsRead = async (notificationId: number) => {
     try {
@@ -124,7 +124,7 @@ const NotificationBell: React.FC = () => {
 
   useEffect(() => {
     loadNotifications();
-  }, [/* loadNotifications */]);
+  }, [loadNotifications]);
 
   // Reproducir animación del timbre al incrementar las no leídas
   useEffect(() => {

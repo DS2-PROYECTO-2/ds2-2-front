@@ -106,8 +106,8 @@ const DashboardLayout: React.FC = () => {
         onCancel: detail.onCancel,
       });
     };
-    window.addEventListener('app-confirm' as any, onConfirmEvent as EventListener);
-    return () => window.removeEventListener('app-confirm' as any, onConfirmEvent as EventListener);
+    window.addEventListener('app-confirm' as unknown as string, onConfirmEvent as EventListener);
+    return () => window.removeEventListener('app-confirm' as unknown as string, onConfirmEvent as EventListener);
   }, []);
 
   // Listener global para toasts de la app
@@ -122,11 +122,11 @@ const DashboardLayout: React.FC = () => {
       }, 3000);
     };
     const onToastClear = () => setToasts([]);
-    window.addEventListener('app-toast' as any, onToast as EventListener);
-    window.addEventListener('app-toast-clear' as any, onToastClear as EventListener);
+    window.addEventListener('app-toast' as unknown as string, onToast as EventListener);
+    window.addEventListener('app-toast-clear' as unknown as string, onToastClear as EventListener);
     return () => {
-      window.removeEventListener('app-toast' as any, onToast as EventListener);
-      window.removeEventListener('app-toast-clear' as any, onToastClear as EventListener);
+      window.removeEventListener('app-toast' as unknown as string, onToast as EventListener);
+      window.removeEventListener('app-toast-clear' as unknown as string, onToastClear as EventListener);
     };
   }, []);
 
