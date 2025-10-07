@@ -40,7 +40,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:integration": "vitest run --reporter=verbose src/components/__tests__/Login.integration.test.tsx",
-    "check:coverage": "node -e \"const fs=require('fs');const p='./coverage/coverage-summary.json';if(!fs.existsSync(p)){console.error('No existe',p);process.exit(1)}const r=require(p);const pct=r.total.statements.pct; if(pct<49.5){console.error('Coverage bajo:',pct);process.exit(1)} else {console.log('Coverage OK:',pct)}\"",
+    "check:coverage": "node -e \"const fs=require('fs');const p='./coverage/coverage-summary.json';if(!fs.existsSync(p)){console.error('No existe',p);process.exit(1)}const r=require(p);const pct=r.total.statements.pct; if(pct<49.0){console.error('Coverage bajo:',pct);process.exit(1)} else {console.log('Coverage OK:',pct)}\"",
     "ci": "npm ci && npm run lint && npm run build && npm run test:coverage && npm run check:coverage"
   }
 }

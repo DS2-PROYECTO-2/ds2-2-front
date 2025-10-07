@@ -204,6 +204,7 @@ export const roomManagementService = {
             id: apiReport.id.toString(),
             computerId: apiReport.equipment.toString(),
             roomId: '', // Se asignará después
+            reporterId: (apiReport.reported_by ?? apiReport.user_id ?? apiReport.userId) ?? undefined,
             issues,
             reporter: reporterName,
             description: apiReport.issue_description,
@@ -417,6 +418,7 @@ export const roomManagementService = {
         id: apiReport.id.toString(),
         computerId: apiReport.equipment.toString(),
         roomId: '', // Se asignará después
+        reporterId: (apiReport.reported_by ?? apiReport.user_id ?? apiReport.userId) ?? undefined,
         issues: resolveIssues(apiReport),
         reporter: resolveReporterName(apiReport),
         description: apiReport.issue_description,
@@ -445,6 +447,7 @@ export const roomManagementService = {
             id: apiReport.id.toString(),
             computerId: apiReport.equipment.toString(),
             roomId: '', // Se asignará después
+            reporterId: (apiReport.reported_by ?? apiReport.user_id ?? apiReport.userId) ?? undefined,
             issues,
             reporter: reporterName,
             description: apiReport.issue_description,
@@ -473,6 +476,7 @@ export const roomManagementService = {
           id: apiReport.id?.toString?.() ?? String(apiReport.id),
           computerId: apiReport.equipment?.toString?.() ?? String(apiReport.equipment),
           roomId: '',
+          reporterId: (apiReport.reported_by ?? apiReport.user_id ?? apiReport.userId) ?? undefined,
           issues,
           reporter: reporterName,
           description: apiReport.issue_description,
@@ -500,6 +504,7 @@ export const roomManagementService = {
         id: apiReport.id?.toString?.() ?? String(apiReport.id),
         computerId: apiReport.equipment?.toString?.() ?? String(apiReport.equipment),
         roomId: '',
+        reporterId: (apiReport.reported_by ?? apiReport.user_id ?? apiReport.userId) ?? undefined,
         issues: resolveIssues(apiReport),
         reporter: reporterName,
         description: apiReport.issue_description,

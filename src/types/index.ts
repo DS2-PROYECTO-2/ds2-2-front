@@ -36,6 +36,7 @@ export interface Report {
     id: string;
     computerId: string;
     roomId?: string;
+    reporterId?: number;
     reporter: string;
     date: string;
     description: string;
