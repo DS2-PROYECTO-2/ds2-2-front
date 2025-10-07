@@ -21,13 +21,16 @@ async function handleResponse(response: Response) {
 
   if (!response.ok) {
     // Manejo automático de 401/403
-    if (response.status === 401) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-    }
-    if (response.status === 403) {
-      window.location.href = '/403';
+    const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
+    if (isBrowser) {
+      if (response.status === 401) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
+      if (response.status === 403) {
+        window.location.href = '/403';
+      }
     }
     
     let msg = '';

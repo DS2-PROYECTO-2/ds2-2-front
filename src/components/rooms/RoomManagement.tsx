@@ -30,7 +30,7 @@ export default function RoomManagement(): JSX.Element {
   };
 
   // Función para emitir actualizaciones en tiempo real
-  const emitRealTimeUpdate = (type: string, data: any) => {
+  const emitRealTimeUpdate = (type: string, data: Record<string, unknown>) => {
     const updateData = {
       type,
       timestamp: Date.now(),
@@ -108,9 +108,7 @@ export default function RoomManagement(): JSX.Element {
       if ((e.key === 'room-data-update' || e.key === 'notifications-updated' || e.key === 'reports-updated') && (e.newValue || e.key !== null)) {
         try {
           const updateData = e.key === 'room-data-update' && e.newValue ? JSON.parse(e.newValue) : null;
-          if (updateData) {
-            console.log('Received real-time update:', updateData);
-          }
+          // no-op: logs removidos
           
           if (updateData && updateData.type === 'report-created') {
             // Agregar nuevo reporte
@@ -280,8 +278,7 @@ export default function RoomManagement(): JSX.Element {
     });
     if (!proceed) return;
     try {
-      console.log('Deleting computer with ID:', computerId);
-      console.log('Computer ID type:', typeof computerId);
+        // logs removidos
       await roomManagementService.deleteEquipment(computerId);
       setRooms(prevRooms => {
         const updatedRooms = prevRooms.map(room => 
@@ -536,9 +533,7 @@ export default function RoomManagement(): JSX.Element {
           acquisition_date: new Date().toISOString()
         });
         
-        console.log('New computer created:', newComputer);
-        console.log('Selected room ID:', selectedRoom.id);
-        console.log('Current rooms before update:', rooms);
+        // logs removidos
         
         setRooms(prevRooms => {
           const updatedRooms = prevRooms.map(room => 
@@ -546,8 +541,7 @@ export default function RoomManagement(): JSX.Element {
               ? { ...room, computers: [...room.computers, newComputer] }
               : room
           );
-          console.log('Updated rooms:', updatedRooms);
-          console.log('Selected room computers after update:', updatedRooms.find(r => r.id === selectedRoom.id)?.computers);
+          // logs removidos
           
           // Actualizar también el selectedRoom para que la vista se actualice inmediatamente
           const updatedSelectedRoom = updatedRooms.find(r => r.id === selectedRoom.id);

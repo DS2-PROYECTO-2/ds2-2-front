@@ -1,12 +1,12 @@
 import { apiClient } from '../utils/api';
 import type { Room, Computer, Report } from '../types/index';
 
-function resolveIssues(apiReport: any): string[] {
-  const fromArray = apiReport?.issues || apiReport?.issue_types || apiReport?.failure_types || apiReport?.tags || apiReport?.categories;
+function resolveIssues(apiReport: Record<string, unknown>): string[] {
+  const fromArray = (apiReport as any)?.issues || (apiReport as any)?.issue_types || (apiReport as any)?.failure_types || (apiReport as any)?.tags || (apiReport as any)?.categories;
   if (Array.isArray(fromArray) && fromArray.length > 0) {
     return fromArray.map((x: any) => String(x)).map(s => s.trim()).filter(Boolean);
   }
-  const single = apiReport?.issue_type || apiReport?.category || apiReport?.tag || apiReport?.issue;
+  const single = (apiReport as any)?.issue_type || (apiReport as any)?.category || (apiReport as any)?.tag || (apiReport as any)?.issue;
   if (typeof single === 'string') {
     // CSV -> lista
     return single.split(',').map(s => s.trim()).filter(Boolean);
@@ -15,7 +15,7 @@ function resolveIssues(apiReport: any): string[] {
   return [];
 }
 
-function resolveReporterName(apiReport: any): string {
+function resolveReporterName(apiReport: Record<string, unknown>): string {
   // Campos directos comunes
   const direct =
     apiReport.reporter_name ||
@@ -30,11 +30,11 @@ function resolveReporterName(apiReport: any): string {
 
   // Objetos anidados potenciales
   const candidates = [
-    apiReport.user,
-    apiReport.reported_by_user,
-    apiReport.reported_by,
-    apiReport.owner,
-  ].filter(Boolean);
+    (apiReport as any).user,
+    (apiReport as any).reported_by_user,
+    (apiReport as any).reported_by,
+    (apiReport as any).owner,
+  ].filter(Boolean) as Array<Record<string, unknown>>;
 
   for (const obj of candidates) {
     if (!obj || typeof obj !== 'object') continue;
@@ -49,7 +49,7 @@ function resolveReporterName(apiReport: any): string {
     if (typeof username === 'string' && username.trim()) return username.trim();
   }
 
-  const byId = apiReport.reported_by ?? apiReport.user_id ?? apiReport.userId;
+  const byId = (apiReport as any).reported_by ?? (apiReport as any).user_id ?? (apiReport as any).userId;
   return byId != null ? `Usuario ${byId}` : 'Usuario';
 }
 
@@ -80,13 +80,13 @@ async function fetchUserNameById(userId: string | number): Promise<string | null
   return null;
 }
 
-async function resolveReporterNamesForReports(reports: Report[], apiReportsRaw: any[]): Promise<Report[]> {
+async function resolveReporterNamesForReports(reports: Report[], apiReportsRaw: Array<Record<string, unknown>>): Promise<Report[]> {
   try {
     const missing = new Set<string>();
-    apiReportsRaw.forEach((raw: any) => {
+    apiReportsRaw.forEach((raw) => {
       const existing = resolveReporterName(raw);
       if (!existing || /^Usuario\s+\d+$/i.test(existing)) {
-        const uid = raw?.reported_by ?? raw?.user_id ?? raw?.userId;
+        const uid = (raw as any)?.reported_by ?? (raw as any)?.user_id ?? (raw as any)?.userId;
         if (uid != null) missing.add(String(uid));
       }
     });
@@ -95,7 +95,7 @@ async function resolveReporterNamesForReports(reports: Report[], apiReportsRaw: 
     // reconstruir con nombres si se resolvieron
     return reports.map((r, idx) => {
       const raw = apiReportsRaw[idx];
-      const uid = raw?.reported_by ?? raw?.user_id ?? raw?.userId;
+      const uid = (raw as any)?.reported_by ?? (raw as any)?.user_id ?? (raw as any)?.userId;
       const cached = uid != null ? userNameCache[String(uid)] : undefined;
       if (cached && /^Usuario\s+\d+$/i.test(r.reporter)) {
         return { ...r, reporter: cached };
@@ -125,9 +125,7 @@ export const roomManagementService = {
 
 
       // Procesar respuesta de salas
-      console.log('Rooms response:', roomsResponse);
-      console.log('User role:', userRole);
-      console.log('Rooms endpoint used:', roomsEndpoint);
+      // logs removidos
       
       // Manejar diferentes estructuras de respuesta según el endpoint
       let apiRooms = [];
@@ -318,9 +316,7 @@ export const roomManagementService = {
       const response = await apiClient.post('/api/equipment/equipment/', formattedData);
       const apiEquipment = response as any;
       
-      console.log('API Response for new equipment:', apiEquipment);
-      console.log('Equipment ID from API:', apiEquipment.id);
-      console.log('Equipment serial from API:', apiEquipment.serial_number);
+      // logs removidos
       
       // Extraer el número del nombre (ej: "PC 5" -> 5)
       const nameMatch = apiEquipment.name?.match(/PC (\d+)/);
@@ -336,7 +332,7 @@ export const roomManagementService = {
         updatedAt: apiEquipment.acquisition_date || new Date().toISOString()
       };
       
-      console.log('Converted computer:', newComputer);
+      // logs removidos
       return newComputer;
     } catch (error) {
       console.error('Error creating equipment:', error);
@@ -352,11 +348,10 @@ export const roomManagementService = {
     status?: 'operational' | 'maintenance' | 'out_of_service';
   }): Promise<Computer> {
     try {
-      console.log('Updating equipment with ID:', equipmentId);
-      console.log('Equipment data to update:', equipmentData);
+      // logs removidos
       const response = await apiClient.patch(`/api/equipment/equipment/${equipmentId}/`, equipmentData);
       const apiEquipment = response as any;
-      console.log('API response after update:', apiEquipment);
+      // logs removidos
       
       // Extraer el número del nombre (ej: "PC 5" -> 5)
       const nameMatch = apiEquipment.name?.match(/PC (\d+)/);
@@ -380,24 +375,23 @@ export const roomManagementService = {
   // Eliminar equipo
   async deleteEquipment(equipmentId: string): Promise<void> {
     try {
-      console.log('Attempting to delete equipment with ID:', equipmentId);
-      console.log('Delete endpoint:', `/api/equipment/equipment/${equipmentId}/`);
+      // logs removidos
       
       // Intentar primero con el endpoint estándar
       try {
         await apiClient.delete(`/api/equipment/equipment/${equipmentId}/`);
-        console.log('Equipment deleted successfully');
+        // logs removidos
         return;
       } catch (firstError) {
-        console.log('First attempt failed, trying alternative endpoint...');
+        // logs removidos
         
         // Si falla, intentar con el serial_number como parámetro
         try {
           await apiClient.delete(`/api/equipment/equipment/?serial_number=${equipmentId}`);
-          console.log('Equipment deleted successfully with serial_number');
+          // logs removidos
           return;
         } catch (secondError) {
-          console.log('Second attempt also failed, throwing original error');
+          // logs removidos
           throw firstError;
         }
       }

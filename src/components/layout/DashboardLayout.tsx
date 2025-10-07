@@ -21,6 +21,7 @@ const DashboardLayout: React.FC = () => {
     onConfirm?: () => void;
     onCancel?: () => void;
   }>(null);
+  const [toasts, setToasts] = useState<Array<{ id: number; message: string; type: 'success' | 'error' }>>([]);
   
   // Determinar la sección activa basada en la ruta
   const getActiveSection = () => {
@@ -109,6 +110,26 @@ const DashboardLayout: React.FC = () => {
     return () => window.removeEventListener('app-confirm' as any, onConfirmEvent as EventListener);
   }, []);
 
+  // Listener global para toasts de la app
+  useEffect(() => {
+    const onToast = (e: Event) => {
+      const { message, type } = (e as CustomEvent).detail || {} as { message: string; type: 'success' | 'error' };
+      if (!message) return;
+      const id = Date.now() + Math.floor(Math.random() * 1000);
+      setToasts(prev => [...prev, { id, message, type: type === 'success' ? 'success' : 'error' }]);
+      setTimeout(() => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+      }, 3000);
+    };
+    const onToastClear = () => setToasts([]);
+    window.addEventListener('app-toast' as any, onToast as EventListener);
+    window.addEventListener('app-toast-clear' as any, onToastClear as EventListener);
+    return () => {
+      window.removeEventListener('app-toast' as any, onToast as EventListener);
+      window.removeEventListener('app-toast-clear' as any, onToastClear as EventListener);
+    };
+  }, []);
+
   // El RoomHistory ahora maneja las actualizaciones en tiempo real para todos los usuarios
   // El reloadKey solo se usa para actualizaciones manuales desde el RoomPanel (monitores)
 
@@ -166,6 +187,20 @@ const DashboardLayout: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Toasts globales */}
+      {toasts.length > 0 && (
+        <div
+          className="toast-container"
+          style={{ position: 'fixed', top: '1rem', right: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', zIndex: 1000 }}
+        >
+          {toasts.map(t => (
+            <div key={t.id} className={`notification-toast ${t.type}`}>
+              {t.message}
+            </div>
+          ))}
         </div>
       )}
     </div>

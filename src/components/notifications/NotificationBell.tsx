@@ -124,7 +124,7 @@ const NotificationBell: React.FC = () => {
 
   useEffect(() => {
     loadNotifications();
-  }, []);
+  }, [/* loadNotifications */]);
 
   // Reproducir animación del timbre al incrementar las no leídas
   useEffect(() => {
@@ -160,7 +160,7 @@ const NotificationBell: React.FC = () => {
       window.removeEventListener('focus', handleWindowFocus);
       window.removeEventListener('storage', handleStorage);
     };
-  }, []);
+  }, [loadNotifications]);
 
   // Cerrar dropdown al hacer clic fuera
   useEffect(() => {
@@ -208,7 +208,7 @@ const NotificationBell: React.FC = () => {
       window.removeEventListener('room-entry-added', handleRoomEntry as EventListener);
       window.removeEventListener('room-entry-exited', handleRoomExit as EventListener);
     };
-  }, []);
+  }, [loadNotifications]);
 
 
   const formatDate = (dateString: string) => {
