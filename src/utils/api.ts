@@ -20,7 +20,7 @@ async function handleResponse(response: Response) {
   const payload = isJson ? await response.json() : await response.text();
 
   if (!response.ok) {
-    // Manejo automático de 401/403
+    // Manejo automático de 401. Evitar redirección automática para 403/404 en flujos internos (como edición admin)
     const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
     if (isBrowser) {
       if (response.status === 401) {
@@ -28,9 +28,7 @@ async function handleResponse(response: Response) {
         localStorage.removeItem('user');
         window.location.href = '/login';
       }
-      if (response.status === 403) {
-        window.location.href = '/403';
-      }
+      // No redirigir automáticamente en 403/404; devolver error y que el UI lo maneje
     }
     
     let msg = '';

@@ -316,6 +316,16 @@ const UserManagement: React.FC = () => {
 
   // Acciones de usuario
   const handleEditUser = (user: User) => {
+    // Bloquear edición de otros administradores: solo te puedes editar a ti mismo
+    if (user.role === 'admin' && user.id !== (userContextUserId())) {
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { 
+          message: 'No puedes editar a otro administrador', 
+          type: 'error'
+        }
+      }));
+      return;
+    }
     setSelectedUser(user);
     
     // Separar full_name en first_name y last_name
@@ -327,10 +337,22 @@ const UserManagement: React.FC = () => {
       email: user.email,
       first_name: firstName,
       last_name: lastName,
-      phone: user.phone
+      phone: user.phone || '',
+      identification: user.identification || '',
+      role: user.role,
+      is_verified: user.is_verified
     });
     setEditError(null);
     setShowEditModal(true);
+  };
+
+  // Helper para obtener el id del usuario autenticado con fallback seguro
+  const userContextUserId = () => {
+    try {
+      return user?.id as unknown as number;
+    } catch {
+      return -1;
+    }
   };
 
   // Manejar cambios en formulario de edición
@@ -395,6 +417,15 @@ const UserManagement: React.FC = () => {
     }
 
     try {
+      // Pre-chequeo: impedir enviar cambios si es otro admin
+      if (selectedUser.role === 'admin' && selectedUser.id !== userContextUserId()) {
+        setEditError('No puedes editar a otro administrador');
+        window.dispatchEvent(new CustomEvent('app-toast', {
+          detail: { message: 'No puedes editar a otro administrador', type: 'error' }
+        }));
+        return;
+      }
+
       setEditLoading(true);
       setEditError(null);
       
@@ -412,7 +443,13 @@ const UserManagement: React.FC = () => {
       }));
     } catch (err: unknown) {
       const error = err as ApiError;
-      const errorMessage = error.message || 'Error al actualizar el usuario';
+      // Si el backend ahora devuelve 403/404, NO redirigimos: mostramos toast/controlado
+      let errorMessage = error.message || 'Error al actualizar el usuario';
+      if ('status' in error && error.status === 403) {
+        errorMessage = 'Acceso denegado: no puedes editar a este usuario';
+      } else if ('status' in error && error.status === 404) {
+        errorMessage = 'Usuario no encontrado o no editable';
+      }
       console.error('Error updating user:', err);
       setEditError(errorMessage);
       // Mostrar toast de error
@@ -433,6 +470,16 @@ const UserManagement: React.FC = () => {
   };
 
   const handleDeleteUser = (user: User) => {
+    // Bloquear eliminación del administrador protegido id=1
+    if (user.id === 1 && user.role === 'admin') {
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { 
+          message: 'No se puede eliminar al administrador principal', 
+          type: 'error' 
+        }
+      }));
+      return;
+    }
     setSelectedUser(user);
     setShowDeleteModal(true);
   };
@@ -475,6 +522,17 @@ const UserManagement: React.FC = () => {
   const handleVerifyUser = async (user: User) => {
     const actionKey = `verify-${user.id}`;
     
+    // Bloquear verificación/desverificación del administrador protegido id=1
+    if (user.id === 1 && user.role === 'admin') {
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { 
+          message: 'No se puede cambiar la verificación del administrador principal', 
+          type: 'error' 
+        }
+      }));
+      return;
+    }
+
     // Prevenir múltiples solicitudes
     if (loadingStates[actionKey]) return;
     
@@ -677,8 +735,8 @@ const UserManagement: React.FC = () => {
                         <button
                           onClick={() => handleEditUser(user)}
                           className="btn-action btn-edit"
-                          title="Editar usuario"
-                          disabled={editLoading}
+                          title={user.role === 'admin' && user.id !== userContextUserId() ? 'No puedes editar a otro administrador' : 'Editar usuario'}
+                          disabled={editLoading || (user.role === 'admin' && user.id !== userContextUserId())}
                         >
                           <Edit size={16} />
                         </button>
@@ -686,8 +744,8 @@ const UserManagement: React.FC = () => {
                         <button
                           onClick={() => handleVerifyUser(user)}
                           className={`btn-action ${user.is_verified ? 'btn-unverify' : 'btn-verify'}`}
-                          title={user.is_verified ? 'Desverificar usuario' : 'Verificar usuario'}
-                          disabled={loadingStates[`verify-${user.id}`]}
+                          title={(user.id === 1 && user.role === 'admin') ? 'Acción no permitida para el administrador principal' : (user.is_verified ? 'Desverificar usuario' : 'Verificar usuario')}
+                          disabled={loadingStates[`verify-${user.id}`] || (user.id === 1 && user.role === 'admin')}
                         >
                           {loadingStates[`verify-${user.id}`] ? (
                             <div className="loading-spinner" />
@@ -701,8 +759,8 @@ const UserManagement: React.FC = () => {
                         <button
                           onClick={() => handleDeleteUser(user)}
                           className="btn-action btn-delete"
-                          title="Eliminar usuario"
-                          disabled={loadingStates[`delete-${user.id}`]}
+                          title={(user.id === 1 && user.role === 'admin') ? 'No se puede eliminar al administrador principal' : 'Eliminar usuario'}
+                          disabled={loadingStates[`delete-${user.id}`] || (user.id === 1 && user.role === 'admin')}
                         >
                           {loadingStates[`delete-${user.id}`] ? (
                             <div className="loading-spinner" />
@@ -1020,11 +1078,46 @@ const UserManagement: React.FC = () => {
                     title="Solo números"
                   />
                 </div>
+
+                <div className="form-group">
+                  <label htmlFor="edit-identification">Identificación</label>
+                  <input
+                    type="text"
+                    id="edit-identification"
+                    value={editUser.identification || ''}
+                    onChange={(e) => handleEditUserChange('identification', e.target.value)}
+                    placeholder="6-10 dígitos numéricos"
+                    minLength={6}
+                    maxLength={10}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="edit-role">Rol</label>
+                  <select
+                    id="edit-role"
+                    value={editUser.role || 'monitor'}
+                    onChange={(e) => handleEditUserChange('role', e.target.value as 'admin' | 'monitor')}
+                  >
+                    <option value="monitor">Monitor</option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="edit-is_verified">Verificado</label>
+                  <select
+                    id="edit-is_verified"
+                    value={String(editUser.is_verified ?? false)}
+                    onChange={(e) => handleEditUserChange('is_verified', e.target.value === 'true')}
+                  >
+                    <option value="true">Sí</option>
+                    <option value="false">No</option>
+                  </select>
+                </div>
               </div>
               
-              <div className="edit-info-notice">
-                <p><strong>Nota:</strong> Solo se pueden editar los campos básicos del perfil. El nombre de usuario, identificación, rol y estado de verificación no se pueden modificar desde aquí.</p>
-              </div>
+              {/* Nota removida: ahora los admins pueden editar identificación, rol y verificación */}
               
               {editError && (
                 <div className="form-error">
