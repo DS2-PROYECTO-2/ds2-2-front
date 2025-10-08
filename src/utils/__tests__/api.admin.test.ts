@@ -43,7 +43,7 @@ describe('API Client - Admin Error Handling', () => {
 
     try {
       await apiClient.get('/test-endpoint');
-    } catch (error) {
+    } catch {
       // Debe lanzar error pero no redirigir
     }
     
@@ -64,7 +64,7 @@ describe('API Client - Admin Error Handling', () => {
 
     try {
       await apiClient.get('/test-endpoint');
-    } catch (error) {
+    } catch {
       // Debe lanzar error y redirigir
     }
     
@@ -85,9 +85,10 @@ describe('API Client - Admin Error Handling', () => {
 
     try {
       await apiClient.get('/test-endpoint');
-    } catch (error: any) {
-      expect(error.status).toBe(404);
-      expect(error.message).toBe('Not Found');
+    } catch (error: unknown) {
+      const apiError = error as { status: number; message: string };
+      expect(apiError.status).toBe(404);
+      expect(apiError.message).toBe('Not Found');
     }
   });
 });

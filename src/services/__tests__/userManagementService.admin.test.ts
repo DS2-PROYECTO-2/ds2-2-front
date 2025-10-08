@@ -63,8 +63,8 @@ describe('userManagementService - Admin Edición', () => {
   it('maneja errores 403/404 sin redirección', async () => {
     const { apiClient } = await import('../../utils/api');
     
-    const error403 = new Error('Forbidden');
-    (error403 as any).status = 403;
+    const error403 = new Error('Forbidden') as Error & { status: number };
+    error403.status = 403;
     vi.mocked(apiClient.patch).mockRejectedValue(error403);
 
     const updateData = {

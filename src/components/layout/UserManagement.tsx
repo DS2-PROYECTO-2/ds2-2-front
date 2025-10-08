@@ -445,9 +445,9 @@ const UserManagement: React.FC = () => {
       const error = err as ApiError;
       // Si el backend ahora devuelve 403/404, NO redirigimos: mostramos toast/controlado
       let errorMessage = error.message || 'Error al actualizar el usuario';
-      if ((error as any).status === 403) {
+      if ('status' in error && error.status === 403) {
         errorMessage = 'Acceso denegado: no puedes editar a este usuario';
-      } else if ((error as any).status === 404) {
+      } else if ('status' in error && error.status === 404) {
         errorMessage = 'Usuario no encontrado o no editable';
       }
       console.error('Error updating user:', err);
