@@ -43,6 +43,7 @@ export interface UpdateUserData {
   phone?: string;
   role?: 'admin' | 'monitor';
   is_active?: boolean;
+  is_verified?: boolean;
 }
 
 const userManagementService = {
@@ -124,12 +125,11 @@ const userManagementService = {
     }
   },
 
-  // Actualizar usuario
-  async updateUser(_id: number, userData: UpdateUserData): Promise<User> {
+  // Actualizar usuario por admin (edición consolidada)
+  async updateUser(id: number, userData: UpdateUserData): Promise<User> {
     try {
-      // Usar el endpoint correcto para actualizar perfil de usuario
-      // Nota: Este endpoint actualiza el perfil del usuario autenticado
-      const response = await apiClient.patch('/api/auth/profile/update/', userData);
+      // Endpoint de edición por administrador que permite cambiar datos y campos administrativos
+      const response = await apiClient.patch(`/api/auth/admin/users/${id}/edit/`, userData);
       return response as User;
     } catch (error) {
       console.error('Error updating user:', error);

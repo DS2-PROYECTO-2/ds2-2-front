@@ -13,6 +13,7 @@ vi.mock('../../services/userManagementService', () => ({
     createUser: vi.fn(),
     updateUser: vi.fn(),
     deleteUser: vi.fn(),
+    verifyUser: vi.fn(),
   },
 }));
 
@@ -123,5 +124,92 @@ describe('UserManagement', () => {
 
     const createButton = screen.getByText('Nuevo Usuario');
     expect(createButton).toBeInTheDocument();
+  });
+
+  it('bloquea edición de otros administradores', async () => {
+    const mockUsers = [
+      {
+        id: 1,
+        username: 'admin1',
+        email: 'admin1@test.com',
+        full_name: 'Admin 1',
+        role: 'admin' as const,
+        is_active: true,
+        is_verified: true,
+        date_joined: '2024-01-01',
+      },
+      {
+        id: 2,
+        username: 'admin2',
+        email: 'admin2@test.com',
+        full_name: 'Admin 2',
+        role: 'admin' as const,
+        is_active: true,
+        is_verified: true,
+        date_joined: '2024-01-01',
+      }
+    ];
+
+    const userManagementService = await import('../../services/userManagementService');
+    vi.mocked(userManagementService.default.getUsers).mockResolvedValue(mockUsers);
+
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <AuthProvider>
+            <UserManagement />
+          </AuthProvider>
+        </BrowserRouter>
+      );
+    });
+
+    // Esperar a que se carguen los usuarios
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    });
+
+    // El botón de editar para admin2 debe estar deshabilitado
+    const editButtons = screen.getAllByTitle(/Editar usuario|No puedes editar a otro administrador/);
+    expect(editButtons[1]).toHaveAttribute('disabled');
+  });
+
+  it('bloquea acciones para el administrador principal (id=1)', async () => {
+    const mockUsers = [
+      {
+        id: 1,
+        username: 'admin1',
+        email: 'admin1@test.com',
+        full_name: 'Admin Principal',
+        role: 'admin' as const,
+        is_active: true,
+        is_verified: true,
+        date_joined: '2024-01-01',
+      }
+    ];
+
+    const userManagementService = await import('../../services/userManagementService');
+    vi.mocked(userManagementService.default.getUsers).mockResolvedValue(mockUsers);
+
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <AuthProvider>
+            <UserManagement />
+          </AuthProvider>
+        </BrowserRouter>
+      );
+    });
+
+    // Esperar a que se carguen los usuarios
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    });
+
+    // Los botones de verificar y eliminar deben estar deshabilitados para el admin principal
+    const verifyButton = screen.getByTitle(/Acción no permitida para el administrador principal/);
+    const deleteButton = screen.getByTitle(/No se puede eliminar al administrador principal/);
+    
+    expect(verifyButton).toHaveAttribute('disabled');
+    expect(deleteButton).toHaveAttribute('disabled');
   });
 });
