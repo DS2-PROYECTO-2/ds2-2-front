@@ -371,16 +371,29 @@
 }
 
 .status-badge {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.7em;
-  font-weight: 600;
-  text-align: center;
-  margin-top: 8px;
-  color: white;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  display: flex !important;
+  padding: 3px 4px !important;
+  border-radius: 8px !important;
+  font-size: 0.55em !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+  margin-top: 6px !important;
+  color: white !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  word-wrap: break-word !important;
+  white-space: normal !important;
+  line-height: 1.0 !important;
+  max-width: 100% !important;
+  min-height: 18px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow-wrap: break-word !important;
+  hyphens: auto !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
 }
 
 .computer-card.operational .status-badge {

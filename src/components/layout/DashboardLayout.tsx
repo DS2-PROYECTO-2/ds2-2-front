@@ -6,6 +6,7 @@ import RoomPanel from '../rooms/RoomPanel';
 import RoomHistory from '../rooms/RoomHistory';
 import RoomStatsRow from '../rooms/RoomStatsRow';
 import RoomManagement from '../rooms/RoomManagement';
+import UserManagement from './UserManagement';
 import { useAuth } from '../../hooks/useAuth';
 
 
@@ -27,6 +28,7 @@ const DashboardLayout: React.FC = () => {
   const getActiveSection = useCallback(() => {
     const path = location.pathname;
     if (path === '/inventory') return 'inventory';
+    if (path === '/users') return 'users';
     if (path === '/reports') return 'reports';
     if (path === '/settings') return 'settings';
     return 'home';
@@ -63,6 +65,8 @@ const DashboardLayout: React.FC = () => {
         );
       case 'inventory':
         return <RoomManagement />;
+      case 'users':
+        return <UserManagement />;
       case 'reports':
         return (
           <div className="content-panel">

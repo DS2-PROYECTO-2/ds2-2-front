@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">96% </span>
+                <span class="strong">96.22% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>48/50</span>
+                <span class='fraction'>51/53</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">96% </span>
+                <span class="strong">96.22% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>48/50</span>
+                <span class='fraction'>51/53</span>
             </div>
         
             
@@ -131,13 +131,20 @@
 <a name='L66'></a><a href='#L66'>66</a>
 <a name='L67'></a><a href='#L67'>67</a>
 <a name='L68'></a><a href='#L68'>68</a>
-<a name='L69'></a><a href='#L69'>69</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -163,25 +170,30 @@
 <span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">28x</span>
-<span class="cline-any cline-yes">28x</span>
-<span class="cline-any cline-yes">28x</span>
-<span class="cline-any cline-yes">28x</span>
-<span class="cline-any cline-yes">28x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">28x</span>
-<span class="cline-any cline-yes">28x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">35x</span>
+<span class="cline-any cline-yes">35x</span>
+<span class="cline-any cline-yes">35x</span>
+<span class="cline-any cline-yes">35x</span>
+<span class="cline-any cline-yes">35x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35x</span>
+<span class="cline-any cline-yes">35x</span>
 <span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-yes">7x</span>
@@ -207,9 +219,10 @@ import logo2 from '../../assets/logo2.png';
 &nbsp;
 import { 
   Home, 
-  ShoppingCart, 
+  Monitor, 
   BarChart3, 
-  Settings 
+  Settings,
+  Users
 } from 'lucide-react';
 &nbsp;
 interface LeftSidebarProps {
@@ -218,7 +231,7 @@ interface LeftSidebarProps {
 }
 &nbsp;
 const LeftSidebar: React.FC&lt;LeftSidebarProps&gt; = ({ onNavigate, activeSection }) =&gt; {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 &nbsp;
   const handleLogout = <span class="fstat-no" title="function not covered" >() =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    logout();</span>
@@ -226,10 +239,15 @@ const LeftSidebar: React.FC&lt;LeftSidebarProps&gt; = ({ onNavigate, activeSecti
 &nbsp;
   const buttons = [
     { icon: Home, id: 'home', title: 'Inicio' },
-    { icon: ShoppingCart, id: 'inventory', title: 'Inventario' },
+    { icon: Monitor, id: 'inventory', title: 'Inventario' },
     { icon: BarChart3, id: 'reports', title: 'Reportes' },
     { icon: Settings, id: 'settings', title: 'Configuración' }
   ];
+&nbsp;
+  // Agregar botón de usuarios solo para administradores
+  if (user?.role === 'admin') {
+    buttons.splice(3, 0, { icon: Users, id: 'users', title: 'Gestión de Usuarios' });
+  }
 &nbsp;
   return (
     &lt;aside className="left-sidebar"&gt;
@@ -274,7 +292,7 @@ export default LeftSidebar;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-07T18:26:00.247Z
+                at 2025-10-08T04:09:44.972Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

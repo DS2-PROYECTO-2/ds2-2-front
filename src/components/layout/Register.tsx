@@ -411,6 +411,18 @@ const Register = () => {
                     <span className="error-message">{errors.password}</span>
                 )}
                 
+                <div className="password-toggle">
+                    <label className="password-toggle-label">
+                    <input
+                        type="checkbox"
+                        checked={showPassword}
+                        onChange={(e) => setShowPassword(e.target.checked)}
+                        aria-controls="password-input"
+                    />
+                    Mostrar contraseña
+                    </label>
+                </div>
+                
                 {/* Indicadores de requisitos de contraseña */}
                 {formData.password && (
                     <div className="password-requirements">
@@ -428,18 +440,6 @@ const Register = () => {
                     </div>
                     </div>
                 )}
-                
-                <div className="password-toggle">
-                    <label className="password-toggle-label">
-                    <input
-                        type="checkbox"
-                        checked={showPassword}
-                        onChange={(e) => setShowPassword(e.target.checked)}
-                        aria-controls="password-input"
-                    />
-                    Mostrar contraseña
-                    </label>
-                </div>
                 </div>
 
             <div className="input-group">

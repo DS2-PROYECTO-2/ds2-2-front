@@ -6,9 +6,10 @@ import logo2 from '../../assets/logo2.png';
 
 import { 
   Home, 
-  ShoppingCart, 
+  Monitor, 
   BarChart3, 
-  Settings 
+  Settings,
+  Users
 } from 'lucide-react';
 
 interface LeftSidebarProps {
@@ -17,7 +18,7 @@ interface LeftSidebarProps {
 }
 
 const LeftSidebar: React.FC<LeftSidebarProps> = ({ onNavigate, activeSection }) => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -25,10 +26,15 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onNavigate, activeSection }) 
 
   const buttons = [
     { icon: Home, id: 'home', title: 'Inicio' },
-    { icon: ShoppingCart, id: 'inventory', title: 'Inventario' },
+    { icon: Monitor, id: 'inventory', title: 'Inventario' },
     { icon: BarChart3, id: 'reports', title: 'Reportes' },
     { icon: Settings, id: 'settings', title: 'Configuración' }
   ];
+
+  // Agregar botón de usuarios solo para administradores
+  if (user?.role === 'admin') {
+    buttons.splice(3, 0, { icon: Users, id: 'users', title: 'Gestión de Usuarios' });
+  }
 
   return (
     <aside className="left-sidebar">

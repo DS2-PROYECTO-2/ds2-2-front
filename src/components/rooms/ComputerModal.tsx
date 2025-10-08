@@ -25,13 +25,13 @@ const ComputerModal: React.FC<ComputerModalProps> = ({ computer, room, onSave, o
       });
     } else {
       const nextNumber = room.computers.length + 1;
-      setFormData({
+      setFormData(prev => ({
         number: nextNumber,
-        serial: generateSerial(),
+        serial: prev.serial || generateSerial(), // Solo generar si no existe
         status: 'operational'
-      });
+      }));
     }
-  }, [computer, room]);
+  }, [computer, room.computers.length]); // Incluir las dependencias que usa el efecto
 
   function generateSerial(): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
