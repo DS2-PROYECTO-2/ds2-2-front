@@ -81,7 +81,11 @@ export interface UpdateUserData {
     username?: string;
     email?: string;
     full_name?: string;
+    first_name?: string;
+    last_name?: string;
     cedula?: string;
+    identification?: string;
+    phone?: string;
     role?: 'admin' | 'monitor';
     is_active?: boolean;
 }
@@ -90,6 +94,9 @@ export interface UpdateUserData {
 export interface ApiError extends Error {
     message: string;
     status?: number;
+    username?: string[];
+    email?: string[];
+    identification?: string[];
     response?: {
         data?: {
             detail?: string;

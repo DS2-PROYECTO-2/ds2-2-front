@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">75.28% </span>
+                <span class="strong">74.15% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>67/89</span>
+                <span class='fraction'>66/89</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">65% </span>
+                <span class="strong">47.36% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>13/20</span>
+                <span class='fraction'>9/19</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">75.28% </span>
+                <span class="strong">74.15% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>67/89</span>
+                <span class='fraction'>66/89</span>
             </div>
         
             
@@ -184,42 +184,42 @@
 <span class="cline-any cline-yes">28x</span>
 <span class="cline-any cline-yes">28x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">28x</span>
-<span class="cline-any cline-yes">28x</span>
-<span class="cline-any cline-yes">28x</span>
-<span class="cline-any cline-yes">28x</span>
+<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-yes">24x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">22x</span>
 <span class="cline-any cline-yes">22x</span>
@@ -233,7 +233,7 @@
 <span class="cline-any cline-yes">27x</span>
 <span class="cline-any cline-yes">27x</span>
 <span class="cline-any cline-yes">27x</span>
-<span class="cline-any cline-yes">27x</span>
+<span class="cline-any cline-yes">23x</span>
 <span class="cline-any cline-yes">27x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -292,7 +292,7 @@ function getAuthHeaders(): Record&lt;string, string&gt; {
 async function handleResponse(response: Response) {
   const contentType = response.headers.get('content-type'<span class="branch-0 cbranch-no" title="branch not covered" >) || '';</span>
   const isJson = contentType.includes('application/json');
-  const payload = isJson ? await response.json() : await response.text();
+  const payload = isJson ? await response.json(<span class="branch-0 cbranch-no" title="branch not covered" >) : await response.text(<span class="branch-0 cbranch-no" title="branch not covered" >);</span></span>
 &nbsp;
   if (!response.ok) {
     // Manejo automático de 401/403
@@ -309,8 +309,8 @@ async function handleResponse(response: Response) {
     }
     
     let msg = '';
-    if (typeof payload === 'string') {
-      msg = payload;
+    if (typeof payload === 'string') <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >      msg = payload;</span>
     } else if (payload &amp;&amp; typeof payload === 'object') {
       const p = payload as Record&lt;string, unknown&gt;;
       msg =
@@ -385,7 +385,7 @@ export const apiClient = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-08T01:23:38.800Z
+                at 2025-10-08T03:44:56.274Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
