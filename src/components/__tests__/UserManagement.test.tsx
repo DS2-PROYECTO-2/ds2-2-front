@@ -80,6 +80,12 @@ describe('UserManagement', () => {
       );
     });
 
+    // Esperar a que se complete la carga
+    await act(async () => {
+      // Esperar a que desaparezca el estado de carga
+      await new Promise(resolve => setTimeout(resolve, 100));
+    });
+
     expect(screen.getByPlaceholderText('Buscar por nombre, email o cédula...')).toBeInTheDocument();
     expect(screen.getAllByText('Limpiar Filtros')).toHaveLength(2);
   });
