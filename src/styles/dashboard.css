@@ -76,7 +76,7 @@
 }
 
 /* Buttons micro-interactions */
-.primary-btn, .bell-button, .mark-all-read-btn, .refresh-btn, .content-panel .btn, button {
+.primary-btn, .bell-button, .mark-all-read-btn, .refresh-btn, .content-panel .btn, .dashboard-btn {
   transition: transform 120ms ease, box-shadow 160ms ease, background-color 160ms ease, color 160ms ease;
 }
 
@@ -85,7 +85,7 @@
 .mark-all-read-btn:hover,
 .refresh-btn:hover,
 .content-panel .btn:hover,
-button:hover {
+.dashboard-btn:hover {
   transform: translateY(-1px);
 }
 
@@ -94,7 +94,7 @@ button:hover {
 .mark-all-read-btn:active,
 .refresh-btn:active,
 .content-panel .btn:active,
-button:active {
+.dashboard-btn:active {
   transform: translateY(0);
 }
 
@@ -855,6 +855,48 @@ button:active svg {
   padding: 0 .5rem; 
   background: var(--white);
   font-size: 0.875rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary-red);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.input:hover {
+  border-color: var(--gray-300);
+}
+
+.input::placeholder {
+  color: var(--gray-500);
+  opacity: 1;
+}
+
+.select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6,9 12,15 18,9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 12px;
+  padding-right: 28px;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--primary-red);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.select:hover {
+  border-color: var(--gray-300);
+}
+
+.select:disabled {
+  background-color: var(--gray-100);
+  color: var(--gray-600);
+  cursor: not-allowed;
 }
 
 .primary-btn {
@@ -945,6 +987,16 @@ button:active svg {
   border-collapse: collapse; 
 }
 
+.dashboard-table th, .dashboard-table td { 
+  padding: .75rem .5rem; 
+  border-bottom: 1px solid var(--gray-200); 
+  text-align: center;            /* Centra todo el contenido */
+  white-space: nowrap;           /* Evita que el texto se corte */
+  overflow: hidden;              /* Oculta texto que se desborde */
+  text-overflow: ellipsis;      /* Muestra ... si el texto es muy largo */
+}
+
+/* Estilos para la tabla del historial de entradas y salidas */
 .table th, .table td { 
   padding: .75rem .5rem; 
   border-bottom: 1px solid var(--gray-200); 

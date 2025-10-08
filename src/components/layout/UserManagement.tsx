@@ -1,0 +1,1075 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { 
+  Search, 
+  Filter, 
+  Plus, 
+  Edit, 
+  Trash2, 
+  Shield, 
+  User as UserIcon,
+  XCircle,
+  X,
+  Eye,
+  EyeOff,
+  Save
+} from 'lucide-react';
+import userManagementService from '../../services/userManagementService';
+import type { User, UserFilters, CreateUserData } from '../../types';
+import type { UpdateUserData } from '../../services/userManagementService';
+import { useAuth } from '../../hooks/useAuth';
+import '../../styles/UserManagement.css';
+
+const UserManagement: React.FC = () => {
+  const { user } = useAuth();
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Filtros
+  const [filters, setFilters] = useState<UserFilters>({
+    search: '',
+    role: '',
+    is_active: undefined,
+    is_verified: undefined
+  });
+  
+  // Estados para modales
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  
+  // Estados para formulario de edición
+  const [editUser, setEditUser] = useState<UpdateUserData>({});
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  
+  // Estados para formulario de nuevo usuario
+  const [newUser, setNewUser] = useState<CreateUserData>({
+    username: '',
+    email: '',
+    password: '',
+    password_confirm: '',
+    first_name: '',
+    last_name: '',
+    identification: '',
+    phone: '',
+    role: 'monitor'
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  
+  // Estados para validación visual de contraseña
+  const [passwordCriteria, setPasswordCriteria] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false
+  });
+
+  // Cargar usuarios
+  const loadUsers = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const usersData = await userManagementService.getUsers(filters);
+      setUsers(usersData);
+    } catch (err: any) {
+      const errorMessage = err.message || 'Error al cargar usuarios';
+      setError(errorMessage);
+      // Mostrar toast de error
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { message: errorMessage, type: 'error' }
+      }));
+      console.error('Error loading users:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters]);
+
+  useEffect(() => {
+    loadUsers();
+  }, [filters, loadUsers]);
+
+  // Manejar filtros
+  const handleFilterChange = (key: keyof UserFilters, value: string | boolean | undefined) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  // Limpiar filtros
+  const clearFilters = () => {
+    setFilters({
+      search: '',
+      role: '',
+      is_active: undefined,
+      is_verified: undefined
+    });
+  };
+
+  // Validar criterios de contraseña en tiempo real
+  const validatePasswordCriteria = (password: string) => {
+    setPasswordCriteria({
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /\d/.test(password),
+      special: /[@$!%*?&]/.test(password)
+    });
+  };
+
+  // Manejar formulario de nuevo usuario
+  const handleNewUserChange = (field: keyof CreateUserData, value: string) => {
+    // Validación especial para identificación (solo números)
+    if (field === 'identification') {
+      // Solo permitir números
+      const numericValue = value.replace(/[^0-9]/g, '');
+      // Limitar a 10 dígitos máximo
+      const limitedValue = numericValue.slice(0, 10);
+      setNewUser(prev => ({
+        ...prev,
+        [field]: limitedValue
+      }));
+    } else {
+      setNewUser(prev => ({
+        ...prev,
+        [field]: value
+      }));
+      
+      // Validar criterios de contraseña en tiempo real
+      if (field === 'password') {
+        validatePasswordCriteria(value);
+      }
+    }
+    setCreateError(null);
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validaciones básicas
+    if (!newUser.username.trim()) {
+      setCreateError('El nombre de usuario es requerido');
+      return;
+    }
+    if (!newUser.email.trim()) {
+      setCreateError('El email es requerido');
+      return;
+    }
+    if (!newUser.first_name.trim()) {
+      setCreateError('El nombre es requerido');
+      return;
+    }
+    if (!newUser.last_name.trim()) {
+      setCreateError('El apellido es requerido');
+      return;
+    }
+    if (!newUser.password.trim()) {
+      setCreateError('La contraseña es requerida');
+      return;
+    }
+    if (!newUser.password_confirm.trim()) {
+      setCreateError('La confirmación de contraseña es requerida');
+      return;
+    }
+    if (newUser.password !== newUser.password_confirm) {
+      setCreateError('Las contraseñas no coinciden');
+      return;
+    }
+    
+    // Validación de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newUser.email)) {
+      setCreateError('El email debe tener un formato válido');
+      return;
+    }
+    
+    // Validación de identificación (solo números, 6-10 dígitos)
+    if (newUser.identification && newUser.identification.trim()) {
+      const identificationRegex = /^\d{6,10}$/;
+      if (!identificationRegex.test(newUser.identification)) {
+        setCreateError('La identificación debe tener entre 6 y 10 dígitos numéricos');
+        return;
+      }
+    }
+    
+    // Validación de contraseña (mayúscula, minúscula, número, especial, mínimo 8)
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(newUser.password)) {
+      setCreateError('La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial');
+      return;
+    }
+
+    try {
+      setCreateLoading(true);
+      setCreateError(null);
+      
+      await userManagementService.createUser(newUser);
+      
+      // Limpiar formulario y cerrar modal
+      setNewUser({
+        username: '',
+        email: '',
+        password: '',
+        password_confirm: '',
+        first_name: '',
+        last_name: '',
+        identification: '',
+        phone: '',
+        role: 'monitor'
+      });
+      setShowCreateModal(false);
+      
+      // Mostrar toast de éxito
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { message: 'Usuario creado exitosamente', type: 'success' }
+      }));
+      
+      // Recargar lista de usuarios
+      loadUsers();
+    } catch (err: any) {
+      const errorMessage = err.message || 'Error al crear usuario';
+      setCreateError(errorMessage);
+      // Mostrar toast de error
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { message: errorMessage, type: 'error' }
+      }));
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
+  const resetCreateForm = () => {
+    setNewUser({
+      username: '',
+      email: '',
+      password: '',
+      password_confirm: '',
+      first_name: '',
+      last_name: '',
+      identification: '',
+      phone: '',
+      role: 'monitor'
+    });
+    setCreateError(null);
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    setPasswordCriteria({
+      length: false,
+      uppercase: false,
+      lowercase: false,
+      number: false,
+      special: false
+    });
+  };
+
+  // Acciones de usuario
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setEditUser({
+      username: user.username,
+      email: user.email,
+      full_name: user.full_name,
+      identification: user.cedula,
+      phone: user.phone,
+      role: user.role,
+      is_active: user.is_active,
+      is_verified: user.is_verified
+    });
+    setEditError(null);
+    setShowEditModal(true);
+  };
+
+  // Manejar cambios en formulario de edición
+  const handleEditUserChange = (field: keyof UpdateUserData, value: string | boolean) => {
+    let processedValue = value;
+    
+    // Validaciones en tiempo real
+    if (typeof value === 'string') {
+      if (field === 'identification') {
+        // Solo permitir números para identificación
+        processedValue = value.replace(/[^0-9]/g, '').slice(0, 10);
+      } else if (field === 'phone') {
+        // Solo permitir números para teléfono
+        processedValue = value.replace(/[^0-9]/g, '');
+      }
+    }
+    
+    setEditUser((prev: UpdateUserData) => ({
+      ...prev,
+      [field]: processedValue
+    }));
+    setEditError(null);
+  };
+
+  // Guardar cambios de usuario
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedUser) return;
+
+    // Validaciones básicas
+    if (!editUser.username?.trim()) {
+      setEditError('El nombre de usuario es requerido');
+      return;
+    }
+    if (!editUser.email?.trim()) {
+      setEditError('El email es requerido');
+      return;
+    }
+    if (!editUser.full_name?.trim()) {
+      setEditError('El nombre completo es requerido');
+      return;
+    }
+
+    // Validación de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (editUser.email && !emailRegex.test(editUser.email)) {
+      setEditError('El email debe tener un formato válido');
+      return;
+    }
+
+    // Validación de identificación (solo números, 6-10 dígitos)
+    if (editUser.identification && editUser.identification.trim()) {
+      const identificationRegex = /^\d{6,10}$/;
+      if (!identificationRegex.test(editUser.identification)) {
+        setEditError('La identificación debe tener entre 6 y 10 dígitos numéricos');
+        return;
+      }
+    }
+
+    try {
+      setEditLoading(true);
+      setEditError(null);
+      
+      await userManagementService.updateUser(selectedUser.id, editUser);
+      
+      // Cerrar modal y recargar lista
+      setShowEditModal(false);
+      setSelectedUser(null);
+      setEditUser({});
+      loadUsers();
+      
+      // Mostrar toast de éxito
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { message: 'Usuario actualizado exitosamente', type: 'success' }
+      }));
+    } catch (err: any) {
+      const errorMessage = err.message || 'Error al actualizar el usuario';
+      console.error('Error updating user:', err);
+      setEditError(errorMessage);
+      // Mostrar toast de error
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { message: errorMessage, type: 'error' }
+      }));
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // Cancelar edición
+  const handleCancelEdit = () => {
+    setShowEditModal(false);
+    setSelectedUser(null);
+    setEditUser({});
+    setEditError(null);
+  };
+
+  const handleDeleteUser = (user: User) => {
+    setSelectedUser(user);
+    setShowDeleteModal(true);
+  };
+
+  // Confirmar eliminación de usuario
+  const handleConfirmDelete = async () => {
+    if (!selectedUser) return;
+
+    try {
+      await userManagementService.deleteUser(selectedUser.id);
+      
+      // Cerrar modal y recargar lista
+      setShowDeleteModal(false);
+      setSelectedUser(null);
+      loadUsers();
+      
+      // Mostrar toast de éxito
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { message: 'Usuario eliminado exitosamente', type: 'success' }
+      }));
+    } catch (err: any) {
+      const errorMessage = err.message || 'Error al eliminar el usuario';
+      console.error('Error deleting user:', err);
+      // Mostrar toast de error
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { message: errorMessage, type: 'error' }
+      }));
+    }
+  };
+
+
+  // Formatear fecha
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Fecha inválida';
+      }
+      return date.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', dateString, error);
+      return 'Fecha inválida';
+    }
+  };
+
+
+  if (user?.role !== 'admin') {
+    return (
+      <div className="user-management-container">
+        <div className="access-denied">
+          <Shield size={48} />
+          <h2>Acceso Denegado</h2>
+          <p>No tienes permisos para acceder a esta sección.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="user-management-container">
+      <div className="user-management-header">
+        <div className="header-content">
+          <h1>Gestión de Usuarios</h1>
+          <p>Administra usuarios, roles y permisos del sistema</p>
+        </div>
+        <button 
+          className="btn-primary"
+          onClick={() => setShowCreateModal(true)}
+        >
+          <Plus size={20} />
+          Nuevo Usuario
+        </button>
+      </div>
+
+      {/* Botón Limpiar Filtros */}
+      <div className="clear-filters-container">
+        <button onClick={clearFilters} className="btn-clear-filters">
+          Limpiar Filtros
+        </button>
+      </div>
+
+      {/* Filtros */}
+      <div className="filters-section">
+        <div className="filters-grid">
+          <div className="filter-group">
+            <Search size={20} />
+            <input
+              type="text"
+              placeholder="Buscar por nombre, email o cédula..."
+              value={filters.search || ''}
+              onChange={(e) => handleFilterChange('search', e.target.value)}
+              className="filter-input"
+            />
+          </div>
+          
+          <div className="filter-group">
+            <Filter size={20} />
+            <select
+              value={filters.role || ''}
+              onChange={(e) => handleFilterChange('role', e.target.value || undefined)}
+              className="filter-select"
+            >
+              <option value="">Todos los roles</option>
+              <option value="admin">Administrador</option>
+              <option value="monitor">Monitor</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <select
+              value={filters.is_active === undefined ? '' : filters.is_active.toString()}
+              onChange={(e) => handleFilterChange('is_active', e.target.value === '' ? undefined : e.target.value === 'true')}
+              className="filter-select"
+            >
+              <option value="">Todos los estados</option>
+              <option value="true">Activos</option>
+              <option value="false">Inactivos</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <select
+              value={filters.is_verified === undefined ? '' : filters.is_verified.toString()}
+              onChange={(e) => handleFilterChange('is_verified', e.target.value === '' ? undefined : e.target.value === 'true')}
+              className="filter-select"
+            >
+              <option value="">Todos los estados</option>
+              <option value="true">Verificados</option>
+              <option value="false">No verificados</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Lista de usuarios */}
+      <div className="users-section">
+        {loading ? (
+          <div className="loading-state">
+            <div className="spinner"></div>
+            <p>Cargando usuarios...</p>
+          </div>
+        ) : error ? (
+          <div className="error-state">
+            <XCircle size={48} />
+            <h3>Error</h3>
+            <p>{error}</p>
+            <button onClick={loadUsers} className="btn-primary">
+              Reintentar
+            </button>
+          </div>
+        ) : users.length === 0 ? (
+          <div className="empty-state">
+            <UserIcon size={48} />
+            <h3>No hay usuarios</h3>
+            <p>No se encontraron usuarios con los filtros aplicados.</p>
+            <button onClick={clearFilters} className="btn-primary">
+              Limpiar Filtros
+            </button>
+          </div>
+        ) : (
+          <div className="users-table-container">
+            <table className="users-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre Completo</th>
+                  <th>Usuario</th>
+                  <th>Email</th>
+                  <th>Identificación</th>
+                  <th>Teléfono</th>
+                  <th>Rol</th>
+                  <th>Activo</th>
+                  <th>Verificado</th>
+                  <th>Fecha Registro</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.id}</td>
+                    <td title={user.full_name}>{user.full_name}</td>
+                    <td title={`@${user.username}`}>@{user.username}</td>
+                    <td title={user.email}>{user.email}</td>
+                    <td title={user.cedula || 'Sin identificación'}>{user.cedula || '-'}</td>
+                    <td title={user.phone || 'Sin teléfono'}>{user.phone || '-'}</td>
+                    <td>
+                      <span className={`role-badge ${user.role}`}>
+                        {user.role === 'admin' ? 'Administrador' : 'Monitor'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`status-badge ${user.is_active ? 'active' : 'inactive'}`}>
+                        {user.is_active ? 'Sí' : 'No'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`status-badge ${user.is_verified ? 'verified' : 'pending'}`}>
+                        {user.is_verified ? 'Sí' : 'No'}
+                      </span>
+                    </td>
+                    <td>{formatDate(user.date_joined)}</td>
+                    <td>
+                      <div className="user-actions">
+                        <button
+                          onClick={() => handleEditUser(user)}
+                          className="btn-action btn-edit"
+                          title="Editar usuario"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        
+                        <button
+                          onClick={() => handleDeleteUser(user)}
+                          className="btn-action btn-delete"
+                          title="Eliminar usuario"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Modal de Nuevo Usuario */}
+      {showCreateModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Crear Nuevo Usuario</h2>
+              <button 
+                className="modal-close"
+                onClick={() => setShowCreateModal(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleCreateUser} className="user-form">
+              <div className="form-grid">
+                <div className="form-group">
+                  <label htmlFor="username">Nombre de Usuario *</label>
+                  <input
+                    type="text"
+                    id="username"
+                    value={newUser.username}
+                    onChange={(e) => handleNewUserChange('username', e.target.value)}
+                    placeholder="Ingresa el nombre de usuario"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="email">Email *</label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={newUser.email}
+                    onChange={(e) => handleNewUserChange('email', e.target.value)}
+                    placeholder="usuario@ejemplo.com"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="first_name">Nombre *</label>
+                  <input
+                    type="text"
+                    id="first_name"
+                    value={newUser.first_name}
+                    onChange={(e) => handleNewUserChange('first_name', e.target.value)}
+                    placeholder="Nombre"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="last_name">Apellido *</label>
+                  <input
+                    type="text"
+                    id="last_name"
+                    value={newUser.last_name}
+                    onChange={(e) => handleNewUserChange('last_name', e.target.value)}
+                    placeholder="Apellido"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="identification">Identificación</label>
+                  <input
+                    type="text"
+                    id="identification"
+                    value={newUser.identification}
+                    onChange={(e) => handleNewUserChange('identification', e.target.value)}
+                    placeholder="6-10 dígitos numéricos"
+                    minLength={6}
+                    maxLength={10}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="phone">Teléfono</label>
+                  <input
+                    type="text"
+                    id="phone"
+                    value={newUser.phone}
+                    onChange={(e) => handleNewUserChange('phone', e.target.value)}
+                    placeholder="Número de teléfono"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="password">Contraseña *</label>
+                  <div className="password-input">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
+                      value={newUser.password}
+                      onChange={(e) => handleNewUserChange('password', e.target.value)}
+                      placeholder="Contraseña"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  
+                  {/* Validador visual de contraseña */}
+                  {newUser.password && (
+                    <div className="password-validator">
+                      <div className="validator-title">Requisitos de contraseña:</div>
+                      <div className="validator-criteria">
+                        <div className={`criterion ${passwordCriteria.length ? 'valid' : 'invalid'}`}>
+                          <span className="criterion-icon">
+                            {passwordCriteria.length ? '✓' : '✗'}
+                          </span>
+                          Mínimo 8 caracteres
+                        </div>
+                        <div className={`criterion ${passwordCriteria.uppercase ? 'valid' : 'invalid'}`}>
+                          <span className="criterion-icon">
+                            {passwordCriteria.uppercase ? '✓' : '✗'}
+                          </span>
+                          Una letra mayúscula
+                        </div>
+                        <div className={`criterion ${passwordCriteria.lowercase ? 'valid' : 'invalid'}`}>
+                          <span className="criterion-icon">
+                            {passwordCriteria.lowercase ? '✓' : '✗'}
+                          </span>
+                          Una letra minúscula
+                        </div>
+                        <div className={`criterion ${passwordCriteria.number ? 'valid' : 'invalid'}`}>
+                          <span className="criterion-icon">
+                            {passwordCriteria.number ? '✓' : '✗'}
+                          </span>
+                          Un número
+                        </div>
+                        <div className={`criterion ${passwordCriteria.special ? 'valid' : 'invalid'}`}>
+                          <span className="criterion-icon">
+                            {passwordCriteria.special ? '✓' : '✗'}
+                          </span>
+                          Un carácter especial (@$!%*?&)
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="password_confirm">Confirmar Contraseña *</label>
+                  <div className="password-input">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      id="password_confirm"
+                      value={newUser.password_confirm}
+                      onChange={(e) => handleNewUserChange('password_confirm', e.target.value)}
+                      placeholder="Confirmar contraseña"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  
+                  {/* Indicador de coincidencia de contraseñas */}
+                  {newUser.password_confirm && (
+                    <div className={`password-match ${newUser.password === newUser.password_confirm ? 'match' : 'no-match'}`}>
+                      <span className="match-icon">
+                        {newUser.password === newUser.password_confirm ? '✓' : '✗'}
+                      </span>
+                      {newUser.password === newUser.password_confirm ? 'Las contraseñas coinciden' : 'Las contraseñas no coinciden'}
+                    </div>
+                  )}
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="role">Rol *</label>
+                  <select
+                    id="role"
+                    value={newUser.role}
+                    onChange={(e) => handleNewUserChange('role', e.target.value as 'admin' | 'monitor')}
+                    required
+                  >
+                    <option value="monitor">Monitor</option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                </div>
+              </div>
+
+              {createError && (
+                <div className="form-error">
+                  <XCircle size={16} />
+                  {createError}
+                </div>
+              )}
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    resetCreateForm();
+                  }}
+                  disabled={createLoading}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={createLoading}
+                >
+                  {createLoading ? (
+                    <>
+                      <div className="spinner-small"></div>
+                      Creando...
+                    </>
+                  ) : (
+                    <>
+                      <Plus size={16} />
+                      Crear Usuario
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showEditModal && selectedUser && (
+        <div className="modal-overlay" onClick={handleCancelEdit}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Editar Usuario</h2>
+              <button 
+                className="modal-close"
+                onClick={handleCancelEdit}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSaveEdit} className="user-form">
+              <div className="form-grid">
+                <div className="form-group">
+                  <label htmlFor="edit-username">Nombre de Usuario *</label>
+                  <input
+                    type="text"
+                    id="edit-username"
+                    value={editUser.username || ''}
+                    onChange={(e) => handleEditUserChange('username', e.target.value)}
+                    placeholder="Ingresa el nombre de usuario"
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="edit-email">Email *</label>
+                  <input
+                    type="email"
+                    id="edit-email"
+                    value={editUser.email || ''}
+                    onChange={(e) => handleEditUserChange('email', e.target.value)}
+                    placeholder="usuario@ejemplo.com"
+                    pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                    title="Formato de email válido (ejemplo@dominio.com)"
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="edit-full_name">Nombre Completo *</label>
+                  <input
+                    type="text"
+                    id="edit-full_name"
+                    value={editUser.full_name || ''}
+                    onChange={(e) => handleEditUserChange('full_name', e.target.value)}
+                    placeholder="Nombre y apellidos"
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="edit-identification">Identificación</label>
+                  <input
+                    type="text"
+                    id="edit-identification"
+                    value={editUser.identification || ''}
+                    onChange={(e) => handleEditUserChange('identification', e.target.value)}
+                    placeholder="6-10 dígitos numéricos"
+                    minLength={6}
+                    maxLength={10}
+                    pattern="[0-9]{6,10}"
+                    title="Solo números, entre 6 y 10 dígitos"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="edit-phone">Teléfono</label>
+                  <input
+                    type="tel"
+                    id="edit-phone"
+                    value={editUser.phone || ''}
+                    onChange={(e) => handleEditUserChange('phone', e.target.value)}
+                    placeholder="Solo números"
+                    pattern="[0-9]+"
+                    title="Solo números"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="edit-role">Rol *</label>
+                  <select
+                    id="edit-role"
+                    value={editUser.role || 'monitor'}
+                    onChange={(e) => handleEditUserChange('role', e.target.value as 'admin' | 'monitor')}
+                    required
+                  >
+                    <option value="monitor">Monitor</option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="edit-is_active">Estado</label>
+                  <select
+                    id="edit-is_active"
+                    value={editUser.is_active ? 'true' : 'false'}
+                    onChange={(e) => handleEditUserChange('is_active', e.target.value === 'true')}
+                  >
+                    <option value="true">Activo</option>
+                    <option value="false">Inactivo</option>
+                  </select>
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="edit-is_verified">Verificación</label>
+                  <select
+                    id="edit-is_verified"
+                    value={editUser.is_verified ? 'true' : 'false'}
+                    onChange={(e) => handleEditUserChange('is_verified', e.target.value === 'true')}
+                  >
+                    <option value="true">Verificado</option>
+                    <option value="false">No verificado</option>
+                  </select>
+                </div>
+              </div>
+              
+              {editError && (
+                <div className="form-error">
+                  <XCircle size={16} />
+                  {editError}
+                </div>
+              )}
+              
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={handleCancelEdit}
+                  disabled={editLoading}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={editLoading}
+                >
+                  {editLoading ? (
+                    <>
+                      <div className="spinner-small"></div>
+                      Guardando...
+                    </>
+                  ) : (
+                    <>
+                      <Save size={16} />
+                      Guardar Cambios
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && selectedUser && (
+        <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Eliminar Usuario</h2>
+              <button 
+                className="modal-close"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="delete-confirmation">
+              <div className="warning-icon">
+                <XCircle size={48} />
+              </div>
+              
+              <div className="confirmation-content">
+                <h3>¿Estás seguro de eliminar este usuario?</h3>
+                <p>Esta acción no se puede deshacer.</p>
+                
+                <div className="user-info">
+                  <div className="info-item">
+                    <strong>Nombre:</strong> {selectedUser.full_name}
+                  </div>
+                  <div className="info-item">
+                    <strong>Usuario:</strong> @{selectedUser.username}
+                  </div>
+                  <div className="info-item">
+                    <strong>Email:</strong> {selectedUser.email}
+                  </div>
+                  <div className="info-item">
+                    <strong>Rol:</strong> {selectedUser.role === 'admin' ? 'Administrador' : 'Monitor'}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="btn-danger"
+                  onClick={handleConfirmDelete}
+                >
+                  <Trash2 size={16} />
+                  Eliminar Usuario
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default UserManagement;

@@ -2,7 +2,7 @@ import React from 'react';
 import { X, AlertTriangle, CheckCircle, User, Calendar, FileText } from 'lucide-react';
 import type { Computer, Report } from '../../types/index';
 import { useAuth } from '../../hooks/useAuth';
-import './ReportModal.css';
+import '../../styles/ReportModal.css';
 
 interface ReportModalProps {
   computer: Computer;

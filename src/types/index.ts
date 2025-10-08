@@ -43,3 +43,46 @@ export interface Report {
     issues: string[];
     status: ReportStatus;
 }
+
+// Tipos para gestión de usuarios
+export interface User {
+    id: number;
+    username: string;
+    email: string;
+    full_name: string;
+    cedula?: string;
+    phone?: string;
+    role: 'admin' | 'monitor';
+    is_active: boolean;
+    is_verified: boolean;
+    date_joined: string;
+    last_login?: string;
+}
+
+export interface UserFilters {
+    search?: string;
+    role?: string;
+    is_active?: boolean;
+    is_verified?: boolean;
+}
+
+export interface CreateUserData {
+    username: string;
+    email: string;
+    password: string;
+    password_confirm: string;
+    first_name: string;
+    last_name: string;
+    identification?: string;
+    phone?: string;
+    role: 'admin' | 'monitor';
+}
+
+export interface UpdateUserData {
+    username?: string;
+    email?: string;
+    full_name?: string;
+    cedula?: string;
+    role?: 'admin' | 'monitor';
+    is_active?: boolean;
+}

@@ -8,7 +8,7 @@ import RoomModal from './RoomModal';
 import ComputerModal from './ComputerModal';
 import ReportModal from './ReportModal';
 import FaultReportModal from './FaultReportModal';
-import './RoomManagement.css';
+import '../../styles/RoomManagement.css';
 
 export default function RoomManagement() {
   const { user } = useAuth();

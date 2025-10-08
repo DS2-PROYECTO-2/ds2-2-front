@@ -4,6 +4,7 @@ import '../../styles/dashboard.css';
 import RoomPanel from '../rooms/RoomPanel';
 import RoomHistory from '../rooms/RoomHistory';
 import RoomStatsRow from '../rooms/RoomStatsRow';
+import UserManagement from './UserManagement';
 import { useAuth } from '../../hooks/useAuth';
 
 interface MainLayoutProps {
@@ -51,6 +52,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <p>Reportes y estadísticas del sistema</p>
           </div>
         );
+      case 'users':
+        return <UserManagement />;
       case 'settings':
         return (
           <div className="content-panel">
