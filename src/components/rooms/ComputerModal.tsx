@@ -31,7 +31,7 @@ const ComputerModal: React.FC<ComputerModalProps> = ({ computer, room, onSave, o
         status: 'operational'
       }));
     }
-  }, [computer?.id, room.id]); // Solo dependemos de los IDs, no de los objetos completos
+  }, [computer, room.computers.length]); // Incluir las dependencias que usa el efecto
 
   function generateSerial(): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
