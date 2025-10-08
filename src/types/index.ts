@@ -50,7 +50,7 @@ export interface User {
     username: string;
     email: string;
     full_name: string;
-    cedula?: string;
+    identification?: string;
     phone?: string;
     role: 'admin' | 'monitor';
     is_active: boolean;
@@ -62,7 +62,6 @@ export interface User {
 export interface UserFilters {
     search?: string;
     role?: string;
-    is_active?: boolean;
     is_verified?: boolean;
 }
 
@@ -85,4 +84,24 @@ export interface UpdateUserData {
     cedula?: string;
     role?: 'admin' | 'monitor';
     is_active?: boolean;
+}
+
+// Tipos para manejo de errores
+export interface ApiError extends Error {
+    message: string;
+    status?: number;
+    response?: {
+        data?: {
+            detail?: string;
+            message?: string;
+        };
+    };
+}
+
+// Tipo para respuesta de API de usuarios
+export interface UsersApiResponse {
+    results: User[];
+    count: number;
+    next?: string;
+    previous?: string;
 }

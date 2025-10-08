@@ -5,7 +5,7 @@ export interface User {
   username: string;
   email: string;
   full_name: string;
-  cedula?: string;
+  identification?: string;
   phone?: string;
   role: 'admin' | 'monitor';
   is_active: boolean;
@@ -17,7 +17,6 @@ export interface User {
 export interface UserFilters {
   search?: string;
   role?: string;
-  is_active?: boolean;
   is_verified?: boolean;
 }
 
@@ -34,14 +33,10 @@ export interface CreateUserData {
 }
 
 export interface UpdateUserData {
-  username?: string;
   email?: string;
-  full_name?: string;
-  identification?: string;
+  first_name?: string;
+  last_name?: string;
   phone?: string;
-  role?: 'admin' | 'monitor';
-  is_active?: boolean;
-  is_verified?: boolean;
 }
 
 const userManagementService = {
@@ -51,13 +46,12 @@ const userManagementService = {
       const params = new URLSearchParams();
       
       if (filters?.search) {
+        // Intentar diferentes nombres de parámetro para búsqueda
         params.append('search', filters.search);
+        params.append('q', filters.search); // Parámetro alternativo
       }
       if (filters?.role) {
         params.append('role', filters.role);
-      }
-      if (filters?.is_active !== undefined) {
-        params.append('is_active', filters.is_active.toString());
       }
       if (filters?.is_verified !== undefined) {
         params.append('is_verified', filters.is_verified.toString());
@@ -66,30 +60,32 @@ const userManagementService = {
       // Agregar ordenamiento ascendente por ID
       params.append('ordering', 'id');
 
-      const response = await apiClient.get(`/api/auth/admin/users/?${params.toString()}`);
-      const users = response as any[];
+      const url = `/api/auth/admin/users/?${params.toString()}`;
+      const response = await apiClient.get(url) as User[];
+      
+      // Verificar que response existe y es un array
+      if (!response || !Array.isArray(response)) {
+        console.warn('No users data received or invalid format:', response);
+        return [];
+      }
       
       // El backend no incluye campos de último acceso
       // Usaremos created_at como fallback si está disponible
       
       // Mapear usuarios con manejo robusto de campos
-      const mappedUsers = users.map(user => {
-        const mappedUser = {
-          id: user.id,
-          username: user.username || '',
-          email: user.email || '',
-          full_name: user.full_name || user.first_name + ' ' + user.last_name || '',
-          cedula: user.cedula || user.document || user.document_number || user.identification || null,
-          phone: user.phone || null,
-          role: user.role || user.user_type || 'monitor',
-          is_active: user.is_active !== undefined ? user.is_active : true,
-          is_verified: user.is_verified !== undefined ? user.is_verified : false,
-          date_joined: user.date_joined || user.created_at || user.created || '',
-          last_login: user.last_login || user.last_activity || user.last_access || user.last_sign_in || user.last_seen || user.updated_at || user.created_at || null
-        };
-        
-        return mappedUser;
-      });
+      const mappedUsers = response.map(user => ({
+        id: user.id,
+        username: user.username || '',
+        email: user.email || '',
+        full_name: user.full_name || '',
+        identification: user.identification || undefined,
+        phone: user.phone || undefined,
+        role: user.role || 'monitor',
+        is_active: user.is_active !== undefined ? user.is_active : true,
+        is_verified: user.is_verified !== undefined ? user.is_verified : false,
+        date_joined: user.date_joined || '',
+        last_login: user.last_login || undefined
+      }));
       
       // Ordenar por ID en orden ascendente
       return mappedUsers.sort((a, b) => a.id - b.id);
@@ -145,16 +141,20 @@ const userManagementService = {
     }
   },
 
-  // Verificar usuario
-  async verifyUser(id: number): Promise<User> {
+  // Verificar/Desverificar usuario
+  async verifyUser(id: number, isVerified: boolean): Promise<User> {
     try {
-      const response = await apiClient.post(`/api/auth/admin/users/${id}/verify/`, {});
+      const response = await apiClient.patch(`/api/auth/admin/users/${id}/verify/`, {
+        is_verified: isVerified
+      });
+      
       return response as User;
     } catch (error) {
       console.error('Error verifying user:', error);
       throw error;
     }
   },
+
 
   // Activar usuario con token
   async activateUser(token: string): Promise<User> {

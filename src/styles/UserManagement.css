@@ -574,24 +574,70 @@
   width: 100%;
 }
 
-.password-toggle {
+/* Estilos específicos para botones de ojo en UserManagement */
+.user-management-container .password-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.user-management-container .password-input input {
+  padding-right: 3rem;
+  width: 100%;
+}
+
+.user-management-container .password-input .password-toggle {
   position: absolute;
-  right: 0.75rem;
+  right: 12px;
+  top: 8px;
   background: none;
   border: none;
-  color: #666;
+  color: #6B7280;
   cursor: pointer;
-  padding: 0.25rem;
+  padding: 4px;
   border-radius: 4px;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+  width: 24px;
+  height: 24px;
 }
 
-.password-toggle:hover {
+.user-management-container .password-input .password-toggle:hover {
   background: #f5f5f5;
   color: #333;
+}
+
+.user-management-container .password-input .password-toggle:focus {
+  outline: none;
+  background: #f0f0f0;
+}
+
+/* Asegurar que el icono de ojo esté visible y bien posicionado */
+.user-management-container .password-input .password-toggle svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* Prevenir duplicación de iconos */
+.user-management-container .password-input .password-toggle:not(:first-of-type) {
+  display: none !important;
+}
+
+.password-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #6B7280;
+  cursor: pointer;
+}
+
+.password-toggle-label input[type="checkbox"] {
+  margin: 0;
 }
 
 /* Validador visual de contraseña */
@@ -871,5 +917,140 @@
   
   .modal-actions button {
     width: 100%;
+  }
+}
+
+/* Estilos para la nota informativa de edición */
+.edit-info-notice {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.edit-info-notice p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.edit-info-notice strong {
+  color: #495057;
+}
+
+/* Estilos para botones de verificación */
+.btn-verify {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-verify:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.btn-unverify {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-unverify:hover:not(:disabled) {
+  background-color: #c82333;
+}
+
+/* Estilos para botones en línea horizontal */
+.user-actions-horizontal {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-actions-horizontal .btn-action {
+  min-width: 36px;
+  height: 36px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Animación de carga */
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Estados deshabilitados */
+.btn-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-action:disabled:hover {
+  background-color: inherit;
+}
+
+/* Estados deshabilitados para botones del modal */
+.modal-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+}
+
+.modal-actions button:disabled:hover {
+  background-color: inherit;
+  transform: none;
+}
+
+/* Estilos específicos para botón de eliminar deshabilitado */
+.btn-danger:disabled {
+  background-color: #dc3545;
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-danger:disabled:hover {
+  background-color: #dc3545;
+  transform: none;
+}
+
+/* Estilos específicos para botón secundario deshabilitado */
+.btn-secondary:disabled {
+  background-color: #6c757d;
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-secondary:disabled:hover {
+  background-color: #6c757d;
+  transform: none;
+}
+
+/* Responsive para botones de acciones */
+@media (max-width: 768px) {
+  .user-actions-horizontal {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .user-actions-horizontal .btn-action {
+    min-width: 32px;
+    height: 32px;
+    padding: 6px;
   }
 }

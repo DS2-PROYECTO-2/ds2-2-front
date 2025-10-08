@@ -11,10 +11,12 @@ import {
   X,
   Eye,
   EyeOff,
-  Save
+  Save,
+  CheckCircle,
+  XCircle as XCircleIcon
 } from 'lucide-react';
 import userManagementService from '../../services/userManagementService';
-import type { User, UserFilters, CreateUserData } from '../../types';
+import type { User, UserFilters, CreateUserData, ApiError } from '../../types';
 import type { UpdateUserData } from '../../services/userManagementService';
 import { useAuth } from '../../hooks/useAuth';
 import '../../styles/UserManagement.css';
@@ -29,7 +31,6 @@ const UserManagement: React.FC = () => {
   const [filters, setFilters] = useState<UserFilters>({
     search: '',
     role: '',
-    is_active: undefined,
     is_verified: undefined
   });
   
@@ -43,6 +44,14 @@ const UserManagement: React.FC = () => {
   const [editUser, setEditUser] = useState<UpdateUserData>({});
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+  
+  // Estados de carga para acciones
+  const [loadingStates, setLoadingStates] = useState<{
+    [key: string]: boolean;
+  }>({});
+  
+  // Estado de carga para modal de eliminación
+  const [deleteModalLoading, setDeleteModalLoading] = useState(false);
   
   // Estados para formulario de nuevo usuario
   const [newUser, setNewUser] = useState<CreateUserData>({
@@ -77,8 +86,9 @@ const UserManagement: React.FC = () => {
       setError(null);
       const usersData = await userManagementService.getUsers(filters);
       setUsers(usersData);
-    } catch (err: any) {
-      const errorMessage = err.message || 'Error al cargar usuarios';
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      const errorMessage = error.message || 'Error al cargar usuarios';
       setError(errorMessage);
       // Mostrar toast de error
       window.dispatchEvent(new CustomEvent('app-toast', {
@@ -90,10 +100,6 @@ const UserManagement: React.FC = () => {
     }
   }, [filters]);
 
-  useEffect(() => {
-    loadUsers();
-  }, [filters, loadUsers]);
-
   // Manejar filtros
   const handleFilterChange = (key: keyof UserFilters, value: string | boolean | undefined) => {
     setFilters(prev => ({
@@ -102,12 +108,20 @@ const UserManagement: React.FC = () => {
     }));
   };
 
+  // Cargar usuarios cuando cambien los filtros (con debounce para búsqueda)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      loadUsers();
+    }, filters.search ? 500 : 0); // Debounce solo para búsqueda
+
+    return () => clearTimeout(timeoutId);
+  }, [filters, loadUsers]);
+
   // Limpiar filtros
   const clearFilters = () => {
     setFilters({
       search: '',
       role: '',
-      is_active: undefined,
       is_verified: undefined
     });
   };
@@ -232,8 +246,40 @@ const UserManagement: React.FC = () => {
       
       // Recargar lista de usuarios
       loadUsers();
-    } catch (err: any) {
-      const errorMessage = err.message || 'Error al crear usuario';
+    } catch (err: unknown) {
+      console.error('Error creating user:', err);
+      const error = err as ApiError;
+      let errorMessage = 'Error al crear usuario';
+      
+      // Debug: Log the error structure
+      console.log('Error structure:', error);
+      
+      // Manejar errores específicos del backend
+      if (error.username && Array.isArray(error.username)) {
+        errorMessage = error.username[0];
+      } else if (error.email && Array.isArray(error.email)) {
+        errorMessage = error.email[0];
+      } else if (error.identification && Array.isArray(error.identification)) {
+        errorMessage = error.identification[0];
+      } else if (error.message) {
+        // Si el mensaje es un JSON string, parsearlo
+        try {
+          const parsedError = JSON.parse(error.message);
+          if (parsedError.username && Array.isArray(parsedError.username)) {
+            errorMessage = parsedError.username[0];
+          } else if (parsedError.email && Array.isArray(parsedError.email)) {
+            errorMessage = parsedError.email[0];
+          } else if (parsedError.identification && Array.isArray(parsedError.identification)) {
+            errorMessage = parsedError.identification[0];
+          } else {
+            errorMessage = error.message;
+          }
+        } catch {
+          errorMessage = error.message;
+        }
+      }
+      
+      console.log('Final error message:', errorMessage);
       setCreateError(errorMessage);
       // Mostrar toast de error
       window.dispatchEvent(new CustomEvent('app-toast', {
@@ -271,15 +317,17 @@ const UserManagement: React.FC = () => {
   // Acciones de usuario
   const handleEditUser = (user: User) => {
     setSelectedUser(user);
+    
+    // Separar full_name en first_name y last_name
+    const nameParts = user.full_name ? user.full_name.split(' ') : ['', ''];
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+    
     setEditUser({
-      username: user.username,
       email: user.email,
-      full_name: user.full_name,
-      identification: user.cedula,
-      phone: user.phone,
-      role: user.role,
-      is_active: user.is_active,
-      is_verified: user.is_verified
+      first_name: firstName,
+      last_name: lastName,
+      phone: user.phone
     });
     setEditError(null);
     setShowEditModal(true);
@@ -313,17 +361,20 @@ const UserManagement: React.FC = () => {
     
     if (!selectedUser) return;
 
+    // Prevenir múltiples solicitudes
+    if (editLoading) return;
+
     // Validaciones básicas
-    if (!editUser.username?.trim()) {
-      setEditError('El nombre de usuario es requerido');
-      return;
-    }
     if (!editUser.email?.trim()) {
       setEditError('El email es requerido');
       return;
     }
-    if (!editUser.full_name?.trim()) {
-      setEditError('El nombre completo es requerido');
+    if (!editUser.first_name?.trim()) {
+      setEditError('El nombre es requerido');
+      return;
+    }
+    if (!editUser.last_name?.trim()) {
+      setEditError('El apellido es requerido');
       return;
     }
 
@@ -359,8 +410,9 @@ const UserManagement: React.FC = () => {
       window.dispatchEvent(new CustomEvent('app-toast', {
         detail: { message: 'Usuario actualizado exitosamente', type: 'success' }
       }));
-    } catch (err: any) {
-      const errorMessage = err.message || 'Error al actualizar el usuario';
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      const errorMessage = error.message || 'Error al actualizar el usuario';
       console.error('Error updating user:', err);
       setEditError(errorMessage);
       // Mostrar toast de error
@@ -389,7 +441,12 @@ const UserManagement: React.FC = () => {
   const handleConfirmDelete = async () => {
     if (!selectedUser) return;
 
+    // Prevenir múltiples solicitudes
+    if (deleteModalLoading) return;
+
     try {
+      setDeleteModalLoading(true);
+      
       await userManagementService.deleteUser(selectedUser.id);
       
       // Cerrar modal y recargar lista
@@ -401,13 +458,56 @@ const UserManagement: React.FC = () => {
       window.dispatchEvent(new CustomEvent('app-toast', {
         detail: { message: 'Usuario eliminado exitosamente', type: 'success' }
       }));
-    } catch (err: any) {
-      const errorMessage = err.message || 'Error al eliminar el usuario';
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      const errorMessage = error.message || 'Error al eliminar el usuario';
       console.error('Error deleting user:', err);
       // Mostrar toast de error
       window.dispatchEvent(new CustomEvent('app-toast', {
         detail: { message: errorMessage, type: 'error' }
       }));
+    } finally {
+      setDeleteModalLoading(false);
+    }
+  };
+
+  // Verificar/Desverificar usuario
+  const handleVerifyUser = async (user: User) => {
+    const actionKey = `verify-${user.id}`;
+    
+    // Prevenir múltiples solicitudes
+    if (loadingStates[actionKey]) return;
+    
+    try {
+      setLoadingStates(prev => ({ ...prev, [actionKey]: true }));
+      
+      const newVerifiedStatus = !user.is_verified;
+      await userManagementService.verifyUser(user.id, newVerifiedStatus);
+      
+      // Recargar lista de usuarios
+      loadUsers();
+      
+      // Mostrar toast de éxito
+      const message = newVerifiedStatus 
+        ? 'Usuario verificado exitosamente' 
+        : 'Usuario desverificado exitosamente';
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { 
+          message, 
+          type: 'success',
+          duration: 4000
+        }
+      }));
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      const errorMessage = error.message || 'Error al cambiar el estado de verificación del usuario';
+      console.error('Error verifying user:', err);
+      // Mostrar toast de error
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { message: errorMessage, type: 'error' }
+      }));
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [actionKey]: false }));
     }
   };
 
@@ -495,17 +595,6 @@ const UserManagement: React.FC = () => {
             </select>
           </div>
 
-          <div className="filter-group">
-            <select
-              value={filters.is_active === undefined ? '' : filters.is_active.toString()}
-              onChange={(e) => handleFilterChange('is_active', e.target.value === '' ? undefined : e.target.value === 'true')}
-              className="filter-select"
-            >
-              <option value="">Todos los estados</option>
-              <option value="true">Activos</option>
-              <option value="false">Inactivos</option>
-            </select>
-          </div>
 
           <div className="filter-group">
             <select
@@ -558,7 +647,6 @@ const UserManagement: React.FC = () => {
                   <th>Identificación</th>
                   <th>Teléfono</th>
                   <th>Rol</th>
-                  <th>Activo</th>
                   <th>Verificado</th>
                   <th>Fecha Registro</th>
                   <th>Acciones</th>
@@ -571,16 +659,11 @@ const UserManagement: React.FC = () => {
                     <td title={user.full_name}>{user.full_name}</td>
                     <td title={`@${user.username}`}>@{user.username}</td>
                     <td title={user.email}>{user.email}</td>
-                    <td title={user.cedula || 'Sin identificación'}>{user.cedula || '-'}</td>
+                    <td title={user.identification || 'Sin identificación'}>{user.identification || '-'}</td>
                     <td title={user.phone || 'Sin teléfono'}>{user.phone || '-'}</td>
                     <td>
                       <span className={`role-badge ${user.role}`}>
                         {user.role === 'admin' ? 'Administrador' : 'Monitor'}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`status-badge ${user.is_active ? 'active' : 'inactive'}`}>
-                        {user.is_active ? 'Sí' : 'No'}
                       </span>
                     </td>
                     <td>
@@ -590,21 +673,42 @@ const UserManagement: React.FC = () => {
                     </td>
                     <td>{formatDate(user.date_joined)}</td>
                     <td>
-                      <div className="user-actions">
+                      <div className="user-actions-horizontal">
                         <button
                           onClick={() => handleEditUser(user)}
                           className="btn-action btn-edit"
                           title="Editar usuario"
+                          disabled={editLoading}
                         >
                           <Edit size={16} />
+                        </button>
+                        
+                        <button
+                          onClick={() => handleVerifyUser(user)}
+                          className={`btn-action ${user.is_verified ? 'btn-unverify' : 'btn-verify'}`}
+                          title={user.is_verified ? 'Desverificar usuario' : 'Verificar usuario'}
+                          disabled={loadingStates[`verify-${user.id}`]}
+                        >
+                          {loadingStates[`verify-${user.id}`] ? (
+                            <div className="loading-spinner" />
+                          ) : user.is_verified ? (
+                            <XCircleIcon size={16} />
+                          ) : (
+                            <CheckCircle size={16} />
+                          )}
                         </button>
                         
                         <button
                           onClick={() => handleDeleteUser(user)}
                           className="btn-action btn-delete"
                           title="Eliminar usuario"
+                          disabled={loadingStates[`delete-${user.id}`]}
                         >
-                          <Trash2 size={16} />
+                          {loadingStates[`delete-${user.id}`] ? (
+                            <div className="loading-spinner" />
+                          ) : (
+                            <Trash2 size={16} />
+                          )}
                         </button>
                       </div>
                     </td>
@@ -867,18 +971,6 @@ const UserManagement: React.FC = () => {
             <form onSubmit={handleSaveEdit} className="user-form">
               <div className="form-grid">
                 <div className="form-group">
-                  <label htmlFor="edit-username">Nombre de Usuario *</label>
-                  <input
-                    type="text"
-                    id="edit-username"
-                    value={editUser.username || ''}
-                    onChange={(e) => handleEditUserChange('username', e.target.value)}
-                    placeholder="Ingresa el nombre de usuario"
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
                   <label htmlFor="edit-email">Email *</label>
                   <input
                     type="email"
@@ -893,29 +985,26 @@ const UserManagement: React.FC = () => {
                 </div>
                 
                 <div className="form-group">
-                  <label htmlFor="edit-full_name">Nombre Completo *</label>
+                  <label htmlFor="edit-first_name">Nombre *</label>
                   <input
                     type="text"
-                    id="edit-full_name"
-                    value={editUser.full_name || ''}
-                    onChange={(e) => handleEditUserChange('full_name', e.target.value)}
-                    placeholder="Nombre y apellidos"
+                    id="edit-first_name"
+                    value={editUser.first_name || ''}
+                    onChange={(e) => handleEditUserChange('first_name', e.target.value)}
+                    placeholder="Nombre"
                     required
                   />
                 </div>
                 
                 <div className="form-group">
-                  <label htmlFor="edit-identification">Identificación</label>
+                  <label htmlFor="edit-last_name">Apellido *</label>
                   <input
                     type="text"
-                    id="edit-identification"
-                    value={editUser.identification || ''}
-                    onChange={(e) => handleEditUserChange('identification', e.target.value)}
-                    placeholder="6-10 dígitos numéricos"
-                    minLength={6}
-                    maxLength={10}
-                    pattern="[0-9]{6,10}"
-                    title="Solo números, entre 6 y 10 dígitos"
+                    id="edit-last_name"
+                    value={editUser.last_name || ''}
+                    onChange={(e) => handleEditUserChange('last_name', e.target.value)}
+                    placeholder="Apellido"
+                    required
                   />
                 </div>
                 
@@ -931,43 +1020,10 @@ const UserManagement: React.FC = () => {
                     title="Solo números"
                   />
                 </div>
-                
-                <div className="form-group">
-                  <label htmlFor="edit-role">Rol *</label>
-                  <select
-                    id="edit-role"
-                    value={editUser.role || 'monitor'}
-                    onChange={(e) => handleEditUserChange('role', e.target.value as 'admin' | 'monitor')}
-                    required
-                  >
-                    <option value="monitor">Monitor</option>
-                    <option value="admin">Administrador</option>
-                  </select>
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="edit-is_active">Estado</label>
-                  <select
-                    id="edit-is_active"
-                    value={editUser.is_active ? 'true' : 'false'}
-                    onChange={(e) => handleEditUserChange('is_active', e.target.value === 'true')}
-                  >
-                    <option value="true">Activo</option>
-                    <option value="false">Inactivo</option>
-                  </select>
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="edit-is_verified">Verificación</label>
-                  <select
-                    id="edit-is_verified"
-                    value={editUser.is_verified ? 'true' : 'false'}
-                    onChange={(e) => handleEditUserChange('is_verified', e.target.value === 'true')}
-                  >
-                    <option value="true">Verificado</option>
-                    <option value="false">No verificado</option>
-                  </select>
-                </div>
+              </div>
+              
+              <div className="edit-info-notice">
+                <p><strong>Nota:</strong> Solo se pueden editar los campos básicos del perfil. El nombre de usuario, identificación, rol y estado de verificación no se pueden modificar desde aquí.</p>
               </div>
               
               {editError && (
@@ -1052,6 +1108,7 @@ const UserManagement: React.FC = () => {
                   type="button"
                   className="btn-secondary"
                   onClick={() => setShowDeleteModal(false)}
+                  disabled={deleteModalLoading}
                 >
                   Cancelar
                 </button>
@@ -1059,9 +1116,19 @@ const UserManagement: React.FC = () => {
                   type="button"
                   className="btn-danger"
                   onClick={handleConfirmDelete}
+                  disabled={deleteModalLoading}
                 >
-                  <Trash2 size={16} />
-                  Eliminar Usuario
+                  {deleteModalLoading ? (
+                    <>
+                      <div className="loading-spinner" />
+                      Eliminando...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 size={16} />
+                      Eliminar Usuario
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -1073,3 +1140,4 @@ const UserManagement: React.FC = () => {
 };
 
 export default UserManagement;
+
