@@ -100,7 +100,7 @@ const ScheduleCalendar: React.FC = () => {
   const horas = Array.from({ length: 18 }, (_, i) => `${(i + 6).toString().padStart(2, '0')}:00`);
 
   // Limpiar errores cuando el usuario cambia los valores
-  const handleFieldChange = (field: string, value: any) => {
+  const handleFieldChange = (field: string, value: string | number | boolean) => {
     const updatedSchedule = {...newSchedule, [field]: value};
     setNewSchedule(updatedSchedule);
     
@@ -453,7 +453,7 @@ const ScheduleCalendar: React.FC = () => {
         setIsUpdating(false);
       }
     }
-  }, [currentDate, selectedMonitor, user?.role, view]);
+  }, [currentDate, selectedMonitor, user?.role, view, user?.id]);
 
   useEffect(() => {
     loadData(true); // Carga inicial
@@ -699,7 +699,7 @@ const ScheduleCalendar: React.FC = () => {
       setRangeStartDate('');
       setRangeEndDate('');
       loadData();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating schedule:', error);
       
       // Usar el nuevo sistema de manejo de errores
@@ -908,7 +908,7 @@ const ScheduleCalendar: React.FC = () => {
       
       // Notificar actualización en tiempo real
       notifyScheduleUpdate();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating schedule:', error);
       
       // Usar el nuevo sistema de manejo de errores

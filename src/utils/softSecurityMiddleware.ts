@@ -1,11 +1,11 @@
 import { validateToken } from './tokenUtils';
 
 // Middleware de seguridad "suave" que no desloguea automáticamente
-export const softSecureApiCall = async (
-  apiCall: () => Promise<any>,
+export const softSecureApiCall = async <T>(
+  apiCall: () => Promise<T>,
   requiredRole: 'admin' | 'monitor' | 'any' = 'any',
   action: string = 'realizar acción'
-) => {
+): Promise<T> => {
   try {
     // Obtener información del usuario desde el token almacenado
     const token = localStorage.getItem('authToken');
@@ -48,11 +48,11 @@ export const softSecureApiCall = async (
 };
 
 // Wrapper para operaciones de administrador (versión suave)
-export const softAdminOnly = (apiCall: () => Promise<any>, action: string) => {
+export const softAdminOnly = <T>(apiCall: () => Promise<T>, action: string): Promise<T> => {
   return softSecureApiCall(apiCall, 'admin', action);
 };
 
 // Wrapper para operaciones que requieren autenticación (versión suave)
-export const softAuthenticatedOnly = (apiCall: () => Promise<any>, action: string) => {
+export const softAuthenticatedOnly = <T>(apiCall: () => Promise<T>, action: string): Promise<T> => {
   return softSecureApiCall(apiCall, 'any', action);
 };

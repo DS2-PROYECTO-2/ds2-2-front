@@ -128,3 +128,4 @@ Un usuario normal **NO puede** acceder a funciones administrativas sin ser admin
 
 **La seguridad real está en el backend**, y el frontend proporciona una experiencia de usuario segura y fluida.
 
+

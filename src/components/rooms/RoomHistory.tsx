@@ -67,7 +67,7 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
         setTimeout(() => setIsRefreshing(false), REFRESH_ANIMATION_DURATION);
       }
     }
-  }, [user?.role]);
+  }, [user?.role, loadWithDefaultRange]);
 
   // Función para cargar con rango por defecto (todo el mes actual)
   const loadWithDefaultRange = useCallback(async () => {

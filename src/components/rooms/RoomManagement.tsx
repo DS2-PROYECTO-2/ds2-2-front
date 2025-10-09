@@ -192,7 +192,7 @@ export default function RoomManagement() {
       // No modificar selectedRoom directamente para evitar bucle infinito
       setSelectedRoom(prev => prev ? { ...prev, reports: reports } : prev);
     }
-  }, [reports]); // Remover selectedRoom de las dependencias
+  }, [reports, selectedRoom]); // Incluir selectedRoom en las dependencias
 
   // Recalcular conteos de pendientes por equipo cada vez que cambian los reportes
   useEffect(() => {
@@ -533,7 +533,7 @@ export default function RoomManagement() {
       
       // Manejar error específico de código duplicado
       if (error && typeof error === 'object' && 'data' in error) {
-        const errorData = error.data as any;
+        const errorData = error.data as { details?: { code?: string } };
         if (errorData?.details?.code?.includes('ya existe')) {
           showNotification('El código de sala ya existe. Por favor, usa un código diferente.', 'error');
         } else {

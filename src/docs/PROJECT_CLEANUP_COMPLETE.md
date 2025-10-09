@@ -136,3 +136,4 @@ Object.defineProperty(window, 'localStorage', {
 
 **¡El proyecto está listo para desarrollo y producción!** 🚀
 
+

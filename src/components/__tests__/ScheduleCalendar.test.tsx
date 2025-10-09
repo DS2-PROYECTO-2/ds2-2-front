@@ -2,6 +2,7 @@ import { render, screen, fireEvent, act, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '../../context/AuthProvider';
 import ScheduleCalendar from '../schedule/ScheduleCalendar';
+import type { Schedule } from '../../services/scheduleService';
 
 import { vi } from 'vitest';
 
@@ -133,7 +134,7 @@ describe('ScheduleCalendar', () => {
 
   it('maneja correctamente cuando schedules no es un array', async () => {
     const scheduleService = await import('../../services/scheduleService');
-    vi.mocked(scheduleService.default.getSchedules).mockResolvedValue(null as any);
+    vi.mocked(scheduleService.default.getSchedules).mockResolvedValue(null as unknown as Schedule[]);
 
     await act(async () => {
       render(

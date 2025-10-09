@@ -142,9 +142,21 @@ export const formatTimeRemaining = (minutes: number): string => {
 // La validación real se hace en el backend a través de scheduleService.validateRoomAccess()
 export const validateRoomAccess = (
   roomId: number,
-  userSchedules: any[],
+  userSchedules: Array<{
+    id: number;
+    room: number;
+    status: string;
+    start_datetime: string;
+    end_datetime: string;
+  }>,
   currentTime?: Date
-): { canAccess: boolean; reason: string; activeSchedule?: any } => {
+): { canAccess: boolean; reason: string; activeSchedule?: {
+    id: number;
+    room: number;
+    status: string;
+    start_datetime: string;
+    end_datetime: string;
+  } } => {
   // Esta es una validación básica solo para UX
   // La validación real se hace en el backend
   const now = currentTime || new Date();

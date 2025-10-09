@@ -102,7 +102,7 @@ const scheduleService = {
 
       const url = `/api/schedule/schedules/?${params.toString()}`;
       
-      const response = await apiClient.get(url) as any;
+      const response = await apiClient.get(url) as { results: Schedule[] };
       
       // La API devuelve un objeto paginado con 'results' que contiene el array
       if (response && response.results && Array.isArray(response.results)) {
@@ -192,7 +192,7 @@ const scheduleService = {
   // Validar acceso a sala
   async validateRoomAccess(roomId: number, userId?: number, accessDatetime?: string): Promise<RoomAccessValidation> {
     try {
-      const body: any = { room_id: roomId };
+      const body: { room_id: number; user_id?: number; access_datetime?: string } = { room_id: roomId };
       if (userId) body.user_id = userId;
       if (accessDatetime) body.access_datetime = accessDatetime;
 
@@ -207,7 +207,7 @@ const scheduleService = {
   // Verificar cumplimiento de turno
   async checkCompliance(scheduleId: number): Promise<{ compliant: boolean; details: string }> {
     try {
-      const response = await apiClient.post<any, { compliant: boolean; details: string }>(`/api/schedule/schedules/${scheduleId}/check_compliance/`, {});
+      const response = await apiClient.post<Record<string, never>, { compliant: boolean; details: string }>(`/api/schedule/schedules/${scheduleId}/check_compliance/`, {});
       return response;
     } catch (error) {
       console.error('Error checking compliance:', error);
@@ -218,7 +218,7 @@ const scheduleService = {
   // Verificación masiva de cumplimiento
   async runComplianceCheck(): Promise<{ checked: number; compliant: number; non_compliant: number }> {
     try {
-      const response = await apiClient.post<any, { checked: number; compliant: number; non_compliant: number }>('/api/schedule/schedules/run_compliance_check/', {});
+      const response = await apiClient.post<Record<string, never>, { checked: number; compliant: number; non_compliant: number }>('/api/schedule/schedules/run_compliance_check/', {});
       return response;
     } catch (error) {
       console.error('Error running compliance check:', error);

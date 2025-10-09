@@ -155,9 +155,13 @@ const softScheduleService = {
   },
 
   // Validar acceso a sala
-  async validateRoomAccess(roomId: number, userId?: number, accessDatetime?: string): Promise<any> {
+  async validateRoomAccess(roomId: number, userId?: number, accessDatetime?: string): Promise<{
+    access_granted: boolean;
+    reason?: string;
+    schedule?: unknown;
+  }> {
     try {
-      const body: any = { room_id: roomId };
+      const body: { room_id: number; user_id?: number; access_datetime?: string } = { room_id: roomId };
       if (userId) body.user_id = userId;
       if (accessDatetime) body.access_datetime = accessDatetime;
 
@@ -186,4 +190,5 @@ const softScheduleService = {
 };
 
 export default softScheduleService;
+
 

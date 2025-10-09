@@ -3,7 +3,11 @@ import React, { useState } from 'react';
 const ScheduleValidationDebug: React.FC = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [validationResult, setValidationResult] = useState<any>(null);
+  const [validationResult, setValidationResult] = useState<{
+    valid: boolean;
+    message: string;
+    details?: unknown;
+  } | null>(null);
 
   const validateDates = () => {
     if (!startDate || !endDate) {

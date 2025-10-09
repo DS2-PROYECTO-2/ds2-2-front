@@ -55,8 +55,30 @@ export const authService = {
     return response;
   },
 
-  async getDashboard(): Promise<any> {
-    const response = await apiClient.get<any>('/api/auth/dashboard/');
+  async getDashboard(): Promise<{
+    user: {
+      id: number;
+      username: string;
+      email: string;
+      role: string;
+    };
+    stats: {
+      total_schedules: number;
+      active_schedules: number;
+    };
+  }> {
+    const response = await apiClient.get<{
+      user: {
+        id: number;
+        username: string;
+        email: string;
+        role: string;
+      };
+      stats: {
+        total_schedules: number;
+        active_schedules: number;
+      };
+    }>('/api/auth/dashboard/');
     return response;
   },
 }

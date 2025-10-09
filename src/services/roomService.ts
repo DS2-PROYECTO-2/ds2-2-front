@@ -12,7 +12,7 @@ const roomService = {
   // Obtener todas las salas disponibles
   async getRooms(): Promise<Room[]> {
     try {
-      const response = await apiClient.get('/api/rooms/') as any;
+      const response = await apiClient.get('/api/rooms/') as Room[] | { results: Room[] };
       
       // Si la respuesta es un array directo
       if (Array.isArray(response)) {

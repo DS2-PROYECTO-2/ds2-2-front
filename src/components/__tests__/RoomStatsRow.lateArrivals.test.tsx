@@ -92,3 +92,4 @@ describe('RoomStatsRow - Late Arrivals', () => {
     })
   })
 })
+

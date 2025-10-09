@@ -5,7 +5,13 @@ import { useAuth } from '../../hooks/useAuth';
 interface RoomAccessControllerProps {
   roomId: number;
   onAccessChange?: (hasAccess: boolean, reason: string) => void;
-  onScheduleInfo?: (scheduleInfo: any) => void;
+  onScheduleInfo?: (scheduleInfo: {
+    id: number;
+    start_datetime: string;
+    end_datetime: string;
+    room: number;
+    room_name?: string;
+  }) => void;
 }
 
 const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
@@ -27,10 +33,10 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
     if (user && roomId) {
       checkRoomAccess();
     }
-  }, [user, roomId]);
+  }, [user, roomId, checkRoomAccess]);
 
   // Verificar acceso a la sala
-  const checkRoomAccess = async () => {
+  const checkRoomAccess = useCallback(async () => {
     if (!user || user.role !== 'monitor') {
       return;
     }
@@ -47,7 +53,7 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
         onAccessChange(false, 'Error al verificar acceso');
       }
     }
-  };
+  }, [user, roomId, onAccessChange, canAccessRoom]);
 
   // Obtener información del turno actual
   const getScheduleInfo = async () => {
@@ -171,7 +177,7 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
   };
 
   // Exponer funciones para uso externo
-  const ref = React.useRef<any>(null);
+  const ref = React.useRef<HTMLDivElement>(null);
   React.useImperativeHandle(ref, () => ({
     checkRoomAccess,
     handleRoomEntry,

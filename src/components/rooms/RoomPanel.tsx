@@ -220,14 +220,20 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
 
           // 1) Intentar con turno actual
           try {
-            const currentScheduleResponse = await scheduleService.getMyCurrentSchedule() as { has_current_schedule: boolean; current_schedule?: any } | null;
+            const currentScheduleResponse = await scheduleService.getMyCurrentSchedule() as { has_current_schedule: boolean; current_schedule?: {
+              id: number;
+              start_datetime: string;
+              end_datetime: string;
+              room: number;
+            } } | null;
             
             if (currentScheduleResponse?.has_current_schedule && currentScheduleResponse?.current_schedule) {
               const currentSchedule = currentScheduleResponse.current_schedule;
               scheduleStart = new Date(currentSchedule.start_datetime);
               targetSchedule = currentSchedule;
             }
-          } catch (error) {
+          } catch {
+            // Error al obtener turno actual, continuar con fallback
           }
 
           // 2) Fallback: intentar getMySchedules sin filtros
@@ -260,7 +266,8 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
                   targetSchedule = candidates[0].s;
                 }
               }
-            } catch (error) {
+            } catch {
+              // Error al obtener turnos, continuar sin validación
             }
           }
 
@@ -276,10 +283,13 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
                 }
               }));
             } else {
+              // Llegada a tiempo, no se requiere acción adicional
             }
           } else {
+            // No hay turno válido, continuar sin validación
           }
-        } catch (error) {
+        } catch {
+          // Error en validación de llegada tarde, continuar con registro
         }
 
         // Obtener información de la sala y el usuario para la notificación

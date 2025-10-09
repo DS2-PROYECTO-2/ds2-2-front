@@ -219,7 +219,7 @@ const NotificationBell: React.FC = () => {
   };
 
   // Obtener tiempo unificado (priorizar created_at para consistencia y zona horaria)
-  const getUnifiedTime = (notification: any) => {
+  const getUnifiedTime = (notification: { created_at: string }) => {
     return formatDate(notification.created_at);
   };
 
@@ -242,12 +242,12 @@ const NotificationBell: React.FC = () => {
   // Parsear detalles en lista (Sala, Monitor, Hora) a partir de emojis
   const parseDetails = (message: string): Array<{ icon: string; label: string; value: string }> => {
     const details: Array<{ icon: string; label: string; value: string }> = [];
-    const salaMatch = message.match(/🏢\s*Sala:\s*([^👤📅\n]+)/);
+    const salaMatch = message.match(/🏢\s*Sala:\s*([^👤📅\n]+)/u);
     if (salaMatch) {
       details.push({ icon: '🏢', label: 'Sala', value: salaMatch[1].trim() });
     }
     // Incluir monitor nuevamente como item
-    const monitorMatch = message.match(/👤\s*Monitor:\s*([^📅\n]+)/);
+    const monitorMatch = message.match(/👤\s*Monitor:\s*([^📅\n]+)/u);
     if (monitorMatch) {
       details.push({ icon: '👤', label: 'Monitor', value: monitorMatch[1].trim() });
     }

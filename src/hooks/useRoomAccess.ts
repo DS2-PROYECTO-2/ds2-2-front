@@ -39,7 +39,7 @@ export const useRoomAccess = () => {
     try {
       const result = await roomAccessService.registerRoomEntry(roomId, entryTime);
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error registering entry:', error);
       
       // Parsear y manejar errores específicos

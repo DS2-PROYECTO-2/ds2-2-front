@@ -1,6 +1,12 @@
 // Utilidades para manejo de tokens
 
-export const validateToken = (token: string): { isValid: boolean; error?: string; payload?: any } => {
+export const validateToken = (token: string): { isValid: boolean; error?: string; payload?: {
+  user_id: number;
+  username: string;
+  role: string;
+  exp: number;
+  iat: number;
+} } => {
   if (!token) {
     return { isValid: false, error: 'Token no encontrado' };
   }
@@ -70,14 +76,16 @@ export const forceLogout = () => {
   window.location.href = '/login';
 };
 
-export const handleTokenError = (error: any) => {
+export const handleTokenError = (error: unknown) => {
   console.error('Error de token:', error);
   
   // Solo desloguear en casos críticos de token corrupto, NO por problemas de permisos
-  if (error.message?.includes('formato inválido') || 
-      error.message?.includes('Token inválido o corrupto') ||
-      error.message?.includes('Token con formato inválido') ||
-      error.message?.includes('Error al decodificar')) {
+  if (error && typeof error === 'object' && 'message' in error) {
+    const errorWithMessage = error as { message: string };
+    if (errorWithMessage.message?.includes('formato inválido') || 
+        errorWithMessage.message?.includes('Token inválido o corrupto') ||
+        errorWithMessage.message?.includes('Token con formato inválido') ||
+        errorWithMessage.message?.includes('Error al decodificar')) {
     
     console.warn('Token corrupto detectado, limpiando datos de autenticación...');
     clearAuthData();
@@ -95,9 +103,10 @@ export const handleTokenError = (error: any) => {
     setTimeout(() => {
       window.location.href = '/login';
     }, 2000);
+    }
   } else {
     // Para otros errores (como permisos), solo mostrar notificación
-    console.warn('Error de token no crítico:', error.message);
+    console.warn('Error de token no crítico:', error);
     window.dispatchEvent(new CustomEvent('app-toast', {
       detail: { 
         type: 'warning', 

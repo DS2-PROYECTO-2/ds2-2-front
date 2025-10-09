@@ -32,7 +32,7 @@ describe('scheduleService - Compliance Check', () => {
       })
     }
 
-    vi.mocked(fetch).mockResolvedValue(mockResponse as any)
+    vi.mocked(fetch).mockResolvedValue(mockResponse as Response)
 
     const result = await scheduleService.runComplianceCheck()
 
@@ -66,7 +66,7 @@ describe('scheduleService - Compliance Check', () => {
       })
     }
 
-    vi.mocked(fetch).mockResolvedValue(mockResponse as any)
+    vi.mocked(fetch).mockResolvedValue(mockResponse as Response)
 
     await expect(scheduleService.runComplianceCheck()).rejects.toThrow()
   })

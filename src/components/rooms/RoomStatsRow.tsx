@@ -85,7 +85,7 @@ const RoomStatsRow: React.FC = () => {
         let data;
         try {
           data = await scheduleService.getMySchedules();
-        } catch (error) {
+        } catch {
           // Fallback con filtros
           data = await scheduleService.getMySchedules({
             date_from: extendedStart.toISOString().split('T')[0],

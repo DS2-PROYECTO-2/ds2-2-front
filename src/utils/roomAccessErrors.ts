@@ -3,13 +3,15 @@
 export interface RoomAccessError {
   type: 'schedule_required' | 'time_mismatch' | 'room_mismatch' | 'user_not_found' | 'server_error';
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
-export const parseRoomAccessError = (error: any): RoomAccessError => {
+export const parseRoomAccessError = (error: unknown): RoomAccessError => {
   // Si es un error del backend con estructura específica
-  if (error.response?.data?.error) {
-    const backendError = error.response.data;
+  if (error && typeof error === 'object' && 'response' in error) {
+    const errorWithResponse = error as { response?: { data?: { error?: string } } };
+    if (errorWithResponse.response?.data?.error) {
+      const backendError = errorWithResponse.response.data;
     
     // Error de turno requerido
     if (backendError.error.includes('Sin turno asignado') || 
@@ -57,11 +59,14 @@ export const parseRoomAccessError = (error: any): RoomAccessError => {
       message: backendError.error || 'Error del servidor',
       details: backendError.details
     };
+    }
   }
   
   // Si el error viene directamente en el formato JSON que mencionas
-  if (error.data?.error) {
-    const errorData = error.data;
+  if (error && typeof error === 'object' && 'data' in error) {
+    const errorWithData = error as { data?: { error?: string; details?: Record<string, unknown> } };
+    if (errorWithData.data?.error) {
+    const errorData = errorWithData.data;
     
     // Error de turno requerido
     if (errorData.error.includes('Sin turno asignado') || 
@@ -109,15 +114,19 @@ export const parseRoomAccessError = (error: any): RoomAccessError => {
       message: errorData.error || 'Error del servidor',
       details: errorData.details
     };
+    }
   }
   
   // Si es un error de red o conexión
-  if (error.code === 'NETWORK_ERROR' || error.message.includes('Network Error')) {
+  if (error && typeof error === 'object' && ('code' in error || 'message' in error)) {
+    const errorWithCode = error as { code?: string; message?: string };
+    if (errorWithCode.code === 'NETWORK_ERROR' || errorWithCode.message?.includes('Network Error')) {
     return {
       type: 'server_error',
       message: 'Error de conexión. Verifica tu internet e intenta nuevamente',
       details: error
     };
+    }
   }
   
   // Error genérico

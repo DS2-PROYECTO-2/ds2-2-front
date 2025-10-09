@@ -55,16 +55,21 @@ export const useSecurity = () => {
     return requireAuth('ver turnos');
   };
 
-  const handleSecurityError = (error: any, action: string) => {
-    if (error.message?.includes('No autorizado')) {
-      console.warn(`Acceso denegado: ${error.message}`);
-      // Mostrar notificación al usuario
-      window.dispatchEvent(new CustomEvent('app-toast', {
-        detail: { 
-          type: 'error', 
-          message: `No tienes permisos para ${action}` 
-        }
-      }));
+  const handleSecurityError = (error: unknown, action: string) => {
+    if (error && typeof error === 'object' && 'message' in error) {
+      const errorWithMessage = error as { message: string };
+      if (errorWithMessage.message?.includes('No autorizado')) {
+        console.warn(`Acceso denegado: ${errorWithMessage.message}`);
+        // Mostrar notificación al usuario
+        window.dispatchEvent(new CustomEvent('app-toast', {
+          detail: { 
+            type: 'error', 
+            message: `No tienes permisos para ${action}` 
+          }
+        }));
+      } else {
+        console.error('Error de seguridad:', errorWithMessage.message || 'Error desconocido');
+      }
     } else {
       console.error('Error de seguridad:', error);
     }

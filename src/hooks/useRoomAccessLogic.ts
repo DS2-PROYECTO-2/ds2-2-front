@@ -6,7 +6,13 @@ import { useRoomAccess } from './useRoomAccess';
 interface AccessState {
   hasAccess: boolean;
   reason: string;
-  currentSchedule: any | null;
+  currentSchedule: {
+    id: number;
+    start_datetime: string;
+    end_datetime: string;
+    room: number;
+    room_name?: string;
+  } | null;
   isInRoom: boolean;
   lastEntryTime: string | null;
   lastExitTime: string | null;
@@ -37,7 +43,7 @@ export const useRoomAccessLogic = (roomId: number) => {
     if (user && user.role === 'monitor' && roomId) {
       checkAccess();
     }
-  }, [user, roomId]);
+  }, [user, roomId, checkAccess]);
 
   // Verificar acceso a la sala
   const checkAccess = useCallback(async () => {
@@ -195,7 +201,13 @@ export const useRoomAccessLogic = (roomId: number) => {
   }, [user, roomId, validateAccess]);
 
   // Verificar si puede acceder ahora mismo
-  const canAccessNow = useCallback(async (): Promise<{ canAccess: boolean; reason: string; schedule?: any }> => {
+  const canAccessNow = useCallback(async (): Promise<{ canAccess: boolean; reason: string; schedule?: {
+    id: number;
+    start_datetime: string;
+    end_datetime: string;
+    room: number;
+    room_name?: string;
+  } }> => {
     try {
       const accessInfo = await canAccessRoom(roomId);
       return {

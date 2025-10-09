@@ -110,3 +110,4 @@ export const parseRoomAccessError = (error: unknown): string => {
   return 'Error al acceder a la sala. Verifica que tengas un turno asignado y que esté activo.';
 };
 
+

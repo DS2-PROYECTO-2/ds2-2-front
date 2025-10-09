@@ -276,3 +276,4 @@ const AdminNotificationsPanel = () => {
 
 **El sistema está muy cerca de cumplir todos los criterios, solo necesita activar las funcionalidades ya implementadas.**
 
+

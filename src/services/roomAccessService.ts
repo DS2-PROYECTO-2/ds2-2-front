@@ -10,26 +10,51 @@ export interface RoomAccessRequest {
 export interface RoomAccessValidation {
   access_granted: boolean;
   reason?: string;
-  schedule?: any;
-  details?: any;
+  schedule?: {
+    id: number;
+    start_datetime: string;
+    end_datetime: string;
+    room_name?: string;
+  };
+  details?: {
+    room_id: number;
+    user_id: number;
+    access_time: string;
+  };
 }
 
 export interface RoomAccessResult {
   success: boolean;
   message: string;
-  data?: any;
+  data?: {
+    id: number;
+    room: number;
+    entry_time: string;
+    exit_time?: string;
+  };
 }
 
 export interface RoomAccessInfo {
   canAccess: boolean;
   reason?: string;
-  schedule?: any;
+  schedule?: {
+    id: number;
+    start_datetime: string;
+    end_datetime: string;
+    room_name?: string;
+  };
 }
 
 export interface ScheduleInfo {
   hasActiveSchedule: boolean;
   message: string;
-  schedule?: any;
+  schedule?: {
+    id: number;
+    start_datetime: string;
+    end_datetime: string;
+    room_name?: string;
+    user_id: number;
+  };
 }
 
 // Servicio de acceso a salas
@@ -39,7 +64,7 @@ class RoomAccessService {
     try {
       const response = await apiClient.post<RoomAccessRequest, RoomAccessValidation>('/schedule/schedules/validate_room_access/', request);
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error validating room access:', error);
       return {
         access_granted: false,
@@ -51,7 +76,7 @@ class RoomAccessService {
   // Registrar entrada a sala
   async registerRoomEntry(roomId: number, entryTime?: string): Promise<RoomAccessResult> {
     try {
-      const response = await apiClient.post<any, any>('/rooms/entry/', {
+      const response = await apiClient.post<{room: number; entry_time?: string}, {id: number; room: number; entry_time: string}>('/rooms/entry/', {
         room: roomId,
         entry_time: entryTime
       });
@@ -60,7 +85,7 @@ class RoomAccessService {
         message: 'Entrada registrada exitosamente',
         data: response
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error registering room entry:', error);
       return {
         success: false,
@@ -72,7 +97,7 @@ class RoomAccessService {
   // Registrar salida de sala
   async registerRoomExit(roomId: number, exitTime?: string): Promise<RoomAccessResult> {
     try {
-      const response = await apiClient.patch<any, any>(`/rooms/entry/${roomId}/exit/`, {
+      const response = await apiClient.patch<{exit_time?: string}, {id: number; room: number; entry_time: string; exit_time: string}>(`/rooms/entry/${roomId}/exit/`, {
         exit_time: exitTime
       });
       return {
@@ -80,7 +105,7 @@ class RoomAccessService {
         message: 'Salida registrada exitosamente',
         data: response
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error registering room exit:', error);
       return {
         success: false,
@@ -94,7 +119,7 @@ class RoomAccessService {
     try {
       const response = await apiClient.get<RoomAccessInfo>(`/rooms/${roomId}/access/`);
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error checking room access:', error);
       return {
         canAccess: false,
@@ -104,11 +129,23 @@ class RoomAccessService {
   }
 
   // Obtener turnos activos
-  async getActiveSchedules(): Promise<any[]> {
+  async getActiveSchedules(): Promise<Array<{
+    id: number;
+    start_datetime: string;
+    end_datetime: string;
+    room_name?: string;
+    user_id: number;
+  }>> {
     try {
-      const response = await apiClient.get<any[]>('/schedule/schedules/my_schedules/');
+      const response = await apiClient.get<Array<{
+        id: number;
+        start_datetime: string;
+        end_datetime: string;
+        room_name?: string;
+        user_id: number;
+      }>>('/schedule/schedules/my_schedules/');
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error getting active schedules:', error);
       return [];
     }
@@ -138,7 +175,7 @@ class RoomAccessService {
           message: 'No tienes un turno activo en este momento'
         };
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error getting current schedule info:', error);
       return {
         hasActiveSchedule: false,

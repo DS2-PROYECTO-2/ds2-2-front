@@ -18,7 +18,7 @@ export interface BusinessError {
 
 export interface DetailedError {
   error: string;
-  details: any;
+  details: Record<string, unknown>;
   info?: string;
   warning?: {
     type: string;
@@ -56,9 +56,10 @@ export class ApiErrorHandler {
   /**
    * Maneja errores de API y retorna mensajes específicos y user-friendly
    */
-  static handleError(error: any): string {
-    if (error.response) {
-      const { status, data } = error.response;
+  static handleError(error: unknown): string {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const errorWithResponse = error as { response: { status: number; data: unknown } };
+      const { status, data } = errorWithResponse.response;
       
       switch (status) {
         case 400:
@@ -77,46 +78,57 @@ export class ApiErrorHandler {
     }
     
     // Si no hay response, verificar si el error tiene status y data directamente
-    if (error.status && error.data) {
-      switch (error.status) {
+    if (error && typeof error === 'object' && 'status' in error && 'data' in error) {
+      const errorWithStatus = error as { status: number; data: unknown };
+      switch (errorWithStatus.status) {
         case 400:
-          return this.handleValidationError(error.data);
+          return this.handleValidationError(errorWithStatus.data);
         case 401:
-          return this.handleAuthError(error.data);
+          return this.handleAuthError(errorWithStatus.data);
         case 403:
-          return this.handlePermissionError(error.data);
+          return this.handlePermissionError(errorWithStatus.data);
         case 404:
-          return this.handleNotFoundError(error.data);
+          return this.handleNotFoundError(errorWithStatus.data);
         case 500:
-          return this.handleServerError(error.data);
+          return this.handleServerError(errorWithStatus.data);
         default:
           return 'Error desconocido del servidor';
       }
     }
     
     // Error de red o conexión
-    if (error.message?.includes('Network Error') || error.message?.includes('Failed to fetch')) {
-      return 'Error de conexión. Verifica tu conexión a internet.';
+    if (error && typeof error === 'object' && 'message' in error) {
+      const errorWithMessage = error as { message: string };
+      if (errorWithMessage.message?.includes('Network Error') || errorWithMessage.message?.includes('Failed to fetch')) {
+        return 'Error de conexión. Verifica tu conexión a internet.';
+      }
     }
     
     // Fallback: intentar parsear si el error es un string JSON
-    if (typeof error.message === 'string' && error.message.startsWith('{')) {
-      try {
-        const parsedError = JSON.parse(error.message);
-        return this.handleValidationError(parsedError);
-      } catch (e) {
-        // Error al parsear JSON, continuar con el mensaje original
+    if (error && typeof error === 'object' && 'message' in error) {
+      const errorWithMessage = error as { message: string };
+      if (typeof errorWithMessage.message === 'string' && errorWithMessage.message.startsWith('{')) {
+        try {
+          const parsedError = JSON.parse(errorWithMessage.message);
+          return this.handleValidationError(parsedError);
+        } catch {
+          // Error al parsear JSON, continuar con el mensaje original
+        }
       }
     }
     
     // Error genérico
-    return error.message || 'Error desconocido';
+    if (error && typeof error === 'object' && 'message' in error) {
+      const errorWithMessage = error as { message: string };
+      return errorWithMessage.message || 'Error desconocido';
+    }
+    return 'Error desconocido';
   }
 
   /**
    * Maneja errores de validación (400 Bad Request)
    */
-  static handleValidationError(data: any): string {
+  static handleValidationError(data: unknown): string {
     
     if (typeof data === 'object' && data !== null) {
       // Error de negocio específico (prioridad alta)
@@ -167,7 +179,7 @@ export class ApiErrorHandler {
   /**
    * Maneja errores de autenticación (401 Unauthorized)
    */
-  static handleAuthError(data: any): string {
+  static handleAuthError(data: unknown): string {
     
     if (data.detail === 'Invalid token.') {
       return 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
@@ -206,10 +218,12 @@ export class ApiErrorHandler {
   /**
    * Maneja errores de permisos (403 Forbidden)
    */
-  static handlePermissionError(data: any): string {
-    
-    if (data.error) {
-      return data.error;
+  static handlePermissionError(data: unknown): string {
+    if (typeof data === 'object' && data !== null) {
+      const dataObj = data as Record<string, unknown>;
+      if (dataObj.error) {
+        return String(dataObj.error);
+      }
     }
     
     return 'No tienes permisos para realizar esta acción.';
@@ -218,10 +232,12 @@ export class ApiErrorHandler {
   /**
    * Maneja errores de recurso no encontrado (404 Not Found)
    */
-  static handleNotFoundError(data: any): string {
-    
-    if (data.error) {
-      return data.error;
+  static handleNotFoundError(data: unknown): string {
+    if (typeof data === 'object' && data !== null) {
+      const dataObj = data as Record<string, unknown>;
+      if (dataObj.error) {
+        return String(dataObj.error);
+      }
     }
     
     return 'Recurso no encontrado.';
@@ -230,10 +246,12 @@ export class ApiErrorHandler {
   /**
    * Maneja errores del servidor (500 Internal Server Error)
    */
-  static handleServerError(data: any): string {
-    
-    if (data.error) {
-      return data.error;
+  static handleServerError(data: unknown): string {
+    if (typeof data === 'object' && data !== null) {
+      const dataObj = data as Record<string, unknown>;
+      if (dataObj.error) {
+        return String(dataObj.error);
+      }
     }
     
     return 'Error interno del servidor. Inténtalo más tarde.';
@@ -242,129 +260,111 @@ export class ApiErrorHandler {
   /**
    * Maneja errores de negocio específicos
    */
-  static handleBusinessError(data: any): string {
-    
-    // Errores de conflicto de horarios
-    if (data.user_conflict) {
-      const conflictError = Array.isArray(data.user_conflict) ? data.user_conflict[0] : data.user_conflict;
+  static handleBusinessError(data: unknown): string {
+    if (typeof data === 'object' && data !== null) {
+      const dataObj = data as Record<string, unknown>;
       
-      // Limpiar el mensaje si viene con formato de array con corchetes extra
-      if (typeof conflictError === 'string' && conflictError.startsWith("['") && conflictError.endsWith("']")) {
-        const cleaned = conflictError.slice(2, -2); // Remover [' y ']
-        return cleaned;
+      // Errores de conflicto de horarios
+      if (dataObj.user_conflict) {
+        const conflictError = Array.isArray(dataObj.user_conflict) ? dataObj.user_conflict[0] : dataObj.user_conflict;
+        
+        // Limpiar el mensaje si viene con formato de array con corchetes extra
+        if (typeof conflictError === 'string' && conflictError.startsWith("['") && conflictError.endsWith("']")) {
+          const cleaned = conflictError.slice(2, -2); // Remover [' y ']
+          return cleaned;
+        }
+        
+        // Si ya viene limpio, devolver directamente
+        return String(conflictError);
       }
       
-      // Si ya viene limpio, devolver directamente
-      return conflictError;
+      if (dataObj.room_conflict) {
+        const conflictError = Array.isArray(dataObj.room_conflict) ? dataObj.room_conflict[0] : dataObj.room_conflict;
+        
+        // Limpiar el mensaje si viene con formato de array con corchetes extra
+        if (typeof conflictError === 'string' && conflictError.startsWith("['") && conflictError.endsWith("']")) {
+          const cleaned = conflictError.slice(2, -2); // Remover [' y ']
+          return cleaned;
+        }
+        
+        // Si ya viene limpio, devolver directamente
+        return String(conflictError);
+      }
+      
+      // Errores generales de negocio
+      const error = dataObj.error;
+      if (typeof error === 'string') {
+        // Errores de entrada a salas
+        if (error.includes('Sin turno asignado')) {
+          return 'No tienes un turno asignado para esta sala en este horario.';
+        }
+        
+        if (error.includes('entrada activa')) {
+          return 'Ya tienes una entrada activa en otra sala. Debes salir primero.';
+        }
+        
+        if (error.includes('monitor asignado') || error.includes('ya tiene un monitor')) {
+          return 'La sala ya tiene un monitor asignado en este horario.';
+        }
+        
+        if (error.includes('Sala no encontrada')) {
+          return 'La sala seleccionada no existe o está inactiva.';
+        }
+        
+        // Errores de turnos
+        if (error.includes('superponen') || error.includes('superposición')) {
+          return 'El monitor ya tiene turnos asignados que se superponen con este horario.';
+        }
+        
+        if (error.includes('múltiples monitores') || error.includes('ya tiene un monitor asignado')) {
+          return 'La sala ya tiene un monitor asignado en ese horario.';
+        }
+        
+        if (error.includes('fechas pasadas')) {
+          return 'No se pueden crear turnos en fechas pasadas.';
+        }
+      }
+      
+      // Errores de validación de fechas
+      if (dataObj.end_datetime) {
+        const endError = Array.isArray(dataObj.end_datetime) ? dataObj.end_datetime[0] : dataObj.end_datetime;
+        if (typeof endError === 'string') {
+          if (endError.includes('posterior a la fecha de inicio')) {
+            return 'La fecha de fin debe ser posterior a la fecha de inicio.';
+          }
+          if (endError.includes('exceder 12 horas')) {
+            return 'Un turno no puede exceder 12 horas de duración.';
+          }
+          return endError;
+        }
+      }
+      
+      // Errores de validación de campos
+      if (dataObj.non_field_errors) {
+        const nonFieldError = Array.isArray(dataObj.non_field_errors) ? dataObj.non_field_errors[0] : dataObj.non_field_errors;
+        return String(nonFieldError);
+      }
+      
+      return String(error || 'Error desconocido');
     }
     
-    if (data.room_conflict) {
-      const conflictError = Array.isArray(data.room_conflict) ? data.room_conflict[0] : data.room_conflict;
-      
-      // Limpiar el mensaje si viene con formato de array con corchetes extra
-      if (typeof conflictError === 'string' && conflictError.startsWith("['") && conflictError.endsWith("']")) {
-        const cleaned = conflictError.slice(2, -2); // Remover [' y ']
-        return cleaned;
-      }
-      
-      // Si ya viene limpio, devolver directamente
-      return conflictError;
-    }
-    
-    // Errores generales de negocio
-    const error = data.error;
-    if (error) {
-      // Errores de entrada a salas
-      if (error.includes('Sin turno asignado')) {
-        return 'No tienes un turno asignado para esta sala en este horario.';
-      }
-      
-      if (error.includes('entrada activa')) {
-        return 'Ya tienes una entrada activa en otra sala. Debes salir primero.';
-      }
-      
-      if (error.includes('monitor asignado') || error.includes('ya tiene un monitor')) {
-        return 'La sala ya tiene un monitor asignado en este horario.';
-      }
-      
-      if (error.includes('Sala no encontrada')) {
-        return 'La sala seleccionada no existe o está inactiva.';
-      }
-      
-      // Errores de turnos
-      if (error.includes('superponen') || error.includes('superposición')) {
-        return 'El monitor ya tiene turnos asignados que se superponen con este horario.';
-      }
-      
-      if (error.includes('múltiples monitores') || error.includes('ya tiene un monitor asignado')) {
-        return 'La sala ya tiene un monitor asignado en ese horario.';
-      }
-      
-      if (error.includes('fechas pasadas')) {
-        return 'No se pueden crear turnos en fechas pasadas.';
-      }
-    }
-    
-    // Errores de validación de fechas
-    if (data.end_datetime) {
-      const endError = Array.isArray(data.end_datetime) ? data.end_datetime[0] : data.end_datetime;
-      if (endError.includes('posterior a la fecha de inicio')) {
-        return 'La fecha de fin debe ser posterior a la fecha de inicio.';
-      }
-      if (endError.includes('exceder 12 horas')) {
-        return 'Un turno no puede exceder 12 horas de duración.';
-      }
-      return endError;
-    }
-    
-    // Errores de conflicto de horarios
-    if (data.user_conflict) {
-      const conflictError = Array.isArray(data.user_conflict) ? data.user_conflict[0] : data.user_conflict;
-      
-      // Limpiar el mensaje si viene con formato de array con corchetes extra
-      if (typeof conflictError === 'string' && conflictError.startsWith("['") && conflictError.endsWith("']")) {
-        const cleaned = conflictError.slice(2, -2); // Remover [' y ']
-        return cleaned;
-      }
-      
-      // Si ya viene limpio, devolver directamente
-      return conflictError;
-    }
-    
-    if (data.room_conflict) {
-      const conflictError = Array.isArray(data.room_conflict) ? data.room_conflict[0] : data.room_conflict;
-      
-      // Limpiar el mensaje si viene con formato de array con corchetes extra
-      if (typeof conflictError === 'string' && conflictError.startsWith("['") && conflictError.endsWith("']")) {
-        const cleaned = conflictError.slice(2, -2); // Remover [' y ']
-        return cleaned;
-      }
-      
-      // Si ya viene limpio, devolver directamente
-      return conflictError;
-    }
-    
-    // Errores de validación de campos
-    if (data.non_field_errors) {
-      const nonFieldError = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
-      return nonFieldError;
-    }
-    
-    return error;
+    return 'Error desconocido';
   }
 
   /**
    * Extrae errores de campo específicos para formularios
    */
-  static extractFieldErrors(data: any): { [key: string]: string } {
+  static extractFieldErrors(data: unknown): { [key: string]: string } {
     const fieldErrors: { [key: string]: string } = {};
     
     if (typeof data === 'object' && data !== null) {
-      Object.keys(data).forEach(field => {
-        if (Array.isArray(data[field])) {
-          fieldErrors[field] = data[field][0];
-        } else if (typeof data[field] === 'string') {
-          fieldErrors[field] = data[field];
+      const dataObj = data as Record<string, unknown>;
+      Object.keys(dataObj).forEach(field => {
+        if (Array.isArray(dataObj[field])) {
+          const arrayValue = dataObj[field] as unknown[];
+          fieldErrors[field] = String(arrayValue[0]);
+        } else if (typeof dataObj[field] === 'string') {
+          fieldErrors[field] = dataObj[field];
         }
       });
     }
@@ -375,17 +375,23 @@ export class ApiErrorHandler {
   /**
    * Verifica si el error requiere logout del usuario
    */
-  static shouldLogout(error: any): boolean {
-    if (error.response?.status === 401) {
-      return true;
+  static shouldLogout(error: unknown): boolean {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const errorWithResponse = error as { response?: { status?: number } };
+      if (errorWithResponse.response?.status === 401) {
+        return true;
+      }
     }
     
-    if (error.message?.includes('sesión ha expirado')) {
-      return true;
-    }
-    
-    if (error.message?.includes('Token inválido')) {
-      return true;
+    if (error && typeof error === 'object' && 'message' in error) {
+      const errorWithMessage = error as { message?: string };
+      if (errorWithMessage.message?.includes('sesión ha expirado')) {
+        return true;
+      }
+      
+      if (errorWithMessage.message?.includes('Token inválido')) {
+        return true;
+      }
     }
     
     return false;
@@ -394,21 +400,26 @@ export class ApiErrorHandler {
   /**
    * Maneja errores de notificaciones y warnings
    */
-  static handleNotificationError(data: any): { message: string; type: 'info' | 'warning' | 'error' } {
-    if (data.warning) {
-      return {
-        message: data.warning.message,
-        type: data.warning.is_critical ? 'error' : 'warning'
-      };
+  static handleNotificationError(data: unknown): { message: string; type: 'info' | 'warning' | 'error' } {
+    if (typeof data === 'object' && data !== null) {
+      const dataObj = data as Record<string, unknown>;
+      
+      if (dataObj.warning && typeof dataObj.warning === 'object') {
+        const warning = dataObj.warning as { message?: string; is_critical?: boolean };
+        return {
+          message: warning.message || 'Advertencia',
+          type: warning.is_critical ? 'error' : 'warning'
+        };
+      }
+      
+      if (dataObj.info) {
+        return {
+          message: String(dataObj.info),
+          type: 'info'
+        };
+      }
     }
     
-    if (data.info) {
-    return {
-        message: data.info,
-        type: 'info'
-    };
-  }
-  
     return {
       message: this.handleError({ response: { status: 400, data } }),
       type: 'error'
@@ -420,27 +431,30 @@ export class ApiErrorHandler {
  * Hook para manejo de errores en componentes
  */
 export const useApiError = () => {
-  const handleApiCall = async (apiCall: () => Promise<any>): Promise<any> => {
+  const handleApiCall = async <T>(apiCall: () => Promise<T>): Promise<T> => {
     try {
       return await apiCall();
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = ApiErrorHandler.handleError(error);
       throw new Error(errorMessage);
     }
   };
 
-  const handleError = (error: any): string => {
+  const handleError = (error: unknown): string => {
     return ApiErrorHandler.handleError(error);
   };
 
-  const extractFieldErrors = (error: any): { [key: string]: string } => {
-    if (error.response?.data) {
-      return ApiErrorHandler.extractFieldErrors(error.response.data);
+  const extractFieldErrors = (error: unknown): { [key: string]: string } => {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const errorWithResponse = error as { response?: { data?: unknown } };
+      if (errorWithResponse.response?.data) {
+        return ApiErrorHandler.extractFieldErrors(errorWithResponse.response.data);
+      }
     }
     return {};
   };
 
-  const shouldLogout = (error: any): boolean => {
+  const shouldLogout = (error: unknown): boolean => {
     return ApiErrorHandler.shouldLogout(error);
   };
 
