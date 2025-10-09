@@ -4,6 +4,7 @@
   max-width: 1400px;
   margin: 0 auto;
   font-family: 'Poppins', sans-serif;
+  animation: fadeIn 0.5s ease-out;
 }
 
 /* Header */
@@ -14,6 +15,7 @@
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
   border-bottom: 2px solid #f0f0f0;
+  animation: slideInDown 0.4s ease-out;
 }
 
 .header-content h1 {
@@ -31,23 +33,26 @@
 
 /* Botones */
 .btn-primary {
-  background: linear-gradient(135deg, #DC2626, #B91C1C);
-  color: white;
+  background: #e72603 !important;
+  color: white !important;
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
+  height: 2.75rem; /* Altura unificada */
   font-family: 'Poppins', sans-serif;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3) !important;
+  background: #2563eb !important;
 }
 
 .btn-secondary {
@@ -73,10 +78,15 @@
   background: #dc3545;
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
   cursor: pointer;
   font-family: 'Poppins', sans-serif;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 2.75rem; /* Altura unificada */
 }
 
 /* Botón Limpiar Filtros */
@@ -98,6 +108,11 @@
   font-weight: 500;
   font-size: 0.9rem;
   box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 2.75rem; /* Altura unificada */
 }
 
 .btn-clear-filters:hover {
@@ -130,7 +145,8 @@
   align-items: center;
   gap: 0.5rem;
   background: #f8f9fa;
-  padding: 0.75rem;
+  padding: 0 0.75rem; /* sin padding vertical para igualar altura */
+  height: 3rem; /* igual a botones */
   border-radius: 8px;
   border: 1px solid #e0e0e0;
 }
@@ -143,6 +159,9 @@
   flex: 1;
   font-family: 'Poppins', sans-serif;
   font-size: 0.9rem;
+  height: 2.75rem; /* Altura unificada con botones */
+  padding: 0 0.75rem;
+  box-sizing: border-box;
 }
 
 .filter-input::placeholder {

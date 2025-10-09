@@ -24,6 +24,7 @@ import '../../styles/UserManagement.css';
 const UserManagement: React.FC = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]); // Todos los usuarios sin filtrar
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -79,12 +80,43 @@ const UserManagement: React.FC = () => {
     special: false
   });
 
-  // Cargar usuarios
+  // Función de filtrado local
+  const filterUsers = useCallback((users: User[], currentFilters: UserFilters): User[] => {
+    return users.filter(user => {
+      // Filtro por búsqueda (nombre, email, identificación)
+      if (currentFilters.search && currentFilters.search.trim()) {
+        const searchTerm = currentFilters.search.toLowerCase().trim();
+        const matchesSearch = 
+          user.full_name?.toLowerCase().includes(searchTerm) ||
+          user.email?.toLowerCase().includes(searchTerm) ||
+          user.identification?.toLowerCase().includes(searchTerm) ||
+          user.username?.toLowerCase().includes(searchTerm);
+        
+        if (!matchesSearch) return false;
+      }
+      
+      // Filtro por rol
+      if (currentFilters.role && user.role !== currentFilters.role) {
+        return false;
+      }
+      
+      // Filtro por verificación
+      if (currentFilters.is_verified !== undefined && user.is_verified !== currentFilters.is_verified) {
+        return false;
+      }
+      
+      return true;
+    });
+  }, []);
+
+  // Cargar usuarios (solo backend, sin filtros)
   const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const usersData = await userManagementService.getUsers(filters);
+      // Cargar todos los usuarios sin filtros del backend
+      const usersData = await userManagementService.getUsers();
+      setAllUsers(usersData);
       setUsers(usersData);
     } catch (err: unknown) {
       const error = err as ApiError;
@@ -98,7 +130,7 @@ const UserManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, []); // Sin dependencias para evitar recreación constante
 
   // Manejar filtros
   const handleFilterChange = (key: keyof UserFilters, value: string | boolean | undefined) => {
@@ -108,14 +140,20 @@ const UserManagement: React.FC = () => {
     }));
   };
 
-  // Cargar usuarios cuando cambien los filtros (con debounce para búsqueda)
+  // Aplicar filtros localmente cuando cambien los filtros o los usuarios
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      loadUsers();
-    }, filters.search ? 500 : 0); // Debounce solo para búsqueda
+      const filteredUsers = filterUsers(allUsers, filters);
+      setUsers(filteredUsers);
+    }, 300); // Debounce para búsqueda
 
     return () => clearTimeout(timeoutId);
-  }, [filters, loadUsers]);
+  }, [filters, allUsers, filterUsers]);
+
+  // Cargar usuarios al montar el componente
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   // Limpiar filtros
   const clearFilters = () => {
@@ -251,8 +289,6 @@ const UserManagement: React.FC = () => {
       const error = err as ApiError;
       let errorMessage = 'Error al crear usuario';
       
-      // Debug: Log the error structure
-      console.log('Error structure:', error);
       
       // Manejar errores específicos del backend
       if (error.username && Array.isArray(error.username)) {
@@ -279,7 +315,6 @@ const UserManagement: React.FC = () => {
         }
       }
       
-      console.log('Final error message:', errorMessage);
       setCreateError(errorMessage);
       // Mostrar toast de error
       window.dispatchEvent(new CustomEvent('app-toast', {
@@ -611,7 +646,7 @@ const UserManagement: React.FC = () => {
           <p>Administra usuarios, roles y permisos del sistema</p>
         </div>
         <button 
-          className="btn-primary"
+          className="btn-danger"
           onClick={() => setShowCreateModal(true)}
         >
           <Plus size={20} />
@@ -680,7 +715,7 @@ const UserManagement: React.FC = () => {
             <XCircle size={48} />
             <h3>Error</h3>
             <p>{error}</p>
-            <button onClick={loadUsers} className="btn-primary">
+            <button onClick={() => loadUsers()} className="btn-primary">
               Reintentar
             </button>
           </div>
@@ -992,7 +1027,7 @@ const UserManagement: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="btn-primary"
+                  className="btn-danger"
                   disabled={createLoading}
                 >
                   {createLoading ? (
@@ -1036,7 +1071,6 @@ const UserManagement: React.FC = () => {
                     value={editUser.email || ''}
                     onChange={(e) => handleEditUserChange('email', e.target.value)}
                     placeholder="usuario@ejemplo.com"
-                    pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
                     title="Formato de email válido (ejemplo@dominio.com)"
                     required
                   />

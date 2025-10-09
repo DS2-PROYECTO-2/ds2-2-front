@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { fetchRooms, type Room } from '../../services/roomService';
+import roomService, { type Room } from '../../services/roomService';
 import { getMyEntries, getAllEntries, type RoomEntryUI } from '../../services/roomEntryService';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -7,6 +7,10 @@ type Props = { reloadKey?: number };
 type DateISO = string;
 
 const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
+  // Constantes para duraciones de animación
+  const REFRESH_ANIMATION_DURATION = 1000; // ms - Duración de animación de actualización
+  const HIGHLIGHT_DURATION = 1200; // ms - Duración del highlight de entrada
+
   const { user } = useAuth();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [entries, setEntries] = useState<RoomEntryUI[]>([]);
@@ -19,8 +23,8 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
   const [error, setError] = useState<string | null>(null);
   const [highlightedEntryId, setHighlightedEntryId] = useState<number | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // logs removidos
+  const [showAll, setShowAll] = useState<boolean>(false); // Nuevo estado para mostrar todo
+  const [backendFiltered, setBackendFiltered] = useState<boolean>(false); // Indica si se aplicaron filtros en backend
 
   const parseErr = (e: unknown) => (e && typeof e === 'object' && 'message' in e ? (e as { message: string }).message : 'Error al cargar historial');
 
@@ -30,14 +34,14 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
     setFilterRoomId('');
     setFilterUser('');
     setFilterDocument('');
+    setShowAll(false);
+    setBackendFiltered(false);
   };
 
 
-  // Función para cargar datos básicos (sin filtros)
+  // Función para cargar datos básicos (con rango por defecto para admin)
   const load = useCallback(async (showRefreshAnimation = false) => {
-    // logs removidos
     if (showRefreshAnimation) {
-      // logs removidos
       setIsRefreshing(true);
     } else {
       setLoading(true);
@@ -45,27 +49,61 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
     setError(null);
     try {
       const [roomsData, entriesData] = await Promise.all([
-        fetchRooms(),
+        roomService.getRooms(),
         user?.role === 'admin' 
-          ? getAllEntries()  // Admin ve todos sin filtros
-          : getMyEntries()    // Monitor ve solo los suyos
+          ? loadWithDefaultRange()  // Admin con rango por defecto (todo el mes actual)
+          : getMyEntries()          // Monitor ve solo los suyos
       ]);
-      
-      // logs removidos
       
       setRooms(roomsData);
       setEntries(entriesData);
+      setBackendFiltered(false); // No se aplicaron filtros en backend
     } catch (err) {
       setError(parseErr(err));
     } finally {
       setLoading(false);
       if (showRefreshAnimation) {
-        // logs removidos
         // Mantener la animación por un momento para que se vea
-        setTimeout(() => setIsRefreshing(false), 1000);
+        setTimeout(() => setIsRefreshing(false), REFRESH_ANIMATION_DURATION);
       }
     }
   }, [user?.role]);
+
+  // Función para cargar con rango por defecto (todo el mes actual)
+  const loadWithDefaultRange = useCallback(async () => {
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    const fromFormatted = firstDayOfMonth.toISOString();
+    const toFormatted = lastDayOfMonth.toISOString();
+    
+    return getAllEntries({
+      from: fromFormatted,
+      to: toFormatted
+    });
+  }, []);
+
+  // Función para cargar TODOS los registros (sin filtros de fecha)
+  const loadAllEntries = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [roomsData, entriesData] = await Promise.all([
+        roomService.getRooms(),
+        getAllEntries() // Sin filtros de fecha
+      ]);
+      
+      setRooms(roomsData);
+      setEntries(entriesData);
+      setShowAll(true); // Marcar que estamos mostrando todo
+      setBackendFiltered(false); // No se aplicaron filtros en backend
+    } catch (err) {
+      setError(parseErr(err));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // Función para cargar con filtros (solo para admin)
   const loadWithFilters = useCallback(async () => {
@@ -91,9 +129,9 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
       }
       
       const [roomsData, entriesData] = await Promise.all([
-        fetchRooms(),
+        roomService.getRooms(),
         getAllEntries({
-          // No enviar filtro de usuario al backend, se maneja en frontend
+          // Enviar filtros de fecha al backend
           room: filterRoomId || undefined,
           from: fromFormatted,
           to: toFormatted,
@@ -103,12 +141,22 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
       
       setRooms(roomsData);
       setEntries(entriesData);
+      setShowAll(false); // Marcar que no estamos mostrando todo
+      setBackendFiltered(true); // Marcar que se aplicaron filtros en backend
     } catch (err) {
       setError(parseErr(err));
     } finally {
       setLoading(false);
     }
   }, [user?.role, filterRoomId, filterFrom, filterTo, filterDocument]);
+
+  // Función para aplicar filtros manualmente (cuando el usuario hace clic en aplicar)
+  const applyFilters = useCallback(() => {
+    if (user?.role === 'admin') {
+      setShowAll(false); // Salir del modo "mostrar todo"
+      loadWithFilters();
+    }
+  }, [user?.role, loadWithFilters]);
 
   useEffect(() => { 
     if (user) {  // Solo cargar si hay usuario autenticado
@@ -123,8 +171,6 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
 
   // Escuchar eventos de entrada/salida de salas para actualizar automáticamente (TODOS los usuarios)
   useEffect(() => {
-    // Registrar listeners de eventos de sala
-    
     const handleRoomEntry = (event: Event) => {
       const customEvent = event as CustomEvent;
       const { roomName, userName } = customEvent.detail || {};
@@ -143,8 +189,6 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
 
     window.addEventListener('room-entry-added', handleRoomEntry);
     window.addEventListener('room-entry-exited', handleRoomExit);
-    
-    // Listeners registrados
     
     return () => {
       window.removeEventListener('room-entry-added', handleRoomEntry);
@@ -182,10 +226,11 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
 
   // Recargar cuando cambien los filtros (solo para admin)
   useEffect(() => {
-    if (user?.role === 'admin') {
+    if (user?.role === 'admin' && !showAll) {
+      // Solo aplicar filtros si NO estamos en modo "mostrar todo"
       loadWithFilters();
     }
-  }, [filterRoomId, filterFrom, filterTo, filterDocument, loadWithFilters, user?.role]);
+  }, [filterRoomId, filterFrom, filterTo, filterDocument, loadWithFilters, user?.role, showAll]);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -199,7 +244,7 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
   // Quitar highlight después de animación
   useEffect(() => {
     if (highlightedEntryId !== null) {
-      const t = setTimeout(() => setHighlightedEntryId(null), 1200);
+      const t = setTimeout(() => setHighlightedEntryId(null), HIGHLIGHT_DURATION);
       return () => clearTimeout(t);
     }
   }, [highlightedEntryId]);
@@ -231,8 +276,10 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
       });
     }
     
-    // Aplicar filtros de fecha
-    if (filterFrom || filterTo) {
+    // NOTA: Los filtros de fecha se aplican en el backend cuando se usa loadWithFilters()
+    // Solo aplicar filtros de fecha en frontend cuando NO se han aplicado en el backend
+    // (es decir, cuando se usa load() o loadAllEntries())
+    if (!backendFiltered && (filterFrom || filterTo)) {
       let from: Date | null = null, to: Date | null = null;
       
       if (filterFrom) { 
@@ -249,13 +296,13 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
         const endDate = e.endedAt ? new Date(e.endedAt) : new Date();
         
         if (from && to) {
-          // La entrada debe empezar antes del final del rango Y terminar después del inicio del rango
-          return startDate <= to && (endDate >= from || !e.endedAt);
+          // La entrada debe tener alguna actividad dentro del rango
+          return (startDate >= from && startDate <= to) || 
+                 (endDate >= from && endDate <= to) || 
+                 (startDate <= from && endDate >= to);
         } else if (from) {
-          // La entrada debe terminar después del inicio del rango (o estar activa)
           return endDate >= from || !e.endedAt;
         } else if (to) {
-          // La entrada debe empezar antes del final del rango
           return startDate <= to;
         }
         return true;
@@ -263,7 +310,7 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
     }
     
     return filteredEntries;
-  }, [entries, filterFrom, filterTo, filterRoomId, filterUser, filterDocument]);
+  }, [entries, filterFrom, filterTo, filterRoomId, filterUser, filterDocument, backendFiltered]);
 
   return (
     <div className="room-panel">
@@ -302,8 +349,66 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
             </span>
           )}
         </h3>
-        <button className="primary-btn" onClick={clearFilters}>Borrar filtros</button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button className="primary-btn" onClick={clearFilters}>Borrar filtros</button>
+          {user?.role === 'admin' && (
+            <button 
+              className="primary-btn" 
+              onClick={applyFilters}
+              style={{
+                background: '#2196f3',
+                color: 'white',
+                border: 'none',
+                padding: '0.75rem 1.5rem',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                fontWeight: '500'
+              }}
+            >
+              Aplicar Filtros
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Botón mostrar todo para administradores */}
+      {user?.role === 'admin' && (
+        <div style={{ marginBottom: '1rem' }}>
+          <button 
+            onClick={loadAllEntries}
+            style={{
+              padding: '0.75rem 1.5rem',
+              background: showAll ? '#4caf50' : '#ff9800',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              fontWeight: '500',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseOver={(e) => {
+              if (!showAll) {
+                e.currentTarget.style.background = '#f57c00';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }
+            }}
+            onMouseOut={(e) => {
+              if (!showAll) {
+                e.currentTarget.style.background = '#ff9800';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }
+            }}
+          >
+            {showAll ? '✓ Mostrando todo el historial' : '📅 Mostrar todo el historial'}
+          </button>
+        </div>
+      )}
 
       <div className="panel-filters">
         <label className="field">
@@ -354,6 +459,32 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
           </>
         )}
       </div>
+
+      {/* Indicador del rango de fechas mostrado */}
+      {user?.role === 'admin' && (
+        <div className="date-range-indicator" style={{
+          padding: '0.5rem 1rem',
+          background: '#e8f5e8',
+          border: '1px solid #4caf50',
+          borderRadius: '6px',
+          marginBottom: '1rem',
+          fontSize: '0.875rem',
+          color: '#2e7d32',
+          fontWeight: '500'
+        }}>
+          {showAll ? (
+            '📅 Mostrando TODOS los registros históricos'
+          ) : filterFrom && filterTo ? (
+            `📅 Mostrando registros del ${filterFrom} al ${filterTo}`
+          ) : filterFrom ? (
+            `📅 Mostrando registros desde el ${filterFrom}`
+          ) : filterTo ? (
+            `📅 Mostrando registros hasta el ${filterTo}`
+          ) : (
+            `📅 Mostrando registros del mes actual (${new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })})`
+          )}
+        </div>
+      )}
 
       <div className="panel-table">
         <div className="table-scroll">

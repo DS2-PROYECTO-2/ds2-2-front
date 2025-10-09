@@ -12,7 +12,9 @@ vi.mock('../../hooks/useAuth', () => ({
 const dispatchSpy = vi.spyOn(window, 'dispatchEvent')
 
 vi.mock('../../services/roomService', () => ({
-  fetchRooms: vi.fn().mockResolvedValue([{ id: 1, name: 'Sala 1' }])
+  default: {
+    getRooms: vi.fn().mockResolvedValue([{ id: 1, name: 'Sala 1' }])
+  }
 }))
 
 vi.mock('../../services/roomEntryService', () => ({

@@ -1,8 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { fetchRooms, type Room } from '../../services/roomService';
+import roomService, { type Room } from '../../services/roomService';
 import { createEntry, exitEntry, getMyActiveEntry } from '../../services/roomEntryService';
+import scheduleService from '../../services/scheduleService';
 import { getMyEntries, type RoomEntryUI } from '../../services/roomEntryService';
+import { parseRoomAccessError } from '../../utils/errorMessageParser';
+import { getBogotaNow, isLateArrival, getLateMinutes } from '../../utils/timeHelpers';
 // import { notificationService } from '../../services/notificationService'; // Removido para evitar notificaciones duplicadas
 
 type Props = { onChanged?: () => void };
@@ -97,21 +100,7 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
   };
 
   const parseErrorMessage = (e: unknown) => {
-    if (!e) return 'Error desconocido';
-    if (typeof e === 'string') return e;
-    if (e instanceof Error && e.message) return e.message;
-    const anyErr = e as { message?: string; data?: unknown; status?: number };
-    if (anyErr?.message) return anyErr.message;
-    if (anyErr?.data) {
-      const d = anyErr.data as Record<string, unknown>;
-      if (typeof d.detail === 'string') return d.detail;
-      if (Array.isArray(d.non_field_errors)) return d.non_field_errors.join(', ');
-      const firstField = Object.keys(d)[0];
-      const val = d[firstField];
-      if (Array.isArray(val)) return `${firstField}: ${val.join(', ')}`;
-      if (typeof val === 'string') return `${firstField}: ${val}`;
-    }
-    return 'Ocurrió un error procesando la solicitud';
+    return parseRoomAccessError(e);
   };
 
   // Verificar si el monitor ha excedido 8 horas hoy
@@ -176,7 +165,7 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
 
   const loadRooms = async () => {
     setError(null);
-    const list = await fetchRooms();
+    const list = await roomService.getRooms();
     setRooms(list);
     setSelectedRoomId(list[0]?.id ?? '');
   };
@@ -222,6 +211,77 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
       
       const newId = (created as { entry?: { id: number }; id?: number })?.entry?.id ?? (created as { id?: number })?.id ?? null;
       if (newId != null) {
+        // Verificar llegada tarde contra el turno actual (tolerancia 20 min)
+        try {
+          const now = getBogotaNow();
+          let scheduleStart: Date | null = null;
+          let targetSchedule = null;
+
+
+          // 1) Intentar con turno actual
+          try {
+            const currentScheduleResponse = await scheduleService.getMyCurrentSchedule() as { has_current_schedule: boolean; current_schedule?: any } | null;
+            
+            if (currentScheduleResponse?.has_current_schedule && currentScheduleResponse?.current_schedule) {
+              const currentSchedule = currentScheduleResponse.current_schedule;
+              scheduleStart = new Date(currentSchedule.start_datetime);
+              targetSchedule = currentSchedule;
+            }
+          } catch (error) {
+          }
+
+          // 2) Fallback: intentar getMySchedules sin filtros
+          if (!scheduleStart) {
+            try {
+              const my = await scheduleService.getMySchedules();
+              
+              const all = [...(my.current||[]), ...(my.upcoming||[]), ...(my.past||[])];
+              
+              if (all.length > 0) {
+                // Filtrar por la sala seleccionada si es posible
+                const byRoom = all.filter(s => Number(s.room) === Number(selectedRoomId));
+                
+                const candidates = (byRoom.length ? byRoom : all)
+                  .map(s => ({ 
+                    s, 
+                    start: new Date(s.start_datetime),
+                    end: new Date(s.end_datetime)
+                  }))
+                  .filter(x => {
+                    // Ventana amplia: desde 2 horas antes del inicio hasta 2 horas después del fin
+                    const windowStart = new Date(x.start.getTime() - 2 * 60 * 60 * 1000);
+                    const windowEnd = new Date(x.end.getTime() + 2 * 60 * 60 * 1000);
+                    return now.getTime() >= windowStart.getTime() && now.getTime() <= windowEnd.getTime();
+                  })
+                  .sort((a,b) => Math.abs(now.getTime()-a.start.getTime()) - Math.abs(now.getTime()-b.start.getTime()));
+                
+                if (candidates[0]) {
+                  scheduleStart = candidates[0].start;
+                  targetSchedule = candidates[0].s;
+                }
+              }
+            } catch (error) {
+            }
+          }
+
+          if (scheduleStart && targetSchedule) {
+            
+            if (isLateArrival(now, scheduleStart, 20)) {
+              const lateMinutes = getLateMinutes(now, scheduleStart, 20);
+              
+              window.dispatchEvent(new CustomEvent('app-toast', {
+                detail: { 
+                  type: 'warning', 
+                  message: `Llegada tarde: ${lateMinutes} min sobre el período de gracia` 
+                }
+              }));
+            } else {
+            }
+          } else {
+          }
+        } catch (error) {
+        }
+
         // Obtener información de la sala y el usuario para la notificación
         const roomName = rooms.find(r => r.id === selectedRoomId)?.name || `Sala ${selectedRoomId}`;
         const userName = user?.username || 'Monitor';
@@ -290,7 +350,9 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
       {error && <div className="alert error" role="alert" aria-live="polite">{error}</div>}
 
       <h2 className="panel-title">
-        ¡Bienvenido, {user?.username ?? 'usuario'}! Selecciona una sala y registra tu entrada.
+        ¡Bienvenido, {user?.first_name && user?.last_name 
+          ? `${user.first_name} ${user.last_name}` 
+          : user?.username ?? 'usuario'}! Selecciona una sala y registra tu entrada.
       </h2>
       
       <div className="panel-actions">

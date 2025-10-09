@@ -22,9 +22,9 @@ export interface Computer {
 export interface Room {
     id: string;
     name: string;
+    code: string;
     capacity: number;
     description?: string;
-    location?: string;
     computers: Computer[];
     createdAt?: string;
     updatedAt?: string;
@@ -50,6 +50,8 @@ export interface User {
     username: string;
     email: string;
     full_name: string;
+    first_name?: string;
+    last_name?: string;
     identification?: string;
     phone?: string;
     role: 'admin' | 'monitor';
