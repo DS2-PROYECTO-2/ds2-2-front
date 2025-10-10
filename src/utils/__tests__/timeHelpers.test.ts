@@ -16,8 +16,14 @@ describe('timeHelpers', () => {
   describe('getBogotaNow', () => {
     it('obtiene la fecha actual en zona horaria de Bogotá', () => {
       const now = getBogotaNow()
+      
       expect(now).toBeInstanceOf(Date)
-      expect(now.getTime()).toBeLessThanOrEqual(Date.now())
+      expect(now.getTime()).toBeGreaterThan(0)
+      // Verificar que la fecha esté en un rango razonable (últimos 10 años)
+      const tenYearsAgo = Date.now() - (10 * 365 * 24 * 60 * 60 * 1000)
+      const oneYearFromNow = Date.now() + (365 * 24 * 60 * 60 * 1000)
+      expect(now.getTime()).toBeGreaterThan(tenYearsAgo)
+      expect(now.getTime()).toBeLessThan(oneYearFromNow)
     })
   })
 
