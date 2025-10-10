@@ -9,12 +9,12 @@ export interface RoomAccessError {
 export const parseRoomAccessError = (error: unknown): RoomAccessError => {
   // Si es un error del backend con estructura específica
   if (error && typeof error === 'object' && 'response' in error) {
-    const errorWithResponse = error as { response?: { data?: { error?: string } } };
+    const errorWithResponse = error as { response?: { data?: { error?: string; details?: Record<string, unknown> } } };
     if (errorWithResponse.response?.data?.error) {
       const backendError = errorWithResponse.response.data;
     
     // Error de turno requerido
-    if (backendError.error.includes('Sin turno asignado') || 
+    if (backendError.error?.includes('Sin turno asignado') || 
         backendError.details?.reason === 'schedule_required') {
       return {
         type: 'schedule_required',
@@ -24,8 +24,8 @@ export const parseRoomAccessError = (error: unknown): RoomAccessError => {
     }
     
     // Error de horario
-    if (backendError.error.includes('horario') || 
-        backendError.error.includes('tiempo')) {
+    if (backendError.error?.includes('horario') || 
+        backendError.error?.includes('tiempo')) {
       return {
         type: 'time_mismatch',
         message: 'El acceso no está permitido en este horario',
@@ -34,8 +34,8 @@ export const parseRoomAccessError = (error: unknown): RoomAccessError => {
     }
     
     // Error de sala
-    if (backendError.error.includes('sala') || 
-        backendError.error.includes('room')) {
+    if (backendError.error?.includes('sala') || 
+        backendError.error?.includes('room')) {
       return {
         type: 'room_mismatch',
         message: 'No tienes acceso a esta sala',
@@ -44,8 +44,8 @@ export const parseRoomAccessError = (error: unknown): RoomAccessError => {
     }
     
     // Error de usuario
-    if (backendError.error.includes('usuario') || 
-        backendError.error.includes('user')) {
+    if (backendError.error?.includes('usuario') || 
+        backendError.error?.includes('user')) {
       return {
         type: 'user_not_found',
         message: 'Usuario no encontrado o no autorizado',
@@ -69,7 +69,7 @@ export const parseRoomAccessError = (error: unknown): RoomAccessError => {
     const errorData = errorWithData.data;
     
     // Error de turno requerido
-    if (errorData.error.includes('Sin turno asignado') || 
+    if (errorData.error?.includes('Sin turno asignado') || 
         errorData.details?.reason === 'schedule_required') {
       return {
         type: 'schedule_required',
@@ -79,8 +79,8 @@ export const parseRoomAccessError = (error: unknown): RoomAccessError => {
     }
     
     // Error de horario
-    if (errorData.error.includes('horario') || 
-        errorData.error.includes('tiempo')) {
+    if (errorData.error?.includes('horario') || 
+        errorData.error?.includes('tiempo')) {
       return {
         type: 'time_mismatch',
         message: 'El acceso no está permitido en este horario',
@@ -89,8 +89,8 @@ export const parseRoomAccessError = (error: unknown): RoomAccessError => {
     }
     
     // Error de sala
-    if (errorData.error.includes('sala') || 
-        errorData.error.includes('room')) {
+    if (errorData.error?.includes('sala') || 
+        errorData.error?.includes('room')) {
       return {
         type: 'room_mismatch',
         message: 'No tienes acceso a esta sala',
@@ -99,8 +99,8 @@ export const parseRoomAccessError = (error: unknown): RoomAccessError => {
     }
     
     // Error de usuario
-    if (errorData.error.includes('usuario') || 
-        errorData.error.includes('user')) {
+    if (errorData.error?.includes('usuario') || 
+        errorData.error?.includes('user')) {
       return {
         type: 'user_not_found',
         message: 'Usuario no encontrado o no autorizado',
@@ -133,7 +133,7 @@ export const parseRoomAccessError = (error: unknown): RoomAccessError => {
   return {
     type: 'server_error',
     message: 'Error inesperado. Intenta nuevamente',
-    details: error
+    details: error as Record<string, unknown>
   };
 };
 

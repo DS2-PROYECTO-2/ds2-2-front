@@ -38,6 +38,20 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
     setBackendFiltered(false);
   };
 
+  // Función para cargar con rango por defecto (todo el mes actual)
+  const loadWithDefaultRange = useCallback(async () => {
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    const fromFormatted = firstDayOfMonth.toISOString();
+    const toFormatted = lastDayOfMonth.toISOString();
+    
+    return getAllEntries({
+      from: fromFormatted,
+      to: toFormatted
+    });
+  }, []);
 
   // Función para cargar datos básicos (con rango por defecto para admin)
   const load = useCallback(async (showRefreshAnimation = false) => {
@@ -68,21 +82,6 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
       }
     }
   }, [user?.role, loadWithDefaultRange]);
-
-  // Función para cargar con rango por defecto (todo el mes actual)
-  const loadWithDefaultRange = useCallback(async () => {
-    const today = new Date();
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    
-    const fromFormatted = firstDayOfMonth.toISOString();
-    const toFormatted = lastDayOfMonth.toISOString();
-    
-    return getAllEntries({
-      from: fromFormatted,
-      to: toFormatted
-    });
-  }, []);
 
   // Función para cargar TODOS los registros (sin filtros de fecha)
   const loadAllEntries = useCallback(async () => {

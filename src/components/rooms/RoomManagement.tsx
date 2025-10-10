@@ -641,7 +641,7 @@ export default function RoomManagement() {
               <div className="room-card-header">
                 <div className="room-info">
                   <h3 className="room-name">{room.name}</h3>
-                  <p className="room-location">{room.location} · Capacidad: {room.capacity}</p>
+                  <p className="room-location">{room.code} · Capacidad: {room.capacity}</p>
                 </div>
                 <div className="room-actions">
                   {canEditRooms() && (

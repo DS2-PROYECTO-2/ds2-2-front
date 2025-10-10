@@ -38,13 +38,6 @@ export const useRoomAccessLogic = (roomId: number) => {
     lastExitTime: null
   });
 
-  // Verificar acceso inicial
-  useEffect(() => {
-    if (user && user.role === 'monitor' && roomId) {
-      checkAccess();
-    }
-  }, [user, roomId, checkAccess]);
-
   // Verificar acceso a la sala
   const checkAccess = useCallback(async () => {
     if (!user || user.role !== 'monitor') {
@@ -62,7 +55,10 @@ export const useRoomAccessLogic = (roomId: number) => {
         ...prev,
         hasAccess: accessInfo.canAccess,
         reason: accessInfo.reason || 'Sin información',
-        currentSchedule: accessInfo.schedule
+        currentSchedule: accessInfo.schedule ? {
+          ...accessInfo.schedule,
+          room: roomId
+        } : null
       }));
     } catch (error) {
       console.error('Error checking room access:', error);
@@ -73,6 +69,13 @@ export const useRoomAccessLogic = (roomId: number) => {
       }));
     }
   }, [user, roomId, canAccessRoom]);
+
+  // Verificar acceso inicial
+  useEffect(() => {
+    if (user && user.role === 'monitor' && roomId) {
+      checkAccess();
+    }
+  }, [user, roomId, checkAccess]);
 
   // Intentar entrar a la sala (usando validación del backend)
   const attemptEntry = useCallback(async (entryTime?: string) => {
@@ -193,7 +196,10 @@ export const useRoomAccessLogic = (roomId: number) => {
         ...prev,
         hasAccess: validation.access_granted,
         reason: validation.reason || '',
-        currentSchedule: validation.schedule
+        currentSchedule: validation.schedule ? {
+          ...validation.schedule,
+          room: roomId
+        } : null
       }));
     } catch (error) {
       console.error('Error validating real-time access:', error);
@@ -213,7 +219,10 @@ export const useRoomAccessLogic = (roomId: number) => {
       return {
         canAccess: accessInfo.canAccess,
         reason: accessInfo.reason || 'Sin información',
-        schedule: accessInfo.schedule
+        schedule: accessInfo.schedule ? {
+          ...accessInfo.schedule,
+          room: roomId
+        } : undefined
       };
     } catch (error) {
       console.error('Error checking current access:', error);

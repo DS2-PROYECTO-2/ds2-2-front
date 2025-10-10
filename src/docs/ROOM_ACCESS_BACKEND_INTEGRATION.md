@@ -226,3 +226,4 @@ Para probar la integración:
 La nueva implementación garantiza que **nunca** se pueda acceder a una sala sin tener un turno asignado y activo, ya que todas las validaciones se realizan en el backend, que es la única fuente de verdad del sistema.
 
 
+

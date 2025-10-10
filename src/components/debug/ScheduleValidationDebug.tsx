@@ -152,13 +152,13 @@ const ScheduleValidationDebug: React.FC = () => {
             {getStatusIcon(validationResult.valid)} {validationResult.message}
           </h4>
           
-          {validationResult.details && (
+          {validationResult.details && typeof validationResult.details === 'object' ? (
             <div style={{ fontSize: '14px' }}>
-              <p><strong>Fecha de Inicio:</strong> {validationResult.details.startDate}</p>
-              <p><strong>Fecha de Fin:</strong> {validationResult.details.endDate}</p>
-              <p><strong>Diferencia:</strong> {validationResult.details.hours.toFixed(2)} horas</p>
+              <p><strong>Fecha de Inicio:</strong> {String((validationResult.details as Record<string, unknown>)?.startDate || '')}</p>
+              <p><strong>Fecha de Fin:</strong> {String((validationResult.details as Record<string, unknown>)?.endDate || '')}</p>
+              <p><strong>Diferencia:</strong> {(validationResult.details as Record<string, unknown>)?.hours ? Number((validationResult.details as Record<string, unknown>).hours).toFixed(2) : '0.00'} horas</p>
             </div>
-          )}
+          ) : null}
         </div>
       )}
 

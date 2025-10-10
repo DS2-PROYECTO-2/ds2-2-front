@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useRoomAccess } from '../../hooks/useRoomAccess';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -28,13 +28,6 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
     getCurrentScheduleInfo
   } = useRoomAccess();
 
-  // Validar acceso inicial
-  useEffect(() => {
-    if (user && roomId) {
-      checkRoomAccess();
-    }
-  }, [user, roomId, checkRoomAccess]);
-
   // Verificar acceso a la sala
   const checkRoomAccess = useCallback(async () => {
     if (!user || user.role !== 'monitor') {
@@ -55,13 +48,26 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
     }
   }, [user, roomId, onAccessChange, canAccessRoom]);
 
+  // Validar acceso inicial
+  useEffect(() => {
+    if (user && roomId) {
+      checkRoomAccess();
+    }
+  }, [user, roomId, checkRoomAccess]);
+
   // Obtener información del turno actual
   const getScheduleInfo = async () => {
     try {
       const scheduleInfo = await getCurrentScheduleInfo();
       
-      if (onScheduleInfo) {
-        onScheduleInfo(scheduleInfo);
+      if (onScheduleInfo && scheduleInfo) {
+        onScheduleInfo({
+          id: (scheduleInfo as unknown as Record<string, unknown>).id as number || 0,
+          start_datetime: (scheduleInfo as unknown as Record<string, unknown>).start_datetime as string || '',
+          end_datetime: (scheduleInfo as unknown as Record<string, unknown>).end_datetime as string || '',
+          room: roomId,
+          room_name: (scheduleInfo as unknown as Record<string, unknown>).room_name as string
+        });
       }
     } catch (error) {
       console.error('Error getting schedule info:', error);
@@ -177,7 +183,15 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
   };
 
   // Exponer funciones para uso externo
-  const ref = React.useRef<HTMLDivElement>(null);
+  const ref = React.useRef<{
+    checkRoomAccess: () => Promise<void>;
+    handleRoomEntry: (entryTime?: string) => Promise<{ success: boolean; message: string }>;
+    handleRoomExit: (exitTime?: string) => Promise<{ success: boolean; message: string }>;
+    validateRealTimeAccess: () => Promise<void>;
+    hasScheduleInRoom: () => Promise<boolean>;
+    getSchedulesForRoom: () => Promise<unknown>;
+    getScheduleInfo: () => Promise<void>;
+  }>(null);
   React.useImperativeHandle(ref, () => ({
     checkRoomAccess,
     handleRoomEntry,

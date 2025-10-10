@@ -24,8 +24,8 @@ export const softSecureApiCall = async <T>(
     }
 
     const payload = tokenValidation.payload;
-    const userRole = payload.role;
-    const isVerified = payload.is_verified;
+    const userRole = payload?.role;
+    const isVerified = (payload as Record<string, unknown>)?.is_verified;
 
     // Validar rol si es necesario
     if (requiredRole !== 'any') {

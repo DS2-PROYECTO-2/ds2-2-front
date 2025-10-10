@@ -131,25 +131,27 @@ export class ApiErrorHandler {
   static handleValidationError(data: unknown): string {
     
     if (typeof data === 'object' && data !== null) {
+      const dataObj = data as Record<string, unknown>;
+      
       // Error de negocio específico (prioridad alta)
-      if (data.error) {
-        return this.handleBusinessError(data);
+      if (dataObj.error) {
+        return this.handleBusinessError(dataObj);
       }
       
       // Errores de conflicto de horarios (prioridad alta)
-      if (data.user_conflict) {
-        return this.handleBusinessError(data);
+      if (dataObj.user_conflict) {
+        return this.handleBusinessError(dataObj);
       }
       
-      if (data.room_conflict) {
-        return this.handleBusinessError(data);
+      if (dataObj.room_conflict) {
+        return this.handleBusinessError(dataObj);
       }
       
       // Error de validación de campos específicos
-      const fields = Object.keys(data);
+      const fields = Object.keys(dataObj);
       if (fields.length > 0) {
         const firstField = fields[0];
-        const messages = data[firstField];
+        const messages = dataObj[firstField];
         const message = Array.isArray(messages) ? messages[0] : messages;
         
         // Mapear campos a nombres más amigables
@@ -180,18 +182,19 @@ export class ApiErrorHandler {
    * Maneja errores de autenticación (401 Unauthorized)
    */
   static handleAuthError(data: unknown): string {
+    const dataObj = data as Record<string, unknown>;
     
-    if (data.detail === 'Invalid token.') {
+    if (dataObj.detail === 'Invalid token.') {
       return 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
     }
     
-    if (data.detail === 'Authentication credentials were not provided.') {
+    if (dataObj.detail === 'Authentication credentials were not provided.') {
       return 'Debes iniciar sesión para acceder a esta función.';
     }
     
     // Errores específicos de campos
-    if (data.username) {
-      const message = Array.isArray(data.username) ? data.username[0] : data.username;
+    if (dataObj.username) {
+      const message = Array.isArray(dataObj.username) ? dataObj.username[0] : dataObj.username;
       if (message.includes('no ha sido verificada')) {
         return 'Tu cuenta aún no ha sido verificada por un administrador.';
       }
@@ -204,8 +207,8 @@ export class ApiErrorHandler {
       return `Usuario: ${message}`;
     }
     
-    if (data.password) {
-      const message = Array.isArray(data.password) ? data.password[0] : data.password;
+    if (dataObj.password) {
+      const message = Array.isArray(dataObj.password) ? dataObj.password[0] : dataObj.password;
       if (message.includes('incorrecta')) {
         return 'Contraseña incorrecta. Verifica tu contraseña.';
       }

@@ -128,7 +128,7 @@ const ScheduleCalendar: React.FC = () => {
       if (field === 'start_datetime') {
         if (!value) {
           errors.start_datetime = 'Debes seleccionar una fecha y hora de inicio';
-        } else {
+        } else if (typeof value === 'string' || typeof value === 'number') {
           const startDate = new Date(value);
           const now = getBogotaDate();
           if (startDate < now) {
@@ -139,7 +139,7 @@ const ScheduleCalendar: React.FC = () => {
       if (field === 'end_datetime') {
         if (!value) {
           errors.end_datetime = 'Debes seleccionar una fecha y hora de fin';
-        } else if (updatedSchedule.start_datetime) {
+        } else if (updatedSchedule.start_datetime && (typeof value === 'string' || typeof value === 'number')) {
           const startDate = new Date(updatedSchedule.start_datetime);
           const endDate = new Date(value);
           if (endDate <= startDate) {
@@ -932,7 +932,7 @@ const ScheduleCalendar: React.FC = () => {
           window.location.href = '/login';
         }, 3000);
       } else {
-        console.warn('Error no crítico, manteniendo sesión:', error.message);
+        console.warn('Error no crítico, manteniendo sesión:', error instanceof Error ? error.message : String(error));
       }
     }
   };
