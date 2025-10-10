@@ -148,7 +148,7 @@ const UserManagement: React.FC = () => {
     }, 300); // Debounce para búsqueda
 
     return () => clearTimeout(timeoutId);
-  }, [filters, allUsers, filterUsers]);
+  }, [filters, allUsers]); // Removido filterUsers para evitar bucle infinito
 
   // Cargar usuarios al montar el componente
   useEffect(() => {
@@ -257,6 +257,28 @@ const UserManagement: React.FC = () => {
       return;
     }
 
+    // Validaciones adicionales de longitud y formato
+    if (newUser.username.length < 3) {
+      setCreateError('El nombre de usuario debe tener al menos 3 caracteres');
+      return;
+    }
+    if (newUser.username.length > 30) {
+      setCreateError('El nombre de usuario no puede tener más de 30 caracteres');
+      return;
+    }
+    if (newUser.first_name.length < 2) {
+      setCreateError('El nombre debe tener al menos 2 caracteres');
+      return;
+    }
+    if (newUser.last_name.length < 2) {
+      setCreateError('El apellido debe tener al menos 2 caracteres');
+      return;
+    }
+    if (newUser.phone && newUser.phone.length < 7) {
+      setCreateError('El teléfono debe tener al menos 7 dígitos');
+      return;
+    }
+
     try {
       setCreateLoading(true);
       setCreateError(null);
@@ -286,32 +308,38 @@ const UserManagement: React.FC = () => {
       loadUsers();
     } catch (err: unknown) {
       console.error('Error creating user:', err);
-      const error = err as ApiError;
+      
       let errorMessage = 'Error al crear usuario';
       
-      
-      // Manejar errores específicos del backend
-      if (error.username && Array.isArray(error.username)) {
-        errorMessage = error.username[0];
-      } else if (error.email && Array.isArray(error.email)) {
-        errorMessage = error.email[0];
-      } else if (error.identification && Array.isArray(error.identification)) {
-        errorMessage = error.identification[0];
-      } else if (error.message) {
-        // Si el mensaje es un JSON string, parsearlo
-        try {
-          const parsedError = JSON.parse(error.message);
-          if (parsedError.username && Array.isArray(parsedError.username)) {
-            errorMessage = parsedError.username[0];
-          } else if (parsedError.email && Array.isArray(parsedError.email)) {
-            errorMessage = parsedError.email[0];
-          } else if (parsedError.identification && Array.isArray(parsedError.identification)) {
-            errorMessage = parsedError.identification[0];
-          } else {
-            errorMessage = error.message;
+      // Manejar diferentes tipos de errores
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (err && typeof err === 'object' && 'message' in err) {
+        const apiError = err as { message: string; status?: number };
+        errorMessage = apiError.message;
+        
+        // Manejar errores específicos del backend
+        if (apiError.status === 500) {
+          errorMessage = 'Error interno del servidor. Por favor, intenta nuevamente.';
+        } else if (apiError.status === 400) {
+          // Intentar extraer errores de validación específicos
+          if (err && typeof err === 'object' && 'data' in err) {
+            const errorData = (err as { data: unknown }).data;
+            if (errorData && typeof errorData === 'object') {
+              const data = errorData as Record<string, unknown>;
+              if (data.username && Array.isArray(data.username)) {
+                errorMessage = `Nombre de usuario: ${data.username[0]}`;
+              } else if (data.email && Array.isArray(data.email)) {
+                errorMessage = `Email: ${data.email[0]}`;
+              } else if (data.password && Array.isArray(data.password)) {
+                errorMessage = `Contraseña: ${data.password[0]}`;
+              } else if (data.identification && Array.isArray(data.identification)) {
+                errorMessage = `Identificación: ${data.identification[0]}`;
+              }
+            }
           }
-        } catch {
-          errorMessage = error.message;
+        } else if (apiError.status === 409) {
+          errorMessage = 'El usuario o email ya existe. Por favor, usa otros datos.';
         }
       }
       

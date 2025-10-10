@@ -227,3 +227,4 @@ La nueva implementación garantiza que **nunca** se pueda acceder a una sala sin
 
 
 
+
