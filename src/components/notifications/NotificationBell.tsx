@@ -207,13 +207,52 @@ const NotificationBell: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString('es-ES', {
+    return date.toLocaleString('es-CO', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'America/Bogota'
     });
+  };
+
+  // Obtener tiempo unificado (priorizar created_at para consistencia y zona horaria)
+  const getUnifiedTime = (notification: { created_at: string }) => {
+    return formatDate(notification.created_at);
+  };
+
+  // Extraer parte principal (antes de los detalles con emojis)
+  const extractMainText = (message: string) => {
+    const cutIndex = Math.min(
+      ...['🏢', '👤', '📅']
+        .map(icon => message.indexOf(icon))
+        .filter(idx => idx !== -1)
+        .concat([message.length])
+    );
+    return message.slice(0, cutIndex).trim();
+  };
+
+  // Corrección ortográfica: "salió a la sala" -> "salió de la sala"
+  const fixGrammar = (text: string) => {
+    return text.replace(/salió\s+a\s+la\s+sala/gi, 'salió de la sala');
+  };
+
+  // Parsear detalles en lista (Sala, Monitor, Hora) a partir de emojis
+  const parseDetails = (message: string): Array<{ icon: string; label: string; value: string }> => {
+    const details: Array<{ icon: string; label: string; value: string }> = [];
+    const salaMatch = message.match(/🏢\s*Sala:\s*([^👤📅\n]+)/u);
+    if (salaMatch) {
+      details.push({ icon: '🏢', label: 'Sala', value: salaMatch[1].trim() });
+    }
+    // Incluir monitor nuevamente como item
+    const monitorMatch = message.match(/👤\s*Monitor:\s*([^📅\n]+)/u);
+    if (monitorMatch) {
+      details.push({ icon: '👤', label: 'Monitor', value: monitorMatch[1].trim() });
+    }
+    // Omitimos la hora embebida en el mensaje para evitar discrepancias de zona horaria.
+    return details;
   };
 
   // Mostrar para usuarios autenticados (admins y monitores)
@@ -283,14 +322,20 @@ const NotificationBell: React.FC = () => {
                   onClick={() => !notification.is_read && markAsRead(notification.id)}
                 >
                   <div className="notification-content">
-                    <h4>{notification.title}</h4>
-                    <p>{notification.message}</p>
-                    {notification.monitor_name && (
-                      <span className="monitor-info">
-                        Monitor: {notification.monitor_name}
-                      </span>
+                    <h4>{fixGrammar(notification.title)}</h4>
+                    <p className="notification-main">{fixGrammar(extractMainText(notification.message))}</p>
+                    {parseDetails(notification.message).length > 0 && (
+                      <ul className="notification-details">
+                        {parseDetails(notification.message).map((d, idx) => (
+                          <li key={idx} className="notification-detail-item">
+                            <span className="detail-icon" aria-hidden>{d.icon}</span>
+                            <span className="detail-text"><strong>{d.label}:</strong> {d.value}</span>
+                          </li>
+                        ))}
+                      </ul>
                     )}
-                    <time>{formatDate(notification.created_at)}</time>
+                    {/* Información de monitor oculta por solicitud */}
+                    <time>{getUnifiedTime(notification)}</time>
                   </div>
                   {!notification.is_read && <div className="unread-indicator" />}
                 </div>

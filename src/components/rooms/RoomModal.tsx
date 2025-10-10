@@ -13,7 +13,7 @@ const RoomModal: React.FC<RoomModalProps> = ({ room, onSave, onClose }) => {
     name: '',
     capacity: 0,
     description: '',
-    location: ''
+    code: ''
   });
 
   useEffect(() => {
@@ -22,21 +22,21 @@ const RoomModal: React.FC<RoomModalProps> = ({ room, onSave, onClose }) => {
         name: room.name,
         capacity: room.capacity,
         description: room.description || '',
-        location: room.location || ''
+        code: room.code || ''
       });
     } else {
       setFormData({
         name: '',
         capacity: 0,
         description: '',
-        location: ''
+        code: ''
       });
     }
   }, [room]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.name.trim() && formData.capacity > 0) {
+    if (formData.name.trim() && formData.capacity > 0 && formData.code.trim()) {
       onSave(formData);
     }
   };
@@ -90,14 +90,15 @@ const RoomModal: React.FC<RoomModalProps> = ({ room, onSave, onClose }) => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="location">Ubicación</label>
+            <label htmlFor="code">Código de Sala *</label>
             <input
               type="text"
-              id="location"
-              name="location"
-              value={formData.location}
+              id="code"
+              name="code"
+              value={formData.code}
               onChange={handleChange}
-              placeholder="Ej: Edificio A, Piso 2"
+              required
+              placeholder="Ej: LR001, SALA-A-001, LAB-REDES"
             />
           </div>
 
@@ -117,7 +118,7 @@ const RoomModal: React.FC<RoomModalProps> = ({ room, onSave, onClose }) => {
             <button type="button" className="btn btn-cancel" onClick={onClose}>
               Cancelar
             </button>
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className="btn btn-danger">
               {room ? 'Actualizar' : 'Crear'} Sala
             </button>
           </div>

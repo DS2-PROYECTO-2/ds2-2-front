@@ -8,6 +8,8 @@ interface User {
   role: string
   is_verified: boolean
   full_name?: string
+  first_name?: string
+  last_name?: string
 }
 
 interface AuthContextType {

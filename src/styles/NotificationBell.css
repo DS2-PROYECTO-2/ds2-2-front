@@ -1,0 +1,212 @@
+/* Estilos para el componente NotificationBell */
+.notification-bell {
+  position: relative;
+  display: inline-block;
+}
+
+.notification-bell-button {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-bell-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.notification-bell-icon {
+  width: 24px;
+  height: 24px;
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.notification-bell-button:hover .notification-bell-icon {
+  color: #333;
+}
+
+.notification-bell-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: #ff4444;
+  color: white;
+  border-radius: 50%;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.notification-bell-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 350px;
+  max-height: 400px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.notification-bell-header {
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-bell-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.notification-bell-mark-all {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.notification-bell-mark-all:hover {
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+.notification-bell-content {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.notification-bell-loading,
+.notification-bell-empty {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
+
+.notification-bell-list {
+  padding: 0;
+}
+
+.notification-bell-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.notification-bell-item:hover {
+  background-color: #f8f9fa;
+}
+
+.notification-bell-item.unread {
+  background-color: #f0f8ff;
+  border-left: 3px solid #007bff;
+}
+
+.notification-bell-item-content {
+  flex: 1;
+}
+
+.notification-bell-item-content h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.notification-bell-item-content p {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Mejorar presentación de emojis e información estructurada */
+.notification-bell-item-content p {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Texto principal de la notificación */
+.notification-main {
+  margin-bottom: 6px;
+}
+
+/* Lista de detalles (Sala, Monitor, Hora) */
+.notification-details {
+  list-style: none;
+  padding: 8px 12px;
+  margin: 0 0 8px 0;
+  background: #f8f9fa;
+  border-left: 3px solid #007bff;
+  border-radius: 6px;
+}
+
+.notification-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+  color: #374151;
+}
+
+.notification-detail-item .detail-icon {
+  width: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-detail-item .detail-text {
+  font-size: 13px;
+}
+
+.notification-bell-item-time {
+  font-size: 12px;
+  color: #999;
+}
+
+.notification-bell-item-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #007bff;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .notification-bell-dropdown {
+    width: 300px;
+    right: -50px;
+  }
+}
+

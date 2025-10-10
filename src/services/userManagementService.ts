@@ -53,9 +53,8 @@ const userManagementService = {
       const params = new URLSearchParams();
       
       if (filters?.search) {
-        // Intentar diferentes nombres de parámetro para búsqueda
+        // Usar solo un parámetro de búsqueda para evitar confusión
         params.append('search', filters.search);
-        params.append('q', filters.search); // Parámetro alternativo
       }
       if (filters?.role) {
         params.append('role', filters.role);
@@ -191,6 +190,16 @@ const userManagementService = {
       });
     } catch (error) {
       console.error('Error changing user password:', error);
+      throw error;
+    }
+  },
+
+  // Obtener solo monitores
+  async getMonitors(): Promise<User[]> {
+    try {
+      return await this.getUsers({ role: 'monitor' });
+    } catch (error) {
+      console.error('Error fetching monitors:', error);
       throw error;
     }
   }

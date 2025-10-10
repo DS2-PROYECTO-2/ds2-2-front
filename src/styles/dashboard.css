@@ -103,8 +103,7 @@
 .bell-button:active svg,
 .mark-all-read-btn:active svg,
 .refresh-btn:active svg,
-.content-panel .btn:active svg,
-button:active svg {
+.content-panel .btn:active svg {
   animation: icon-tap 220ms ease-in-out;
   transform-origin: 50% 50%;
 }
@@ -944,6 +943,15 @@ button:active svg {
   background-repeat: no-repeat, repeat;
 }
 
+/* Panel de calendario */
+.panel-calendar {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
 /* Marca de agua para panel de registro de sala (lado derecho) */
 .panel-room { position: relative; overflow: hidden; }
 .panel-room::before {
@@ -1182,6 +1190,20 @@ button:active svg {
   color: var(--gray-600); 
   font-size: .85rem; 
   text-align: center;
+}
+
+/* Mini-card de llegadas tarde */
+.mini.mini--late { position: relative; }
+.mini.mini--late .mini-watermark { position: absolute; right: 8px; top: 8px; font-size: 40px; opacity: .12; pointer-events: none; }
+.mini-card__value--late { color: #DC2626; }
+
+/* Mantener 4 mini-cards en línea reduciendo padding en pantallas medianas */
+@media (max-width: 1200px) {
+  .content-panel.mini { padding: 14px; }
+  .mini-card__value { font-size: 1.6rem; }
+}
+@media (max-width: 1024px) {
+  .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 }
 
 @media (max-width: 768px) {

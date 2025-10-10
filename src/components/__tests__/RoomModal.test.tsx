@@ -29,8 +29,8 @@ describe('RoomModal', () => {
   const mockRoom = {
     id: '1',
     name: 'Sala A',
+    code: 'SA001',
     capacity: 20,
-    location: 'Edificio A',
     description: 'Sala de sistemas',
     computers: []
   };

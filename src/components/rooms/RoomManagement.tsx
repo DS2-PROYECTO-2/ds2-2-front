@@ -110,7 +110,6 @@ export default function RoomManagement() {
       if ((e.key === 'room-data-update' || e.key === 'notifications-updated' || e.key === 'reports-updated') && (e.newValue || e.key !== null)) {
         try {
           const updateData = e.key === 'room-data-update' && e.newValue ? JSON.parse(e.newValue) : null;
-          // no-op: logs removidos
           
           if (updateData && updateData.type === 'report-created') {
             // Agregar nuevo reporte
@@ -122,8 +121,7 @@ export default function RoomManagement() {
               return prevReports;
             });
             // Forzar refresco de vistas para badges/conteos
-            setSelectedRoom(prev => (prev ? { ...prev } : prev));
-            setRooms(prev => [...prev]);
+            // No modificar selectedRoom y rooms directamente para evitar bucles infinitos
           } else if (updateData && updateData.type === 'report-updated') {
             // Actualizar reporte existente
             setReports(prevReports => 
@@ -134,8 +132,7 @@ export default function RoomManagement() {
               )
             );
             // Forzar refresco de vistas para badges/conteos
-            setSelectedRoom(prev => (prev ? { ...prev } : prev));
-            setRooms(prev => [...prev]);
+            // No modificar selectedRoom y rooms directamente para evitar bucles infinitos
           } else if (e.key === 'notifications-updated' || e.key === 'reports-updated') {
             // Reconsultar solo los reportes con un pequeño retraso y REEMPLAZAR por verdad de servidor
             (async () => {
@@ -144,8 +141,7 @@ export default function RoomManagement() {
                 const apiReports = await roomManagementService.getReports();
                 setReports(apiReports);
                 // Forzar refresco de vistas
-                setSelectedRoom(prev => (prev ? { ...prev } : prev));
-                setRooms(prev => [...prev]);
+                // No modificar selectedRoom y rooms directamente para evitar bucles infinitos
           } catch { /* silencioso */ }
             })();
           }
@@ -192,9 +188,11 @@ export default function RoomManagement() {
   // Forzar re-render de la vista de detalle al cambiar los reportes
   useEffect(() => {
     if (selectedRoom) {
-      setSelectedRoom(prev => (prev ? { ...prev } : prev));
+      // Solo actualizar si realmente hay cambios en los reportes
+      // No modificar selectedRoom directamente para evitar bucle infinito
+      setSelectedRoom(prev => prev ? { ...prev, reports: reports } : prev);
     }
-  }, [reports, selectedRoom]);
+  }, [reports, selectedRoom]); // Incluir selectedRoom en las dependencias
 
   // Recalcular conteos de pendientes por equipo cada vez que cambian los reportes
   useEffect(() => {
@@ -303,7 +301,6 @@ export default function RoomManagement() {
     });
     if (!proceed) return;
     try {
-        // logs removidos
       await roomManagementService.deleteEquipment(computerId);
       setRooms(prevRooms => {
         const updatedRooms = prevRooms.map(room => 
@@ -379,7 +376,6 @@ export default function RoomManagement() {
         const latest = await roomManagementService.getReports();
         setReports(latest);
       } catch { /* noop */ }
-      console.log(`Reporte ${reportId} actualizado a estado: ${newStatus}`);
       // Emitir actualización en tiempo real
       emitRealTimeUpdate('report-updated', { reportId, newStatus });
       showNotification('Reporte actualizado', 'success');
@@ -451,13 +447,9 @@ export default function RoomManagement() {
       
       // Solo los administradores pueden cambiar el estado del equipo
       if (user?.role === 'admin') {
-        console.log('Updating equipment status to out_of_service for computer:', reportData.computerId);
         await roomManagementService.updateEquipment(reportData.computerId, {
           status: 'out_of_service'
         });
-        console.log('Equipment status updated successfully');
-      } else {
-        console.log('Monitor reported fault - equipment status not changed (admin permission required)');
       }
       
       // Actualizar el selectedRoom para todos los usuarios (para que se vea el badge de reportes)
@@ -520,9 +512,16 @@ export default function RoomManagement() {
           )
         );
       } else {
+        // Generar código único si no se proporciona
+        const generateUniqueCode = () => {
+          const timestamp = Date.now();
+          const random = Math.random().toString(36).substr(2, 5).toUpperCase();
+          return `SALA-${timestamp}-${random}`;
+        };
+
         const newRoom = await roomManagementService.createRoom({
           name: roomData.name,
-          code: roomData.location || `SALA-${Date.now()}`,
+          code: roomData.code || generateUniqueCode(),
           capacity: roomData.capacity,
           description: roomData.description || ''
         });
@@ -531,7 +530,18 @@ export default function RoomManagement() {
       setShowRoomModal(false);
     } catch (error) {
       console.error('Error saving room:', error);
+      
+      // Manejar error específico de código duplicado
+      if (error && typeof error === 'object' && 'data' in error) {
+        const errorData = error.data as { details?: { code?: string } };
+        if (errorData?.details?.code?.includes('ya existe')) {
+          showNotification('El código de sala ya existe. Por favor, usa un código diferente.', 'error');
+        } else {
+          showNotification('Error al guardar la sala. Por favor, intenta de nuevo.', 'error');
+        }
+      } else {
         showNotification('Error al guardar la sala. Por favor, intenta de nuevo.', 'error');
+      }
     }
   };
 
@@ -580,7 +590,6 @@ export default function RoomManagement() {
           acquisition_date: new Date().toISOString()
         });
         
-        // logs removidos
         
         setRooms(prevRooms => {
           const updatedRooms = prevRooms.map(room => 
@@ -588,7 +597,6 @@ export default function RoomManagement() {
               ? { ...room, computers: [...room.computers, newComputer] }
               : room
           );
-          // logs removidos
           
           // Actualizar también el selectedRoom para que la vista se actualice inmediatamente
           const updatedSelectedRoom = updatedRooms.find(r => r.id === selectedRoom.id);
@@ -633,7 +641,7 @@ export default function RoomManagement() {
               <div className="room-card-header">
                 <div className="room-info">
                   <h3 className="room-name">{room.name}</h3>
-                  <p className="room-location">{room.location} · Capacidad: {room.capacity}</p>
+                  <p className="room-location">{room.code} · Capacidad: {room.capacity}</p>
                 </div>
                 <div className="room-actions">
                   {canEditRooms() && (

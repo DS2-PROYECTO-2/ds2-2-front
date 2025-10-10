@@ -30,8 +30,6 @@
   max-width: 600px;
   position: relative;
   z-index: 2;
-  opacity: 0; /* ← ESTADO INICIAL */
-  transform: translateY(50px); /* ← ESTADO INICIAL */
   animation: slideInUp 0.8s ease-out;
   animation-fill-mode: forwards;
 }

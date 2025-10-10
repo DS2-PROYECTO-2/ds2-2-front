@@ -1,8 +1,8 @@
 /* Contenedor principal */
 .room-management-container {
   min-height: 100vh;
-  
   padding: 20px;
+  animation: fadeIn 0.5s ease-out;
 }
 
 /* Header */
@@ -15,6 +15,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  animation: slideInDown 0.4s ease-out;
 }
 
 .header-content h1 {
@@ -50,10 +51,15 @@
   box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
 }
 
+.create-room-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+}
+
 /* Grid de salas */
 .rooms-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 30px;
 }
 
@@ -64,6 +70,7 @@
   box-shadow: 0 10px 30px rgba(0,0,0,0.15);
   transition: all 0.4s ease;
   overflow: hidden;
+  animation: fadeIn 0.4s ease-out;
 }
 
 .room-card:hover {
@@ -264,13 +271,14 @@
 .computer-card {
   background: white;
   border-radius: 12px;
-  padding: 15px;
+  padding: 8px; /* reduce padding */
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* sombra más ligera */
   border: 2px solid transparent;
+  min-height: 100px; /* reduce altura */
 }
 
 .computer-icon {
@@ -329,13 +337,21 @@
 
 .computer-actions {
   display: flex;
-  gap: 4px;
+  flex-wrap: wrap; /* permitir salto de línea para que no se oculte el botón */
+  gap: 6px;
   opacity: 0;
   transition: opacity 0.3s;
 }
 
 .computer-card:hover .computer-actions {
   opacity: 1;
+}
+
+/* En dispositivos táctiles no hay hover, mostrar siempre acciones */
+@media (hover: none) {
+  .computer-actions {
+    opacity: 1;
+  }
 }
 
 .computer-actions .action-btn {
@@ -358,6 +374,23 @@
 .computer-actions .report-btn:hover {
   background: rgba(220, 38, 38, 0.2);
   color: #B91C1C;
+}
+
+/* Asegurar que las tarjetas reserven espacio para acciones y no tapen botones */
+.computer-card {
+  padding-bottom: 44px; /* reserva menor para acciones */
+}
+
+/* Responsive: mejorar disposición de acciones en pantallas pequeñas */
+@media (max-width: 768px) {
+  .computer-actions {
+    justify-content: space-between;
+  }
+  .computer-actions .action-btn,
+  .computer-actions .report-btn {
+    flex: 1 1 calc(50% - 6px);
+    text-align: center;
+  }
 }
 
 .computer-serial {
@@ -683,13 +716,13 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #DC2626, #B91C1C);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   color: white;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
 }
 
 .btn-cancel {
@@ -1220,6 +1253,8 @@
 
 .notification-toast.error {
   background: linear-gradient(135deg, #f44336, #d32f2f);
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes slideInRight {

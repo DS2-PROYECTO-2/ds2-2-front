@@ -7,6 +7,7 @@ import RoomHistory from '../rooms/RoomHistory';
 import RoomStatsRow from '../rooms/RoomStatsRow';
 import RoomManagement from '../rooms/RoomManagement';
 import UserManagement from './UserManagement';
+import ScheduleCalendar from '../schedule/ScheduleCalendar';
 import { useAuth } from '../../hooks/useAuth';
 
 
@@ -47,6 +48,11 @@ const DashboardLayout: React.FC = () => {
       case 'home':
         return (
           <>
+            {/* Calendario de turnos - visible para todos */}
+            <div className="content-panel panel-calendar">
+              <ScheduleCalendar />
+            </div>
+            
             {/* Solo monitores ven las estadísticas y panel de registro */}
             {user?.role === 'monitor' && (
               <>
@@ -118,7 +124,9 @@ const DashboardLayout: React.FC = () => {
   useEffect(() => {
     const onToast = (e: Event) => {
       const { message, type } = (e as CustomEvent).detail || {} as { message: string; type: 'success' | 'error' };
-      if (!message) return;
+      if (!message) {
+        return;
+      }
       const id = Date.now() + Math.floor(Math.random() * 1000);
       setToasts(prev => [...prev, { id, message, type: type === 'success' ? 'success' : 'error' }]);
       setTimeout(() => {
@@ -184,7 +192,7 @@ const DashboardLayout: React.FC = () => {
                 {confirmConfig.cancelText || 'Cancelar'}
               </button>
               <button
-                className="btn btn-primary"
+                className="btn btn-danger"
                 onClick={() => { confirmConfig.onConfirm?.(); setConfirmConfig(null); }}
               >
                 {confirmConfig.confirmText || 'Confirmar'}

@@ -147,9 +147,9 @@ export const roomManagementService = {
       const rooms: Room[] = apiRooms.map((apiRoom: any) => ({
         id: apiRoom.id.toString(),
         name: apiRoom.name,
+        code: apiRoom.code,
         capacity: apiRoom.capacity,
         description: apiRoom.description || '',
-        location: apiRoom.code,
         computers: [], // Se llenará con equipos
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -249,9 +249,9 @@ export const roomManagementService = {
       return {
         id: apiRoom.id.toString(),
         name: apiRoom.name,
+        code: apiRoom.code,
         capacity: apiRoom.capacity,
         description: apiRoom.description,
-        location: apiRoom.code,
         computers: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -276,9 +276,9 @@ export const roomManagementService = {
       return {
         id: apiRoom.id.toString(),
         name: apiRoom.name,
+        code: apiRoom.code,
         capacity: apiRoom.capacity,
         description: apiRoom.description,
-        location: apiRoom.code,
         computers: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()

@@ -20,16 +20,8 @@ async function handleResponse(response: Response) {
   const payload = isJson ? await response.json() : await response.text();
 
   if (!response.ok) {
-    // Manejo automático de 401. Evitar redirección automática para 403/404 en flujos internos (como edición admin)
-    const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
-    if (isBrowser) {
-      if (response.status === 401) {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
-      }
-      // No redirigir automáticamente en 403/404; devolver error y que el UI lo maneje
-    }
+    // NO desloguear automáticamente - dejar que el UI maneje los errores
+    // Solo desloguear en casos críticos de token corrupto, no en errores de permisos
     
     let msg = '';
     if (typeof payload === 'string') {

@@ -151,7 +151,7 @@
   text-decoration: none !important;
 
   /* TRANSICIONES PARA HOVER */
-  transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
 
   /* ANIMACIÓN DE ENTRADA */
   animation: slideInUp 0.8s ease-out 1.2s both;

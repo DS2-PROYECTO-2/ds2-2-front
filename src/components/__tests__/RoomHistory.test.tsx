@@ -10,7 +10,7 @@ vi.mock('../../hooks/useAuth', () => ({
 }))
 
 vi.mock('../../services/roomService', () => ({
-  fetchRooms: vi.fn().mockResolvedValue([{ id: 1, name: 'Sala 1' }])
+  getRooms: vi.fn().mockResolvedValue([{ id: 1, name: 'Sala 1' }])
 }))
 
 vi.mock('../../services/roomEntryService', () => ({

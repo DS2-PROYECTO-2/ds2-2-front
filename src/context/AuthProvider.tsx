@@ -40,9 +40,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (token && !user) {
         setIsLoading(true);
         try {
-          // Cargar perfil del usuario desde el backend
-          const userData = await authService.getProfile();
-          setAuth({ token, user: userData });
+          // Cargar datos completos del usuario desde el dashboard
+          const dashboardData = await authService.getDashboard();
+          const userData = dashboardData.user;
+          
+          // Construir full_name a partir de first_name y last_name si están disponibles
+          const userDataTyped = userData as Record<string, unknown>;
+          const fullName = userDataTyped.first_name && userDataTyped.last_name 
+            ? `${String(userDataTyped.first_name)} ${String(userDataTyped.last_name)}`.trim()
+            : String(userDataTyped.full_name || userData.username);
+          const userWithFullName = { 
+            ...userData, 
+            full_name: fullName,
+            is_verified: Boolean(userDataTyped.is_verified ?? true) // Valor por defecto si no está presente
+          };
+          
+          setAuth({ token, user: userWithFullName });
         } catch {
           // Token inválido, limpiar
           authService.logout();
