@@ -24,18 +24,47 @@ async function handleResponse(response: Response) {
     // Solo desloguear en casos críticos de token corrupto, no en errores de permisos
     
     let msg = '';
+    let errorData = payload;
+    
     if (typeof payload === 'string') {
-      msg = payload;
+      // Si es HTML (página de error del servidor), extraer información útil
+      if (payload.includes('<!DOCTYPE html>') || payload.includes('<html')) {
+        console.error('Backend returned HTML error page instead of JSON:', payload.substring(0, 500));
+        msg = 'Error interno del servidor. El backend no está respondiendo correctamente.';
+        errorData = { 
+          _isHtmlError: true, 
+          _htmlContent: payload.substring(0, 1000), // Solo los primeros 1000 caracteres
+          _status: response.status 
+        };
+      } else {
+        msg = payload;
+      }
     } else if (payload && typeof payload === 'object') {
       const p = payload as Record<string, unknown>;
-      msg =
-        (typeof p.detail === 'string' && p.detail) ||
-        (Array.isArray(p.non_field_errors) && p.non_field_errors.join(', ')) ||
-        JSON.stringify(p);
+      
+      // Manejar diferentes estructuras de error del backend
+      if (p.detail && typeof p.detail === 'string') {
+        msg = p.detail;
+      } else if (Array.isArray(p.non_field_errors)) {
+        msg = p.non_field_errors.join(', ');
+      } else if (p.error && typeof p.error === 'string') {
+        msg = p.error;
+      } else if (p.message && typeof p.message === 'string') {
+        msg = p.message;
+      } else {
+        // Para errores 500, intentar extraer información más útil
+        if (response.status === 500) {
+          msg = 'Error interno del servidor. Por favor, intenta nuevamente.';
+          errorData = { ...p, _isServerError: true };
+        } else {
+          msg = JSON.stringify(p);
+        }
+      }
     }
+    
     const err: ApiError = {
       status: response.status,
-      data: payload,
+      data: errorData,
       message: msg || `HTTP ${response.status}`,
     };
     throw err;
