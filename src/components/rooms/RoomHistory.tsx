@@ -149,13 +149,6 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
     }
   }, [user?.role, filterRoomId, filterFrom, filterTo, filterDocument]);
 
-  // Función para aplicar filtros manualmente (cuando el usuario hace clic en aplicar)
-  const applyFilters = useCallback(() => {
-    if (user?.role === 'admin') {
-      setShowAll(false); // Salir del modo "mostrar todo"
-      loadWithFilters();
-    }
-  }, [user?.role, loadWithFilters]);
 
   useEffect(() => { 
     if (user) {  // Solo cargar si hay usuario autenticado
@@ -350,24 +343,6 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
         </h3>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button className="primary-btn" onClick={clearFilters}>Borrar filtros</button>
-          {user?.role === 'admin' && (
-            <button 
-              className="primary-btn" 
-              onClick={applyFilters}
-              style={{
-                background: '#2196f3',
-                color: 'white',
-                border: 'none',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-                fontWeight: '500'
-              }}
-            >
-              Aplicar Filtros
-            </button>
-          )}
         </div>
       </div>
 
