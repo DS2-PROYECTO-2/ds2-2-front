@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react'
-import { vi } from 'vitest'
+import { vi, beforeEach } from 'vitest'
 import RoomPanel from '../rooms/RoomPanel'
 
 // Mocks
@@ -11,7 +11,9 @@ vi.mock('../../hooks/useAuth', () => ({
 }))
 
 vi.mock('../../services/roomService', () => ({
-  getRooms: vi.fn().mockResolvedValue([{ id: 1, name: 'Sala 1' }])
+  default: {
+    getRooms: vi.fn().mockResolvedValue([{ id: 1, name: 'Sala 1' }])
+  }
 }))
 
 vi.mock('../../services/roomEntryService', () => ({
@@ -20,6 +22,10 @@ vi.mock('../../services/roomEntryService', () => ({
   createEntry: vi.fn().mockResolvedValue({ entry: { id: 10, room: 1 } }),
   exitEntry: vi.fn().mockResolvedValue({ ok: true })
 }))
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})
 
 describe('RoomPanel', () => {
   it('renderiza y muestra select de salas', async () => {

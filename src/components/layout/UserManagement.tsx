@@ -148,7 +148,7 @@ const UserManagement: React.FC = () => {
     }, 300); // Debounce para búsqueda
 
     return () => clearTimeout(timeoutId);
-  }, [filters, allUsers]); // Removido filterUsers para evitar bucle infinito
+  }, [filters, allUsers, filterUsers]);
 
   // Cargar usuarios al montar el componente
   useEffect(() => {

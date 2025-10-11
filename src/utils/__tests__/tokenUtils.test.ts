@@ -9,7 +9,9 @@ import {
 
 // Mock localStorage
 const localStorageMock = {
-  getItem: vi.fn(),
+  getItem: vi.fn((key: string) => {
+    return null // Default to null for all tests
+  }),
   setItem: vi.fn(),
   removeItem: vi.fn(),
   clear: vi.fn()
@@ -97,17 +99,20 @@ describe('tokenUtils', () => {
 
   describe('clearAuthData', () => {
     it('debería limpiar todos los datos de autenticación', () => {
+      // Mock localStorage methods
+      const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem');
+      
       clearAuthData();
       
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('authToken');
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('user');
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('token');
+      expect(removeItemSpy).toHaveBeenCalledWith('authToken');
+      expect(removeItemSpy).toHaveBeenCalledWith('user');
+      expect(removeItemSpy).toHaveBeenCalledWith('token');
     });
   });
 
   describe('getTokenInfo', () => {
     it('debería retornar error cuando no hay token', () => {
-      localStorageMock.getItem.mockReturnValue(null);
+      const getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
       
       const result = getTokenInfo();
       
@@ -118,7 +123,7 @@ describe('tokenUtils', () => {
     it('debería retornar información del token válido', () => {
       const payload = { user_id: 1, username: 'test', role: 'admin', exp: 1234567890, iat: 1234567890 };
       const token = 'header.' + btoa(JSON.stringify(payload)) + '.signature';
-      localStorageMock.getItem.mockReturnValue(token);
+      const getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(token);
       
       const result = getTokenInfo();
       
@@ -130,7 +135,7 @@ describe('tokenUtils', () => {
     });
 
     it('debería retornar error para token inválido', () => {
-      localStorageMock.getItem.mockReturnValue('invalid-token');
+      const getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('invalid-token');
       
       const result = getTokenInfo();
       
@@ -142,11 +147,13 @@ describe('tokenUtils', () => {
 
   describe('forceLogout', () => {
     it('debería limpiar datos y redirigir al login', () => {
+      const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem');
+      
       forceLogout();
       
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('authToken');
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('user');
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('token');
+      expect(removeItemSpy).toHaveBeenCalledWith('authToken');
+      expect(removeItemSpy).toHaveBeenCalledWith('user');
+      expect(removeItemSpy).toHaveBeenCalledWith('token');
       expect(window.location.href).toBe('/login');
     });
   });
@@ -162,11 +169,13 @@ describe('tokenUtils', () => {
 
     it('debería manejar error de token corrupto', () => {
       const error = { message: 'Token con formato inválido' };
+      const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem');
+      const dispatchEventSpy = vi.spyOn(window, 'dispatchEvent');
       
       handleTokenError(error);
       
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('authToken');
-      expect(window.dispatchEvent).toHaveBeenCalledWith(
+      expect(removeItemSpy).toHaveBeenCalledWith('authToken');
+      expect(dispatchEventSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'app-toast',
           detail: expect.objectContaining({
@@ -183,11 +192,13 @@ describe('tokenUtils', () => {
 
     it('debería manejar error de token inválido', () => {
       const error = { message: 'Token inválido o corrupto' };
+      const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem');
+      const dispatchEventSpy = vi.spyOn(window, 'dispatchEvent');
       
       handleTokenError(error);
       
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('authToken');
-      expect(window.dispatchEvent).toHaveBeenCalledWith(
+      expect(removeItemSpy).toHaveBeenCalledWith('authToken');
+      expect(dispatchEventSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'app-toast',
           detail: expect.objectContaining({
@@ -199,11 +210,13 @@ describe('tokenUtils', () => {
 
     it('debería manejar error de decodificación', () => {
       const error = { message: 'Error al decodificar' };
+      const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem');
+      const dispatchEventSpy = vi.spyOn(window, 'dispatchEvent');
       
       handleTokenError(error);
       
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('authToken');
-      expect(window.dispatchEvent).toHaveBeenCalledWith(
+      expect(removeItemSpy).toHaveBeenCalledWith('authToken');
+      expect(dispatchEventSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'app-toast',
           detail: expect.objectContaining({

@@ -11,7 +11,11 @@ interface AuthResponseMock {
 describe('authService', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
-    localStorage.clear()
+    // Clear localStorage mock
+    vi.mocked(localStorage.getItem).mockClear()
+    vi.mocked(localStorage.setItem).mockClear()
+    vi.mocked(localStorage.removeItem).mockClear()
+    vi.mocked(localStorage.clear).mockClear()
   })
 
   it('login guarda token y user', async () => {
@@ -19,16 +23,16 @@ describe('authService', () => {
     vi.spyOn(api.apiClient, 'post').mockResolvedValueOnce({ token: 't', user: { id: 1, username: 'u', email: 'e', role: 'admin', is_verified: true }, message: 'ok' } as AuthResponseMock)
     const res = await authService.login(creds)
     expect(res.token).toBe('t')
-    expect(localStorage.getItem('authToken')).toBe('t')
-    expect(localStorage.getItem('user')).toContain('"username":"u"')
+    expect(localStorage.setItem).toHaveBeenCalledWith('authToken', 't')
+    expect(localStorage.setItem).toHaveBeenCalledWith('user', expect.stringContaining('"username":"u"'))
   })
 
   it('logout limpia almacenamiento', () => {
     localStorage.setItem('authToken', 't')
     localStorage.setItem('user', JSON.stringify({ id: 1 }))
     authService.logout()
-    expect(localStorage.getItem('authToken')).toBeNull()
-    expect(localStorage.getItem('user')).toBeNull()
+    expect(localStorage.removeItem).toHaveBeenCalledWith('authToken')
+    expect(localStorage.removeItem).toHaveBeenCalledWith('user')
   })
 
   it('getProfile usa apiClient.get', async () => {
@@ -38,8 +42,12 @@ describe('authService', () => {
   })
 
   it('isAuthenticated depende de token', () => {
+    // Mock localStorage to return null initially
+    vi.mocked(localStorage.getItem).mockReturnValue(null)
     expect(authService.isAuthenticated()).toBe(false)
-    localStorage.setItem('authToken', 't')
+    
+    // Mock localStorage to return a token
+    vi.mocked(localStorage.getItem).mockReturnValue('t')
     expect(authService.isAuthenticated()).toBe(true)
   })
 })

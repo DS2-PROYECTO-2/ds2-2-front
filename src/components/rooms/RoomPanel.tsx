@@ -211,7 +211,7 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
       
       const newId = (created as { entry?: { id: number }; id?: number })?.entry?.id ?? (created as { id?: number })?.id ?? null;
       if (newId != null) {
-        // Verificar llegada tarde contra el turno actual (tolerancia 20 min)
+        // Verificar llegada tarde contra el turno actual (tolerancia 5 min)
         try {
           const now = getBogotaNow();
           let scheduleStart: Date | null = null;
@@ -273,8 +273,8 @@ const RoomPanel: React.FC<Props> = ({ onChanged }) => {
 
           if (scheduleStart && targetSchedule) {
             
-            if (isLateArrival(now, scheduleStart, 20)) {
-              const lateMinutes = getLateMinutes(now, scheduleStart, 20);
+            if (isLateArrival(now, scheduleStart, 5)) {
+              const lateMinutes = getLateMinutes(now, scheduleStart, 5);
               
               window.dispatchEvent(new CustomEvent('app-toast', {
                 detail: { 

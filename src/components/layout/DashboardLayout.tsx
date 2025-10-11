@@ -8,11 +8,15 @@ import RoomStatsRow from '../rooms/RoomStatsRow';
 import RoomManagement from '../rooms/RoomManagement';
 import UserManagement from './UserManagement';
 import ScheduleCalendar from '../schedule/ScheduleCalendar';
+import ReportsView from '../reports/ReportsView';
+import TurnComparisonTable from '../reports/TurnComparisonTable';
 import { useAuth } from '../../hooks/useAuth';
+import { useSecurity } from '../../hooks/useSecurity';
 
 
 const DashboardLayout: React.FC = () => {
   const { user, isLoading, isHydrated } = useAuth();
+  const { isAdmin } = useSecurity();
   const [historyReloadKey, setHistoryReloadKey] = useState(0);
   const location = useLocation();
   const [confirmConfig, setConfirmConfig] = useState<null | {
@@ -67,6 +71,13 @@ const DashboardLayout: React.FC = () => {
             <div className="content-panel panel-list" style={{ marginTop: user?.role === 'monitor' ? '1rem' : '0' }}>
               <RoomHistory reloadKey={historyReloadKey} />
             </div>
+            
+            {/* Tabla de comparación de turnos - solo visible para administradores */}
+            {user?.role === 'admin' && isAdmin && (
+              <div className="content-panel panel-comparison">
+                <TurnComparisonTable />
+              </div>
+            )}
           </>
         );
       case 'inventory':
@@ -74,12 +85,7 @@ const DashboardLayout: React.FC = () => {
       case 'users':
         return <UserManagement />;
       case 'reports':
-        return (
-          <div className="content-panel">
-            <h2>Reportes</h2>
-            <p>Reportes y estadísticas del sistema</p>
-          </div>
-        );
+        return <ReportsView />;
       case 'settings':
         return (
           <div className="content-panel">

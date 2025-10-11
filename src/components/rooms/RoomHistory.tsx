@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import roomService, { type Room } from '../../services/roomService';
-import { getMyEntries, getAllEntries, type RoomEntryUI } from '../../services/roomEntryService';
+import { getMyEntries, getAllEntriesUnpaginated, type RoomEntryUI } from '../../services/roomEntryService';
 import { useAuth } from '../../hooks/useAuth';
 
 type Props = { reloadKey?: number };
@@ -44,10 +44,15 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
     
-    const fromFormatted = firstDayOfMonth.toISOString();
-    const toFormatted = lastDayOfMonth.toISOString();
+    // Usar formato local sin conversión UTC
+    const formatDate = (date: Date) => {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    };
     
-    return getAllEntries({
+    const fromFormatted = formatDate(firstDayOfMonth);
+    const toFormatted = formatDate(lastDayOfMonth);
+    
+    return getAllEntriesUnpaginated({
       from: fromFormatted,
       to: toFormatted
     });
@@ -83,26 +88,6 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
     }
   }, [user?.role, loadWithDefaultRange]);
 
-  // Función para cargar TODOS los registros (sin filtros de fecha)
-  const loadAllEntries = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [roomsData, entriesData] = await Promise.all([
-        roomService.getRooms(),
-        getAllEntries() // Sin filtros de fecha
-      ]);
-      
-      setRooms(roomsData);
-      setEntries(entriesData);
-      setShowAll(true); // Marcar que estamos mostrando todo
-      setBackendFiltered(false); // No se aplicaron filtros en backend
-    } catch (err) {
-      setError(parseErr(err));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   // Función para cargar con filtros (solo para admin)
   const loadWithFilters = useCallback(async () => {
@@ -111,29 +96,14 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
     setLoading(true);
     setError(null);
     try {
-      // Formatear fechas para el backend con zona horaria UTC
-      let fromFormatted: string | undefined = undefined;
-      let toFormatted: string | undefined = undefined;
-      
-      if (filterFrom) {
-        const [year, month, day] = filterFrom.split('-').map(Number);
-        const fromDate = new Date(year, month - 1, day, 0, 0, 0, 0);
-        fromFormatted = fromDate.toISOString();
-      }
-      
-      if (filterTo) {
-        const [year, month, day] = filterTo.split('-').map(Number);
-        const toDate = new Date(year, month - 1, day, 23, 59, 59, 999);
-        toFormatted = toDate.toISOString();
-      }
-      
+      // Usar formato simple YYYY-MM-DD como recomienda la nueva lógica
       const [roomsData, entriesData] = await Promise.all([
         roomService.getRooms(),
-        getAllEntries({
-          // Enviar filtros de fecha al backend
+        getAllEntriesUnpaginated({
+          // Usar formato simple YYYY-MM-DD
+          from: filterFrom || undefined,
+          to: filterTo || undefined,
           room: filterRoomId || undefined,
-          from: fromFormatted,
-          to: toFormatted,
           document: filterDocument || undefined
         })
       ]);
@@ -245,6 +215,11 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
   const filtered = useMemo(() => {
     let filteredEntries = entries;
     
+    // Limitar a 10 registros por defecto si no se está mostrando todo
+    if (!showAll && !backendFiltered) {
+      filteredEntries = filteredEntries.slice(0, 10);
+    }
+    
     // Aplicar filtro de sala
     if (filterRoomId) {
       filteredEntries = filteredEntries.filter(e => e.roomId === filterRoomId);
@@ -302,7 +277,7 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
     }
     
     return filteredEntries;
-  }, [entries, filterFrom, filterTo, filterRoomId, filterUser, filterDocument, backendFiltered]);
+  }, [entries, filterFrom, filterTo, filterRoomId, filterUser, filterDocument, backendFiltered, showAll]);
 
   return (
     <div className="room-panel">
@@ -343,46 +318,43 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
         </h3>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button className="primary-btn" onClick={clearFilters}>Borrar filtros</button>
+          {!showAll && (
+            <button 
+              className="secondary-btn" 
+              onClick={() => setShowAll(true)}
+              style={{
+                background: '#4caf50',
+                color: 'white',
+                border: 'none',
+                padding: '0.5rem 1rem',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.875rem'
+              }}
+            >
+              📋 Mostrar todo el historial
+            </button>
+          )}
+          {showAll && (
+            <button 
+              className="secondary-btn" 
+              onClick={() => setShowAll(false)}
+              style={{
+                background: '#ff9800',
+                color: 'white',
+                border: 'none',
+                padding: '0.5rem 1rem',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.875rem'
+              }}
+            >
+              📋 Mostrar solo 10 registros
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Botón mostrar todo para administradores */}
-      {user?.role === 'admin' && (
-        <div style={{ marginBottom: '1rem' }}>
-          <button 
-            onClick={loadAllEntries}
-            style={{
-              padding: '0.75rem 1.5rem',
-              background: showAll ? '#4caf50' : '#ff9800',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '0.9rem',
-              fontWeight: '500',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseOver={(e) => {
-              if (!showAll) {
-                e.currentTarget.style.background = '#f57c00';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }
-            }}
-            onMouseOut={(e) => {
-              if (!showAll) {
-                e.currentTarget.style.background = '#ff9800';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }
-            }}
-          >
-            {showAll ? '✓ Mostrando todo el historial' : '📅 Mostrar todo el historial'}
-          </button>
-        </div>
-      )}
 
       <div className="panel-filters">
         <label className="field">
@@ -461,7 +433,13 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
       )}
 
       <div className="panel-table">
-        <div className="table-scroll">
+        <div 
+          className="table-scroll"
+          style={{
+            maxHeight: showAll ? '400px' : 'none',
+            overflowY: showAll ? 'auto' : 'visible'
+          }}
+        >
         <table className="table">
           <thead>
             <tr>
