@@ -68,7 +68,7 @@ const RoomStatsRow: React.FC = () => {
       setMonthly(formatHM(monthMin));
       setWeeklyCount(week.length);
 
-      // Calcular llegadas tarde del mes cruzando schedules + entries (regla: entry > start + 20m)
+      // Calcular llegadas tarde del mes cruzando schedules + entries (regla: entry > start + 5m)
       let lateCount = 0;
       try {
         console.log('🔍 DEBUG CARD LLEGADAS TARDE:');
@@ -169,7 +169,7 @@ const RoomStatsRow: React.FC = () => {
             console.log(`Using first entry in window for schedule ${sch.id}:`, entryTime);
             
             // Verificar si es llegada tarde
-            if (isLateArrival(entryTime, start, 20)) {
+            if (isLateArrival(entryTime, start, 5)) {
               if (!processedEntries.has(firstEntry.id)) {
                 lateCount++;
                 processedEntries.add(firstEntry.id);
@@ -195,7 +195,7 @@ const RoomStatsRow: React.FC = () => {
           console.log(`First entry AFTER schedule start for schedule ${sch.id} (monitor: ${sch.user}, room: ${sch.room}):`, entryTime);
           
           // Usar la función de zona horaria para verificar llegada tarde
-          if (isLateArrival(entryTime, start, 20)) {
+          if (isLateArrival(entryTime, start, 5)) {
             // Verificar si esta entrada ya fue procesada para evitar duplicados
             if (!processedEntries.has(firstEntry.id)) {
               lateCount++;
@@ -269,7 +269,7 @@ const RoomStatsRow: React.FC = () => {
         <div className="mini-watermark">⏰</div>
         <div className="mini-card__title">Llegadas tarde (mes)</div>
         <div className="mini-card__value mini-card__value--late">{lateMonth}</div>
-        <div className="mini-card__hint">Turnos con retraso ≥20m</div>
+        <div className="mini-card__hint">Turnos con retraso ≥5m</div>
       </div>
     </div>
   );
