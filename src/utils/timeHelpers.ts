@@ -57,13 +57,13 @@ export const getMinutesDifference = (date1: Date, date2: Date): number => {
  * Verifica si una entrada es tardía basada en el inicio del turno
  * @param entryTime - Tiempo de entrada
  * @param scheduleStart - Inicio del turno
- * @param graceMinutes - Minutos de gracia (default: 20)
+ * @param graceMinutes - Minutos de gracia (default: 5)
  * @returns true si es llegada tarde
  */
 export const isLateArrival = (
   entryTime: Date, 
   scheduleStart: Date, 
-  graceMinutes: number = 20
+  graceMinutes: number = 5
 ): boolean => {
   const entryBogota = toBogotaTime(entryTime);
   const scheduleBogota = toBogotaTime(scheduleStart);
@@ -76,13 +76,13 @@ export const isLateArrival = (
  * Calcula los minutos de retraso
  * @param entryTime - Tiempo de entrada
  * @param scheduleStart - Inicio del turno
- * @param graceMinutes - Minutos de gracia (default: 20)
+ * @param graceMinutes - Minutos de gracia (default: 5)
  * @returns Minutos de retraso (0 si no es tarde)
  */
 export const getLateMinutes = (
   entryTime: Date,
   scheduleStart: Date,
-  graceMinutes: number = 20
+  graceMinutes: number = 5
 ): number => {
   if (!isLateArrival(entryTime, scheduleStart, graceMinutes)) {
     return 0;

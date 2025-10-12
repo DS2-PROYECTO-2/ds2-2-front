@@ -41,7 +41,7 @@ describe('roomEntryService', () => {
 
   it('getAllEntries compone URL con filtros', async () => {
     const spy = vi.spyOn(api.apiClient, 'get').mockResolvedValueOnce({ entries: [] } as EntriesResponse)
-    await getAllEntries({ user: 'john', room: 1, active: true, from: '2024-01-01', to: '2024-01-02', document: '123', page: 2, page_size: 10 })
+    await getAllEntries({ user_name: 'john', room: 1, active: true, from: '2024-01-01', to: '2024-01-02', document: '123', page: 2, page_size: 10 })
     expect(spy).toHaveBeenCalled()
   })
 })
