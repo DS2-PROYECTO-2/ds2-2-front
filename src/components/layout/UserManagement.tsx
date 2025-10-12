@@ -13,7 +13,9 @@ import {
   EyeOff,
   Save,
   CheckCircle,
-  XCircle as XCircleIcon
+  XCircle as XCircleIcon,
+  Users,
+  UserCheck
 } from 'lucide-react';
 import userManagementService from '../../services/userManagementService';
 import type { User, UserFilters, CreateUserData, ApiError } from '../../types';
@@ -126,7 +128,6 @@ const UserManagement: React.FC = () => {
       window.dispatchEvent(new CustomEvent('app-toast', {
         detail: { message: errorMessage, type: 'error' }
       }));
-      console.error('Error loading users:', err);
     } finally {
       setLoading(false);
     }
@@ -307,7 +308,6 @@ const UserManagement: React.FC = () => {
       // Recargar lista de usuarios
       loadUsers();
     } catch (err: unknown) {
-      console.error('Error creating user:', err);
       
       let errorMessage = 'Error al crear usuario';
       
@@ -513,7 +513,6 @@ const UserManagement: React.FC = () => {
       } else if ('status' in error && error.status === 404) {
         errorMessage = 'Usuario no encontrado o no editable';
       }
-      console.error('Error updating user:', err);
       setEditError(errorMessage);
       // Mostrar toast de error
       window.dispatchEvent(new CustomEvent('app-toast', {
@@ -571,7 +570,6 @@ const UserManagement: React.FC = () => {
     } catch (err: unknown) {
       const error = err as ApiError;
       const errorMessage = error.message || 'Error al eliminar el usuario';
-      console.error('Error deleting user:', err);
       // Mostrar toast de error
       window.dispatchEvent(new CustomEvent('app-toast', {
         detail: { message: errorMessage, type: 'error' }
@@ -622,7 +620,6 @@ const UserManagement: React.FC = () => {
     } catch (err: unknown) {
       const error = err as ApiError;
       const errorMessage = error.message || 'Error al cambiar el estado de verificación del usuario';
-      console.error('Error verifying user:', err);
       // Mostrar toast de error
       window.dispatchEvent(new CustomEvent('app-toast', {
         detail: { message: errorMessage, type: 'error' }
@@ -648,7 +645,6 @@ const UserManagement: React.FC = () => {
         minute: '2-digit'
       });
     } catch (error) {
-      console.error('Error formatting date:', dateString, error);
       return 'Fecha inválida';
     }
   };
@@ -704,7 +700,7 @@ const UserManagement: React.FC = () => {
           </div>
           
           <div className="filter-group">
-            <Filter size={20} />
+            <Users size={20} />
             <select
               value={filters.role || ''}
               onChange={(e) => handleFilterChange('role', e.target.value || undefined)}
@@ -716,8 +712,8 @@ const UserManagement: React.FC = () => {
             </select>
           </div>
 
-
           <div className="filter-group">
+            <UserCheck size={20} />
             <select
               value={filters.is_verified === undefined ? '' : filters.is_verified.toString()}
               onChange={(e) => handleFilterChange('is_verified', e.target.value === '' ? undefined : e.target.value === 'true')}
@@ -761,7 +757,6 @@ const UserManagement: React.FC = () => {
             <table className="users-table">
               <thead>
                 <tr>
-                  <th>ID</th>
                   <th>Nombre Completo</th>
                   <th>Usuario</th>
                   <th>Email</th>
@@ -776,7 +771,6 @@ const UserManagement: React.FC = () => {
               <tbody>
                 {users.map((user) => (
                   <tr key={user.id}>
-                    <td>{user.id}</td>
                     <td title={user.full_name}>{user.full_name}</td>
                     <td title={`@${user.username}`}>@{user.username}</td>
                     <td title={user.email}>{user.email}</td>

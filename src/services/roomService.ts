@@ -26,7 +26,6 @@ const roomService = {
       
       return [];
     } catch (error) {
-      console.error('Error fetching rooms:', error);
       throw error;
     }
   },
@@ -37,7 +36,6 @@ const roomService = {
       const response = await apiClient.get(`/api/rooms/${id}/`);
       return response as Room;
     } catch (error) {
-      console.error('Error fetching room:', error);
       throw error;
     }
   }

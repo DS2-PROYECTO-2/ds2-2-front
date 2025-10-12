@@ -230,7 +230,6 @@ export const roomManagementService = {
 
       return { rooms, reports };
     } catch (error) {
-      console.error('Error fetching rooms:', error);
       throw error;
     }
   },
@@ -257,7 +256,6 @@ export const roomManagementService = {
         updatedAt: new Date().toISOString()
       };
     } catch (error) {
-      console.error('Error creating room:', error);
       throw error;
     }
   },
@@ -284,7 +282,6 @@ export const roomManagementService = {
         updatedAt: new Date().toISOString()
       };
     } catch (error) {
-      console.error('Error updating room:', error);
       throw error;
     }
   },
@@ -294,7 +291,6 @@ export const roomManagementService = {
     try {
       await apiClient.delete(`/api/rooms/admin/rooms/${roomId}/delete/`);
     } catch (error) {
-      console.error('Error deleting room:', error);
       throw error;
     }
   },
@@ -337,7 +333,6 @@ export const roomManagementService = {
       // logs removidos
       return newComputer;
     } catch (error) {
-      console.error('Error creating equipment:', error);
       throw error;
     }
   },
@@ -369,7 +364,6 @@ export const roomManagementService = {
         updatedAt: apiEquipment.acquisition_date
       };
     } catch (error) {
-      console.error('Error updating equipment:', error);
       throw error;
     }
   },
@@ -398,7 +392,6 @@ export const roomManagementService = {
         }
       }
     } catch (error) {
-      console.error('Error deleting equipment:', error);
       throw error;
     }
   },
@@ -426,7 +419,6 @@ export const roomManagementService = {
         status: 'pending'
       };
     } catch (error) {
-      console.error('Error creating report:', error);
       throw error;
     }
   },
@@ -458,7 +450,6 @@ export const roomManagementService = {
       result = await resolveReporterNamesForReports(result, apiReports);
       return result;
     } catch (error) {
-      console.error('Error fetching equipment reports:', error);
       throw error;
     }
   },
@@ -487,7 +478,6 @@ export const roomManagementService = {
       reports = await resolveReporterNamesForReports(reports, apiReports);
       return reports;
     } catch (error) {
-      console.error('Error fetching reports:', error);
       throw error;
     }
   },
@@ -521,7 +511,6 @@ export const roomManagementService = {
       }
       return report;
     } catch (error) {
-      console.error('Error fetching report by id:', error);
       throw error;
     }
   },
@@ -574,7 +563,6 @@ export const roomManagementService = {
         }
       }
     } catch (error) {
-      console.error('Error updating report status:', error);
       throw error;
     }
   }
@@ -584,7 +572,6 @@ export const roomManagementService = {
     try {
       await apiClient.delete(`/api/equipment/reports/${reportId}/`);
     } catch (error) {
-      console.error('Error deleting report:', error);
       throw error;
     }
   }

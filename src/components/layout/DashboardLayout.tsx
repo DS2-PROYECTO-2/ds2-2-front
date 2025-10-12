@@ -52,11 +52,6 @@ const DashboardLayout: React.FC = () => {
       case 'home':
         return (
           <>
-            {/* Calendario de turnos - visible para todos */}
-            <div className="content-panel panel-calendar">
-              <ScheduleCalendar />
-            </div>
-            
             {/* Solo monitores ven las estadísticas y panel de registro */}
             {user?.role === 'monitor' && (
               <>
@@ -66,6 +61,11 @@ const DashboardLayout: React.FC = () => {
                 </div>
               </>
             )}
+            
+            {/* Calendario de turnos - visible para todos */}
+            <div className="content-panel panel-calendar">
+              <ScheduleCalendar />
+            </div>
             
             {/* Todos ven el historial */}
             <div className="content-panel panel-list" style={{ marginTop: user?.role === 'monitor' ? '1rem' : '0' }}>

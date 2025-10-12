@@ -41,7 +41,6 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
         onAccessChange(accessInfo.canAccess, accessInfo.reason || '');
       }
     } catch (error) {
-      console.error('Error checking room access:', error);
       if (onAccessChange) {
         onAccessChange(false, 'Error al verificar acceso');
       }
@@ -70,7 +69,7 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
         });
       }
     } catch (error) {
-      console.error('Error getting schedule info:', error);
+      // Error getting schedule info
     }
   };
 
@@ -109,7 +108,6 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
 
       return result;
     } catch (error) {
-      console.error('Error handling room entry:', error);
       return {
         success: false,
         message: 'Error al procesar entrada'
@@ -135,7 +133,6 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
 
       return result;
     } catch (error) {
-      console.error('Error handling room exit:', error);
       return {
         success: false,
         message: 'Error al procesar salida'
@@ -156,7 +153,7 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
         onAccessChange(validation.access_granted, validation.reason || '');
       }
     } catch (error) {
-      console.error('Error validating real-time access:', error);
+      // Error validating real-time access
     }
   };
 
@@ -166,7 +163,6 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
       const accessInfo = await canAccessRoom(roomId);
       return accessInfo.canAccess;
     } catch (error) {
-      console.error('Error checking schedule in room:', error);
       return false;
     }
   };
@@ -177,7 +173,6 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
       const activeSchedules = await getCurrentScheduleInfo();
       return activeSchedules;
     } catch (error) {
-      console.error('Error getting schedules for room:', error);
       return null;
     }
   };

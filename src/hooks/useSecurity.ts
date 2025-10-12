@@ -5,25 +5,16 @@ export const useSecurity = () => {
 
   const requireAdmin = (action: string, silent: boolean = false) => {
     if (!user) {
-      if (!silent) {
-        console.warn(`Acceso denegado: Usuario no autenticado para ${action}`);
-      }
       return false;
     }
 
     // Verificar que sea administrador
     if (user.role !== 'admin') {
-      if (!silent) {
-        console.warn(`Acceso denegado: Solo administradores pueden ${action}. Rol actual: ${user.role}`);
-      }
       return false;
     }
 
     // Verificar que esté verificado (los admins se verifican automáticamente)
     if (!user.is_verified) {
-      if (!silent) {
-        console.warn(`Acceso denegado: Usuario no verificado para ${action}`);
-      }
       return false;
     }
 
@@ -32,7 +23,6 @@ export const useSecurity = () => {
 
   const requireAuth = (action: string) => {
     if (!user) {
-      console.warn(`Acceso denegado: Usuario no autenticado para ${action}`);
       return false;
     }
 
@@ -59,7 +49,6 @@ export const useSecurity = () => {
     if (error && typeof error === 'object' && 'message' in error) {
       const errorWithMessage = error as { message: string };
       if (errorWithMessage.message?.includes('No autorizado')) {
-        console.warn(`Acceso denegado: ${errorWithMessage.message}`);
         // Mostrar notificación al usuario
         window.dispatchEvent(new CustomEvent('app-toast', {
           detail: { 
@@ -67,11 +56,7 @@ export const useSecurity = () => {
             message: `No tienes permisos para ${action}` 
           }
         }));
-      } else {
-        console.error('Error de seguridad:', errorWithMessage.message || 'Error desconocido');
       }
-    } else {
-      console.error('Error de seguridad:', error);
     }
   };
 

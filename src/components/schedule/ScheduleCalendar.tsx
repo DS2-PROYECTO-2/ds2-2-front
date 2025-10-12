@@ -425,7 +425,6 @@ const ScheduleCalendar: React.FC = () => {
             setMonitors([]);
           }
         } catch (error) {
-          console.error('Error loading monitors:', error);
           setMonitors([]);
         }
       } else {
@@ -438,14 +437,12 @@ const ScheduleCalendar: React.FC = () => {
         const roomsData = await roomService.getRooms();
         setRooms(Array.isArray(roomsData) ? roomsData : []);
       } catch (error) {
-        console.error('Error loading rooms:', error);
         setRooms([]);
       }
       
     } catch (err: unknown) {
       const error = err as Error;
       setError(error.message || 'Error al cargar los datos');
-      console.error('Error loading data:', err);
     } finally {
       if (isInitialLoad) {
         setLoading(false);
@@ -700,7 +697,6 @@ const ScheduleCalendar: React.FC = () => {
       setRangeEndDate('');
       loadData();
     } catch (error: unknown) {
-      console.error('Error creating schedule:', error);
       
       // Usar el nuevo sistema de manejo de errores
       const errorMessage = ApiErrorHandler.handleError(error);
@@ -716,7 +712,6 @@ const ScheduleCalendar: React.FC = () => {
       
       // Verificar si debe desloguear
       if (ApiErrorHandler.shouldLogout(error)) {
-        console.warn('Deslogueando por error crítico de token');
         setTimeout(() => {
           localStorage.removeItem('authToken');
           localStorage.removeItem('user');
@@ -751,14 +746,13 @@ const ScheduleCalendar: React.FC = () => {
             // Notificar actualización en tiempo real
             notifyScheduleUpdate();
           } catch (error) {
-            console.error('Error deleting schedule:', error);
             window.dispatchEvent(new CustomEvent('app-toast', {
               detail: { message: 'Error al eliminar el turno', type: 'error' }
             }));
           }
         },
         onCancel: () => {
-          console.log('Eliminación cancelada');
+          // Eliminación cancelada
         }
       }
     }));
@@ -793,7 +787,6 @@ const ScheduleCalendar: React.FC = () => {
       // Notificar actualización en tiempo real
       notifyScheduleUpdate();
     } catch (error) {
-      console.error('Error deleting all schedules:', error);
       window.dispatchEvent(new CustomEvent('app-toast', {
         detail: { 
           message: 'Error al eliminar todos los turnos', 
@@ -839,7 +832,6 @@ const ScheduleCalendar: React.FC = () => {
       setFormErrors({});
       setShowEditModal(true);
     } catch (error) {
-      console.error('Error loading schedule details:', error);
       // Fallback a los datos básicos si falla la carga detallada
       const formatDateForInput = (dateString: string) => {
         const date = new Date(dateString);
@@ -909,7 +901,6 @@ const ScheduleCalendar: React.FC = () => {
       // Notificar actualización en tiempo real
       notifyScheduleUpdate();
     } catch (error: unknown) {
-      console.error('Error updating schedule:', error);
       
       // Usar el nuevo sistema de manejo de errores
       const errorMessage = ApiErrorHandler.handleError(error);
@@ -925,14 +916,11 @@ const ScheduleCalendar: React.FC = () => {
       
       // Solo desloguear si es un error crítico de token
       if (ApiErrorHandler.shouldLogout(error)) {
-        console.warn('Deslogueando por error crítico de token');
         setTimeout(() => {
           localStorage.removeItem('authToken');
           localStorage.removeItem('user');
           window.location.href = '/login';
         }, 3000);
-      } else {
-        console.warn('Error no crítico, manteniendo sesión:', error instanceof Error ? error.message : String(error));
       }
     }
   };
@@ -1606,14 +1594,13 @@ const ScheduleCalendar: React.FC = () => {
                                       // Notificar actualización en tiempo real
                                       notifyScheduleUpdate();
                                     } catch (error) {
-                                      console.error('Error deleting schedule:', error);
                                       window.dispatchEvent(new CustomEvent('app-toast', {
                                         detail: { message: 'Error al eliminar el turno', type: 'error' }
                                       }));
                                     }
                                   },
                                   onCancel: () => {
-                                    console.log('Eliminación cancelada');
+                                    // Eliminación cancelada
                                   }
                                 }
                               }));

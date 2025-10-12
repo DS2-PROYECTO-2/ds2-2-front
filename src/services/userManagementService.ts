@@ -71,7 +71,6 @@ const userManagementService = {
       
       // Verificar que response existe y es un array
       if (!response || !Array.isArray(response)) {
-        console.warn('No users data received or invalid format:', response);
         return [];
       }
       
@@ -96,7 +95,6 @@ const userManagementService = {
       // Ordenar por ID en orden ascendente
       return mappedUsers.sort((a, b) => a.id - b.id);
     } catch (error) {
-      console.error('Error fetching users:', error);
       throw error;
     }
   },
@@ -107,7 +105,6 @@ const userManagementService = {
       const response = await apiClient.get(`/api/auth/admin/users/${id}/`);
       return response as User;
     } catch (error) {
-      console.error('Error fetching user:', error);
       throw error;
     }
   },
@@ -129,24 +126,11 @@ const userManagementService = {
         throw new Error('Las contraseñas no coinciden');
       }
 
-      // Log de debugging para identificar el problema
-      console.log('Sending user data to backend:', {
-        username: userData.username,
-        email: userData.email,
-        first_name: userData.first_name,
-        last_name: userData.last_name,
-        role: userData.role,
-        hasPassword: !!userData.password,
-        hasPasswordConfirm: !!userData.password_confirm,
-        identification: userData.identification,
-        phone: userData.phone
-      });
 
       // Usar el endpoint de registro estándar que ya existe
       const response = await apiClient.post('/api/auth/register/', userData);
       return response as User;
     } catch (error) {
-      console.error('Error creating user:', error);
       
       // Mejorar el manejo de errores específicos
       if (error && typeof error === 'object' && 'status' in error) {
@@ -156,7 +140,6 @@ const userManagementService = {
         if (apiError.data && typeof apiError.data === 'object') {
           const errorData = apiError.data as Record<string, unknown>;
           if (errorData._isHtmlError) {
-            console.error('Backend returned HTML error page. This indicates a server configuration issue.');
             throw new Error('El servidor backend no está funcionando correctamente. Por favor, contacta al administrador del sistema.');
           }
         }
@@ -193,7 +176,6 @@ const userManagementService = {
       const response = await apiClient.patch(`/api/auth/admin/users/${id}/edit/`, userData);
       return response as User;
     } catch (error) {
-      console.error('Error updating user:', error);
       throw error;
     }
   },
@@ -203,7 +185,6 @@ const userManagementService = {
     try {
       await apiClient.delete(`/api/auth/admin/users/${id}/`);
     } catch (error) {
-      console.error('Error deleting user:', error);
       throw error;
     }
   },
@@ -217,7 +198,6 @@ const userManagementService = {
       
       return response as User;
     } catch (error) {
-      console.error('Error verifying user:', error);
       throw error;
     }
   },
@@ -229,7 +209,6 @@ const userManagementService = {
       const response = await apiClient.post('/api/auth/admin/users/activate/', { token });
       return response as User;
     } catch (error) {
-      console.error('Error activating user:', error);
       throw error;
     }
   },
@@ -239,7 +218,6 @@ const userManagementService = {
     try {
       await apiClient.post('/api/auth/admin/users/delete/', { token });
     } catch (error) {
-      console.error('Error deleting user with token:', error);
       throw error;
     }
   },
@@ -251,7 +229,6 @@ const userManagementService = {
         password: newPassword
       });
     } catch (error) {
-      console.error('Error changing user password:', error);
       throw error;
     }
   },
@@ -261,7 +238,6 @@ const userManagementService = {
     try {
       return await this.getUsers({ role: 'monitor' });
     } catch (error) {
-      console.error('Error fetching monitors:', error);
       throw error;
     }
   }

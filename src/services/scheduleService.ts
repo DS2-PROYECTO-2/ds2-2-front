@@ -112,7 +112,6 @@ const scheduleService = {
       // Fallback: si no tiene la estructura esperada, devolver array vacío
       return [];
     } catch (error) {
-      console.error('Error fetching schedules:', error);
       throw error;
     }
   },
@@ -123,7 +122,6 @@ const scheduleService = {
       const response = await apiClient.get(`/api/schedule/schedules/${id}/`);
       return response as Schedule;
     } catch (error) {
-      console.error('Error fetching schedule:', error);
       throw error;
     }
   },
@@ -136,7 +134,6 @@ const scheduleService = {
         'crear turnos'
       ) as Schedule;
     } catch (error) {
-      console.error('Error creating schedule:', error);
       throw error;
     }
   },
@@ -149,7 +146,6 @@ const scheduleService = {
         'editar turnos'
       ) as Schedule;
     } catch (error) {
-      console.error('Error updating schedule:', error);
       throw error;
     }
   },
@@ -162,7 +158,6 @@ const scheduleService = {
         'eliminar turnos'
       );
     } catch (error) {
-      console.error('Error deleting schedule:', error);
       throw error;
     }
   },
@@ -173,7 +168,6 @@ const scheduleService = {
       const response = await apiClient.get('/api/schedule/schedules/upcoming/');
       return response as Schedule[];
     } catch (error) {
-      console.error('Error fetching upcoming schedules:', error);
       throw error;
     }
   },
@@ -184,7 +178,6 @@ const scheduleService = {
       const response = await apiClient.get('/api/schedule/schedules/current/');
       return response as Schedule[];
     } catch (error) {
-      console.error('Error fetching current schedules:', error);
       throw error;
     }
   },
@@ -199,7 +192,6 @@ const scheduleService = {
       const response = await apiClient.post('/api/schedule/schedules/validate_room_access/', body);
       return response as RoomAccessValidation;
     } catch (error) {
-      console.error('Error validating room access:', error);
       throw error;
     }
   },
@@ -210,7 +202,6 @@ const scheduleService = {
       const response = await apiClient.post<Record<string, never>, { compliant: boolean; details: string }>(`/api/schedule/schedules/${scheduleId}/check_compliance/`, {});
       return response;
     } catch (error) {
-      console.error('Error checking compliance:', error);
       throw error;
     }
   },
@@ -221,7 +212,6 @@ const scheduleService = {
       const response = await apiClient.post<Record<string, never>, { checked: number; compliant: number; non_compliant: number }>('/api/schedule/schedules/run_compliance_check/', {});
       return response;
     } catch (error) {
-      console.error('Error running compliance check:', error);
       throw error;
     }
   },
@@ -257,7 +247,6 @@ const scheduleService = {
         past: response.past_schedules || []
       };
     } catch (error) {
-      console.error('Error fetching my schedules:', error);
       throw error;
     }
   },
@@ -268,7 +257,6 @@ const scheduleService = {
       const response = await apiClient.get('/api/schedule/my-current-schedule/');
       return response as { has_current_schedule: boolean; current_schedule?: Schedule } | null;
     } catch (error) {
-      console.error('Error fetching my current schedule:', error);
       throw error;
     }
   },
@@ -279,7 +267,6 @@ const scheduleService = {
       const response = await apiClient.get('/api/schedule/admin/overview/');
       return response as ScheduleOverview;
     } catch (error) {
-      console.error('Error fetching schedule overview:', error);
       throw error;
     }
   },
@@ -307,7 +294,6 @@ const scheduleService = {
         'eliminar turnos del usuario'
       ) as { deleted_count: number };
     } catch (error) {
-      console.error('Error deleting schedules by user:', error);
       throw error;
     }
   }
