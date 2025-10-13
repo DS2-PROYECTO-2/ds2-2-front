@@ -7,6 +7,9 @@ export default defineConfig({
   define: {
     'process.env': {},
   },
+  build: {
+    outDir: 'dist',
+  },
   test: {
     globals: true,
     environment: 'happy-dom',
