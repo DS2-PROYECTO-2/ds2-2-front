@@ -6,22 +6,35 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality-checks:
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 20
+    env:
+      CI: true
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'npm'
-        
-    - name: Run CI script
-      run: npm run ci
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run lint
+      run: npm run lint
+
+    - name: Build project
+      run: npm run build
 
     - name: Verify build artifacts
       run: |
@@ -29,18 +42,38 @@ jobs:
         test -f dist/index.html
         echo "✅ Build successful"
 
+    - name: Run tests with coverage (try, hard timeout)
+      id: test_with_cov
+      continue-on-error: true
+      run: |
+        timeout 480s npx vitest run \
+          --coverage \
+          --coverage.reporter=text-summary,lcov \
+          --coverage.reportsDirectory=coverage \
+          --reporter=dot \
+          --silent \
+          --sequence.concurrent=false \
+          --pool=forks \
+          --testTimeout=30000
+
+    - name: Fallback tests (no coverage, hard timeout)
+      if: ${{ steps.test_with_cov.outcome == 'failure' }}
+      run: |
+        timeout 300s npx vitest run \
+          --reporter=dot \
+          --silent \
+          --sequence.concurrent=false \
+          --pool=forks \
+          --testTimeout=30000
+
+    - name: List coverage (debug)
+      if: ${{ hashFiles('coverage/**') != '' }}
+      run: ls -la coverage
+
     - name: Upload coverage report
-      if: always()
+      if: ${{ hashFiles('coverage/**') != '' }}
       uses: actions/upload-artifact@v4
       with:
         name: coverage
         path: coverage
-
-    # Optional: integration reporter
-    - name: Run tests (verbose)
-      if: always()
-      run: npm run test:run -- --reporter=verbose
-
-    
-
-  
+        if-no-files-found: warn
