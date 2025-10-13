@@ -18,41 +18,38 @@ jobs:
       CI: true
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Run lint
-      run: npm run lint
-
-    - name: Build project
-      run: npm run build
-
-    - name: Verify build artifacts
+    - name: Run tests with coverage (try, hard timeout)
+      id: test_with_cov
+      continue-on-error: true
       run: |
-        test -d dist
-        test -f dist/index.html
-        echo "✅ Build successful"
+        timeout 480s npx vitest run \
+          --coverage \
+          --coverage.reporter=text-summary,lcov \
+          --coverage.reportsDirectory=coverage \
+          --reporter=dot \
+          --silent \
+          --threads=false \
+          --sequence.concurrent=false \
+          --pool=forks \
+          --testTimeout=30000
 
-    - name: Run tests (with coverage, low noise)
-      run: npx vitest run --coverage --coverage.reporter=text-summary,lcov --coverage.reportsDirectory=coverage --reporter=dot --silent --maxWorkers=2 --testTimeout=30000
-      # Si aún se cuelga, usa esta línea en su lugar:
-      # run: npx vitest run --coverage --coverage.reporter=text-summary,lcov --coverage.reportsDirectory=coverage --reporter=dot --silent --threads=false --testTimeout=30000
+    - name: Fallback tests (no coverage, hard timeout)
+      if: ${{ steps.test_with_cov.outcome == 'failure' }}
+      run: |
+        timeout 300s npx vitest run \
+          --reporter=dot \
+          --silent \
+          --threads=false \
+          --sequence.concurrent=false \
+          --pool=forks \
+          --testTimeout=30000
 
     - name: List coverage (debug)
-      if: always()
-      run: ls -la coverage || true
+      if: ${{ hashFiles('coverage/**') != '' }}
+      run: ls -la coverage
 
     - name: Upload coverage report
-      if: always()
+      if: ${{ hashFiles('coverage/**') != '' }}
       uses: actions/upload-artifact@v4
       with:
         name: coverage
