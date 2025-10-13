@@ -184,14 +184,6 @@ export default function RoomManagement() {
   }, []);
 
 
-  // Forzar re-render de la vista de detalle al cambiar los reportes
-  useEffect(() => {
-    if (selectedRoom) {
-      // Solo actualizar si realmente hay cambios en los reportes
-      // No modificar selectedRoom directamente para evitar bucle infinito
-      setSelectedRoom(prev => prev ? { ...prev, reports: reports } : prev);
-    }
-  }, [reports, selectedRoom]); // Incluir selectedRoom en las dependencias
 
   // Recalcular conteos de pendientes por equipo cada vez que cambian los reportes
   useEffect(() => {

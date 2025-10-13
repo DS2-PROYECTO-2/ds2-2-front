@@ -183,7 +183,7 @@ const DashboardLayout: React.FC = () => {
 
       {confirmConfig && (
         <div className="modal-overlay" onClick={() => { confirmConfig.onCancel?.(); setConfirmConfig(null); }}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content confirm-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">{confirmConfig.title}</h2>
             </div>

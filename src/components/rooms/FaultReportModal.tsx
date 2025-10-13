@@ -100,7 +100,7 @@ const FaultReportModal: React.FC<FaultReportModalProps> = ({ computer, onSave, o
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content fault-report-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">
             <AlertCircle size={24} />
