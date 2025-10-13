@@ -490,7 +490,7 @@ export const roomManagementService = {
       } catch { /* noop */ }
       try {
         // fallback con PUT a una ruta común
-        await fetch(`${(import.meta as any).env.VITE_API_URL || 'http://127.0.0.1:8000'}/api/equipment/reports/${reportId}/`, {
+        await fetch(`${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'}/api/equipment/reports/${reportId}/`, {
           method: 'PUT',
           headers: (() => {
             const t = localStorage.getItem('authToken');
