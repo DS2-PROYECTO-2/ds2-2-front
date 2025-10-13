@@ -21,7 +21,7 @@ jobs:
         cache: 'npm'
         
     - name: Run CI script
-      run: run: npm ci && npm run lint && npm run build
+      run: npm ci && npm run lint && npm run build
 
     - name: Verify build artifacts
       run: |
