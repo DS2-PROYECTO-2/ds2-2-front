@@ -59,14 +59,14 @@ function App() {
           <DashboardLayout />
         </ProtectedRoute>
       } />
+      <Route path="/users" element={
+        <ProtectedRoute>
+          <DashboardLayout />
+        </ProtectedRoute>
+      } />
       <Route path="/reports" element={
         <ProtectedRoute>
-          <MainLayout>
-            <BlankPage 
-              title="Reportes" 
-              description="Análisis y reportes de uso de las salas."
-            />
-          </MainLayout>
+          <DashboardLayout />
         </ProtectedRoute>
       } />
       <Route path="/settings" element={
@@ -77,6 +77,11 @@ function App() {
               description="Configuración del sistema y preferencias."
             />
           </MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <DashboardLayout />
         </ProtectedRoute>
       } />
       <Route path="/" element={<Navigate to="/login" replace />} />

@@ -183,6 +183,60 @@ class RoomAccessService {
       };
     }
   }
+
+  // Obtener mis entradas a salas
+  async getMyEntries(): Promise<Array<{
+    id: number;
+    room: number;
+    room_name?: string;
+    entry_time: string;
+    exit_time?: string;
+    duration_minutes?: number;
+  }>> {
+    try {
+      const response = await apiClient.get('/api/rooms/my-entries/');
+      return response as Array<{
+        id: number;
+        room: number;
+        room_name?: string;
+        entry_time: string;
+        exit_time?: string;
+        duration_minutes?: number;
+      }>;
+    } catch (error: unknown) {
+      console.error('Error getting my entries:', error);
+      return [];
+    }
+  }
+
+  // Obtener mi entrada activa
+  async getMyActiveEntry(): Promise<{
+    has_active_entry: boolean;
+    active_entry?: {
+      id: number;
+      room: number;
+      room_name?: string;
+      entry_time: string;
+    };
+  }> {
+    try {
+      const response = await apiClient.get('/api/rooms/my-active-entry/');
+      return response as {
+        has_active_entry: boolean;
+        active_entry?: {
+          id: number;
+          room: number;
+          room_name?: string;
+          entry_time: string;
+        };
+      };
+    } catch (error: unknown) {
+      console.error('Error getting my active entry:', error);
+      return {
+        has_active_entry: false
+      };
+    }
+  }
 }
 
 // Exportar instancia del servicio

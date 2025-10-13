@@ -37,6 +37,7 @@ interface RawEntry {
 }
 
 function mapRawToUI(e: RawEntry): RoomEntryUI {
+
   return {
     id: e.id,
     roomId: e.room ?? e.room_id ?? 0,
@@ -47,7 +48,7 @@ function mapRawToUI(e: RawEntry): RoomEntryUI {
     userId: e.user ?? e.user_id,
     userName: e.user_name,
     userUsername: e.user_username,
-    userDocument: e.user_identification ?? e.identification ?? e.user_document ?? e.document ?? e.user_username,
+    userDocument: e.user_identification ?? e.identification ?? e.user_document ?? e.document ?? undefined,
   };
 }
 
@@ -87,12 +88,8 @@ export async function createEntry(roomId: number, notes?: string) {
       notes: notes || ''
     };
     
-    console.log('🔍 Creando entrada con validación integrada:');
-    console.log('📦 Payload:', JSON.stringify(payload, null, 2));
-    console.log('🌐 URL:', '/api/rooms/entry/');
     
     const result = await apiClient.post('/api/rooms/entry/', payload);
-    console.log('✅ Entrada creada exitosamente:', result);
     
     // Disparar evento de actualización en tiempo real
     try {
@@ -111,37 +108,17 @@ export async function createEntry(roomId: number, notes?: string) {
         newValue: String(Date.now()), 
         storageArea: localStorage 
       }));
-    } catch (error) {
-      console.warn('Error dispatching room entry update event:', error);
+    } catch {
+      // Error dispatching room entry update event
     }
     
     return result;
   } catch (error: unknown) {
-    console.error('❌ Error al crear entrada:');
-    
-    // Type guard para verificar si es un error con propiedades específicas
-    if (error && typeof error === 'object' && 'status' in error) {
-      const apiError = error as { status?: number; response?: { headers?: unknown; data?: unknown } };
-      console.error('📊 Status:', apiError.status);
-      console.error('📋 Headers:', apiError.response?.headers);
-      console.error('📄 Response Data:', apiError.response?.data);
-    }
-    
-    console.error('🔍 Full Error:', error);
-    
-    // Logging mejorado para capturar todos los datos del error
-    console.error('🔍 Error Details:');
-    if (error && typeof error === 'object' && 'status' in error) {
-      console.error('  - error.status:', (error as { status?: number }).status);
-    }
     
     // Manejar errores específicos del backend
     if (error && typeof error === 'object' && 'status' in error && (error as { status?: number }).status === 400) {
       const apiError = error as { response?: { data?: unknown }; data?: unknown };
       const errorData = apiError.response?.data || apiError.data;
-      console.error('🚨 Error 400 - Datos del error:', errorData);
-      console.error('🚨 Error 400 - Tipo de datos:', typeof errorData);
-      console.error('🚨 Error 400 - JSON stringify:', JSON.stringify(errorData, null, 2));
       
       let errorMessage = 'Acceso denegado';
       if (errorData) {
@@ -204,8 +181,8 @@ export async function exitEntry(entryId: number, notes?: string) {
         newValue: String(Date.now()), 
         storageArea: localStorage 
       }));
-    } catch (error) {
-      console.warn('Error dispatching room exit update event:', error);
+    } catch {
+      // Error dispatching room exit update event
     }
     
     return result;
