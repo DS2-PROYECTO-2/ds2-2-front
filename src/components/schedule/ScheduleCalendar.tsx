@@ -40,9 +40,9 @@ const ScheduleCalendar: React.FC = () => {
   const { canEdit, canDelete, canCreate, isAdmin } = useSecurity();
   
   // Funciones silenciosas para renderizado (no generan errores de consola)
-  const canEditSilent = () => canEdit(true);
-  const canDeleteSilent = () => canDelete(true);
-  const canCreateSilent = () => canCreate(true);
+  const canEditSilent = () => canEdit();
+  const canDeleteSilent = () => canDelete();
+  const canCreateSilent = () => canCreate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<'month' | 'week'>('month');
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -801,7 +801,7 @@ const ScheduleCalendar: React.FC = () => {
   // Abrir modal de edición
   const openEditModal = async (schedule: Schedule) => {
     // Validación de seguridad: verificar permisos
-    if (!canEdit(true)) {
+    if (!canEdit()) {
       return;
     }
     
@@ -870,7 +870,7 @@ const ScheduleCalendar: React.FC = () => {
   // Guardar cambios del turno editado
   const saveEditSchedule = async () => {
     // Validación de seguridad: verificar permisos
-    if (!canEdit(true)) {
+    if (!canEdit()) {
       return;
     }
     
@@ -1195,7 +1195,7 @@ const ScheduleCalendar: React.FC = () => {
                           <div
                             key={schedule.id}
                             className={`week-schedule-item ${schedule.status} clickable ${totalSchedules > 1 ? 'overlapping' : ''}`}
-                            title={`${schedule.user_full_name || `Monitor ${schedule.user}`} - ${schedule.room_name || `Sala ${schedule.room}`} (${formatTime(schedule.start_datetime)} - ${formatTime(schedule.end_datetime)})${canEdit(true) ? ' - Haz clic para editar' : ''}`}
+                            title={`${schedule.user_full_name || `Monitor ${schedule.user}`} - ${schedule.room_name || `Sala ${schedule.room}`} (${formatTime(schedule.start_datetime)} - ${formatTime(schedule.end_datetime)})${canEdit() ? ' - Haz clic para editar' : ''}`}
                             onClick={(e) => {
                               e.stopPropagation();
                               // Abrir modal de detalles

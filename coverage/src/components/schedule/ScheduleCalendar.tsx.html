@@ -3595,9 +3595,9 @@ const ScheduleCalendar: React.FC = () =&gt; {
   const { canEdit, canDelete, canCreate, isAdmin } = useSecurity();
   
   // Funciones silenciosas para renderizado (no generan errores de consola)
-  const canEditSilent = () =&gt; canEdit(true);
-  const canDeleteSilent = () =&gt; canDelete(true);
-  const canCreateSilent = () =&gt; canCreate(true);
+  const canEditSilent = () =&gt; canEdit();
+  const canDeleteSilent = () =&gt; canDelete();
+  const canCreateSilent = () =&gt; canCreate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState&lt;'month' | 'week'&gt;('month');
   const [schedules, setSchedules] = useState&lt;Schedule[]&gt;([]);
@@ -3979,7 +3979,7 @@ const ScheduleCalendar: React.FC = () =&gt; {
           } else {
             setMonitors([]);
           }
-<span class="branch-0 cbranch-no" title="branch not covered" >        } catch (error) {</span>
+<span class="branch-0 cbranch-no" title="branch not covered" >        } catch {</span>
 <span class="cstat-no" title="statement not covered" >          setMonitors([]);</span>
 <span class="cstat-no" title="statement not covered" >        }</span>
 <span class="branch-0 cbranch-no" title="branch not covered" >      } else {</span>
@@ -3991,7 +3991,7 @@ const ScheduleCalendar: React.FC = () =&gt; {
       try {
         const roomsData = await roomService.getRooms();
         setRooms(Array.isArray(roomsData) ? <span class="branch-0 cbranch-no" title="branch not covered" >roomsData : [])</span>;
-<span class="branch-0 cbranch-no" title="branch not covered" >      } catch (error) {</span>
+<span class="branch-0 cbranch-no" title="branch not covered" >      } catch {</span>
 <span class="cstat-no" title="statement not covered" >        setRooms([]);</span>
 <span class="cstat-no" title="statement not covered" >      }</span>
       
@@ -4300,7 +4300,7 @@ const ScheduleCalendar: React.FC = () =&gt; {
             
             // Notificar actualización en tiempo real
 <span class="cstat-no" title="statement not covered" >            notifyScheduleUpdate();</span>
-<span class="cstat-no" title="statement not covered" >          } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >          } catch {</span>
 <span class="cstat-no" title="statement not covered" >            window.dispatchEvent(new CustomEvent('app-toast', {</span>
 <span class="cstat-no" title="statement not covered" >              detail: { message: 'Error al eliminar el turno', type: 'error' }</span>
 <span class="cstat-no" title="statement not covered" >            }));</span>
@@ -4341,7 +4341,7 @@ const ScheduleCalendar: React.FC = () =&gt; {
       
       // Notificar actualización en tiempo real
 <span class="cstat-no" title="statement not covered" >      notifyScheduleUpdate();</span>
-<span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >    } catch {</span>
 <span class="cstat-no" title="statement not covered" >      window.dispatchEvent(new CustomEvent('app-toast', {</span>
 <span class="cstat-no" title="statement not covered" >        detail: { </span>
 <span class="cstat-no" title="statement not covered" >          message: 'Error al eliminar todos los turnos', </span>
@@ -4356,7 +4356,7 @@ const ScheduleCalendar: React.FC = () =&gt; {
   // Abrir modal de edición
   const openEditModal = <span class="fstat-no" title="function not covered" >async (schedule: Schedule) =&gt; {</span>
     // Validación de seguridad: verificar permisos
-<span class="cstat-no" title="statement not covered" >    if (!canEdit(true)) {</span>
+<span class="cstat-no" title="statement not covered" >    if (!canEdit()) {</span>
 <span class="cstat-no" title="statement not covered" >      return;</span>
 <span class="cstat-no" title="statement not covered" >    }</span>
     
@@ -4386,7 +4386,7 @@ const ScheduleCalendar: React.FC = () =&gt; {
 <span class="cstat-no" title="statement not covered" >      setEditSchedule(editData);</span>
 <span class="cstat-no" title="statement not covered" >      setFormErrors({});</span>
 <span class="cstat-no" title="statement not covered" >      setShowEditModal(true);</span>
-<span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >    } catch {</span>
       // Fallback a los datos básicos si falla la carga detallada
 <span class="cstat-no" title="statement not covered" >      const formatDateForInput = (dateString: string) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >        const date = new Date(dateString);</span>
@@ -4425,7 +4425,7 @@ const ScheduleCalendar: React.FC = () =&gt; {
   // Guardar cambios del turno editado
   const saveEditSchedule = <span class="fstat-no" title="function not covered" >async () =&gt; {</span>
     // Validación de seguridad: verificar permisos
-<span class="cstat-no" title="statement not covered" >    if (!canEdit(true)) {</span>
+<span class="cstat-no" title="statement not covered" >    if (!canEdit()) {</span>
 <span class="cstat-no" title="statement not covered" >      return;</span>
 <span class="cstat-no" title="statement not covered" >    }</span>
     
@@ -4750,7 +4750,7 @@ const ScheduleCalendar: React.FC = () =&gt; {
 <span class="cstat-no" title="statement not covered" >                          &lt;div</span>
 <span class="cstat-no" title="statement not covered" >                            key={schedule.id}</span>
 <span class="cstat-no" title="statement not covered" >                            className={`week-schedule-item ${schedule.status} clickable ${totalSchedules &gt; 1 ? 'overlapping' : ''}`}</span>
-<span class="cstat-no" title="statement not covered" >                            title={`${schedule.user_full_name || `Monitor ${schedule.user}`} - ${schedule.room_name || `Sala ${schedule.room}`} (${formatTime(schedule.start_datetime)} - ${formatTime(schedule.end_datetime)})${canEdit(true) ? ' - Haz clic para editar' : ''}`}</span>
+<span class="cstat-no" title="statement not covered" >                            title={`${schedule.user_full_name || `Monitor ${schedule.user}`} - ${schedule.room_name || `Sala ${schedule.room}`} (${formatTime(schedule.start_datetime)} - ${formatTime(schedule.end_datetime)})${canEdit() ? ' - Haz clic para editar' : ''}`}</span>
 <span class="cstat-no" title="statement not covered" >                            onClick={(e) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >                              e.stopPropagation();</span>
                               // Abrir modal de detalles
@@ -5148,7 +5148,7 @@ const ScheduleCalendar: React.FC = () =&gt; {
                                       
                                       // Notificar actualización en tiempo real
 <span class="cstat-no" title="statement not covered" >                                      notifyScheduleUpdate();</span>
-<span class="cstat-no" title="statement not covered" >                                    } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >                                    } catch {</span>
 <span class="cstat-no" title="statement not covered" >                                      window.dispatchEvent(new CustomEvent('app-toast', {</span>
 <span class="cstat-no" title="statement not covered" >                                        detail: { message: 'Error al eliminar el turno', type: 'error' }</span>
 <span class="cstat-no" title="statement not covered" >                                      }));</span>
@@ -5305,7 +5305,7 @@ export default ScheduleCalendar;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-12T23:34:06.227Z
+                at 2025-10-13T01:34:17.550Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

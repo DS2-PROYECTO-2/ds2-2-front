@@ -3,7 +3,7 @@ import { useAuth } from './useAuth';
 export const useSecurity = () => {
   const { user } = useAuth();
 
-  const requireAdmin = (_action: string, _silent: boolean = false) => {
+  const requireAdmin = () => {
     if (!user) {
       return false;
     }
@@ -21,7 +21,7 @@ export const useSecurity = () => {
     return true;
   };
 
-  const requireAuth = (_action: string) => {
+  const requireAuth = () => {
     if (!user) {
       return false;
     }
@@ -29,20 +29,20 @@ export const useSecurity = () => {
     return true;
   };
 
-  const canEdit = (_silent: boolean = false) => {
-    return requireAdmin('editar turnos', _silent);
+  const canEdit = () => {
+    return requireAdmin();
   };
 
-  const canDelete = (_silent: boolean = false) => {
-    return requireAdmin('eliminar turnos', _silent);
+  const canDelete = () => {
+    return requireAdmin();
   };
 
-  const canCreate = (_silent: boolean = false) => {
-    return requireAdmin('crear turnos', _silent);
+  const canCreate = () => {
+    return requireAdmin();
   };
 
   const canView = () => {
-    return requireAuth('ver turnos');
+    return requireAuth();
   };
 
   const handleSecurityError = (error: unknown, action: string) => {

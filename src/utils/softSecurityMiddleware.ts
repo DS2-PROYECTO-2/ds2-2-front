@@ -6,7 +6,7 @@ export const softSecureApiCall = async <T>(
   requiredRole: 'admin' | 'monitor' | 'any' = 'any',
   action: string = 'realizar acción'
 ): Promise<T> => {
-  try {
+    // 
     // Obtener información del usuario desde el token almacenado
     const token = localStorage.getItem('authToken');
     if (!token) {
@@ -38,9 +38,6 @@ export const softSecureApiCall = async <T>(
 
     // Realizar la llamada a la API
     return await apiCall();
-  } catch (error) {
-    throw error;
-  }
 };
 
 // Wrapper para operaciones de administrador (versión suave)

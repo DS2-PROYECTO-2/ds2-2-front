@@ -511,7 +511,7 @@ const RoomAccessController: React.FC&lt;RoomAccessControllerProps&gt; = <span cl
 <span class="cstat-no" title="statement not covered" >      if (onAccessChange) {</span>
 <span class="cstat-no" title="statement not covered" >        onAccessChange(accessInfo.canAccess, accessInfo.reason || '');</span>
 <span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >    } catch {</span>
 <span class="cstat-no" title="statement not covered" >      if (onAccessChange) {</span>
 <span class="cstat-no" title="statement not covered" >        onAccessChange(false, 'Error al verificar acceso');</span>
 <span class="cstat-no" title="statement not covered" >      }</span>
@@ -539,7 +539,7 @@ const RoomAccessController: React.FC&lt;RoomAccessControllerProps&gt; = <span cl
 <span class="cstat-no" title="statement not covered" >          room_name: (scheduleInfo as unknown as Record&lt;string, unknown&gt;).room_name as string</span>
 <span class="cstat-no" title="statement not covered" >        });</span>
 <span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >    } catch {</span>
       // Error getting schedule info
 <span class="cstat-no" title="statement not covered" >    }</span>
 <span class="cstat-no" title="statement not covered" >  };</span>
@@ -578,7 +578,7 @@ const RoomAccessController: React.FC&lt;RoomAccessControllerProps&gt; = <span cl
 <span class="cstat-no" title="statement not covered" >      }</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      return result;</span>
-<span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >    } catch {</span>
 <span class="cstat-no" title="statement not covered" >      return {</span>
 <span class="cstat-no" title="statement not covered" >        success: false,</span>
 <span class="cstat-no" title="statement not covered" >        message: 'Error al procesar entrada'</span>
@@ -603,7 +603,7 @@ const RoomAccessController: React.FC&lt;RoomAccessControllerProps&gt; = <span cl
 <span class="cstat-no" title="statement not covered" >      }</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      return result;</span>
-<span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >    } catch {</span>
 <span class="cstat-no" title="statement not covered" >      return {</span>
 <span class="cstat-no" title="statement not covered" >        success: false,</span>
 <span class="cstat-no" title="statement not covered" >        message: 'Error al procesar salida'</span>
@@ -623,7 +623,7 @@ const RoomAccessController: React.FC&lt;RoomAccessControllerProps&gt; = <span cl
 <span class="cstat-no" title="statement not covered" >      if (onAccessChange) {</span>
 <span class="cstat-no" title="statement not covered" >        onAccessChange(validation.access_granted, validation.reason || '');</span>
 <span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >    } catch {</span>
       // Error validating real-time access
 <span class="cstat-no" title="statement not covered" >    }</span>
 <span class="cstat-no" title="statement not covered" >  };</span>
@@ -633,7 +633,7 @@ const RoomAccessController: React.FC&lt;RoomAccessControllerProps&gt; = <span cl
 <span class="cstat-no" title="statement not covered" >    try {</span>
 <span class="cstat-no" title="statement not covered" >      const accessInfo = await canAccessRoom(roomId);</span>
 <span class="cstat-no" title="statement not covered" >      return accessInfo.canAccess;</span>
-<span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >    } catch {</span>
 <span class="cstat-no" title="statement not covered" >      return false;</span>
 <span class="cstat-no" title="statement not covered" >    }</span>
 <span class="cstat-no" title="statement not covered" >  };</span>
@@ -643,7 +643,7 @@ const RoomAccessController: React.FC&lt;RoomAccessControllerProps&gt; = <span cl
 <span class="cstat-no" title="statement not covered" >    try {</span>
 <span class="cstat-no" title="statement not covered" >      const activeSchedules = await getCurrentScheduleInfo();</span>
 <span class="cstat-no" title="statement not covered" >      return activeSchedules;</span>
-<span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >    } catch {</span>
 <span class="cstat-no" title="statement not covered" >      return null;</span>
 <span class="cstat-no" title="statement not covered" >    }</span>
 <span class="cstat-no" title="statement not covered" >  };</span>
@@ -679,7 +679,7 @@ export default RoomAccessController;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-12T23:34:06.227Z
+                at 2025-10-13T01:34:17.550Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

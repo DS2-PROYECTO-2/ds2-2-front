@@ -48,7 +48,7 @@ function mapRawToUI(e: RawEntry): RoomEntryUI {
     userId: e.user ?? e.user_id,
     userName: e.user_name,
     userUsername: e.user_username,
-    userDocument: e.user_identification ?? e.identification ?? e.user_document ?? e.document ?? null,
+    userDocument: e.user_identification ?? e.identification ?? e.user_document ?? e.document ?? undefined,
   };
 }
 

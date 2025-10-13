@@ -11,23 +11,19 @@ export interface Room {
 const roomService = {
   // Obtener todas las salas disponibles
   async getRooms(): Promise<Room[]> {
-    try {
-      const response = await apiClient.get('/api/rooms/') as Room[] | { results: Room[] };
-      
-      // Si la respuesta es un array directo
-      if (Array.isArray(response)) {
-        return response;
-      }
-      
-      // Si la respuesta tiene paginación
-      if (response && response.results && Array.isArray(response.results)) {
-        return response.results;
-      }
-      
-      return [];
-    } catch (error) {
-      throw error;
+    const response = await apiClient.get('/api/rooms/') as Room[] | { results: Room[] };
+    
+    // Si la respuesta es un array directo
+    if (Array.isArray(response)) {
+      return response;
     }
+    
+    // Si la respuesta tiene paginación
+    if (response && response.results && Array.isArray(response.results)) {
+      return response.results;
+    }
+    
+    return [];
   },
 
   // Obtener detalle de una sala específica

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getMyEntries, type RoomEntryUI } from '../../services/roomEntryService';
 import { apiClient } from '../../utils/api';
-import { useAuth } from '../../hooks/useAuth';
 
 const getWeekRange = (d = new Date()) => {
   const day = d.getDay();
@@ -41,7 +40,6 @@ const sumMinutes = (entries: { startedAt: string; endedAt?: string | null }[], r
   };
 
 const RoomStatsRow: React.FC = () => {
-  const { user: _user } = useAuth();
   const [monthly, setMonthly] = useState<string>('0 h 00 min');
   const [weekly, setWeekly]   = useState<string>('0 h 00 min');
   const [weeklyCount, setWeeklyCount] = useState(0);

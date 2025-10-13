@@ -49,7 +49,7 @@ export interface UpdateUserData {
 const userManagementService = {
   // Obtener lista de usuarios
   async getUsers(filters?: UserFilters): Promise<User[]> {
-    try {
+    // 
       const params = new URLSearchParams();
       
       if (filters?.search) {
@@ -94,9 +94,6 @@ const userManagementService = {
       
       // Ordenar por ID en orden ascendente
       return mappedUsers.sort((a, b) => a.id - b.id);
-    } catch (error) {
-      throw error;
-    }
   },
 
   // Obtener usuario por ID
@@ -107,73 +104,30 @@ const userManagementService = {
 
   // Crear nuevo usuario
   async createUser(userData: CreateUserData): Promise<User> {
-    try {
-      // Validaciones adicionales antes de enviar
-      if (!userData.username?.trim()) {
-        throw new Error('El nombre de usuario es requerido');
-      }
-      if (!userData.email?.trim()) {
-        throw new Error('El email es requerido');
-      }
-      if (!userData.password?.trim()) {
-        throw new Error('La contraseña es requerida');
-      }
-      if (userData.password !== userData.password_confirm) {
-        throw new Error('Las contraseñas no coinciden');
-      }
-
-
-      // Usar el endpoint de registro estándar que ya existe
-      const response = await apiClient.post('/api/auth/register/', userData);
-      return response as User;
-    } catch (error) {
-      
-      // Mejorar el manejo de errores específicos
-      if (error && typeof error === 'object' && 'status' in error) {
-        const apiError = error as { status: number; data: unknown; message: string };
-        
-        // Detectar si el backend devolvió HTML en lugar de JSON
-        if (apiError.data && typeof apiError.data === 'object') {
-          const errorData = apiError.data as Record<string, unknown>;
-          if (errorData._isHtmlError) {
-            throw new Error('El servidor backend no está funcionando correctamente. Por favor, contacta al administrador del sistema.');
-          }
-        }
-        
-        // Manejar errores específicos del backend
-        if (apiError.status === 500) {
-          throw new Error('Error interno del servidor. Por favor, verifica los datos e intenta nuevamente.');
-        } else if (apiError.status === 400) {
-          // Intentar extraer errores de validación específicos
-          if (apiError.data && typeof apiError.data === 'object') {
-            const errorData = apiError.data as Record<string, unknown>;
-            if (errorData.username && Array.isArray(errorData.username)) {
-              throw new Error(`Nombre de usuario: ${errorData.username[0]}`);
-            } else if (errorData.email && Array.isArray(errorData.email)) {
-              throw new Error(`Email: ${errorData.email[0]}`);
-            } else if (errorData.password && Array.isArray(errorData.password)) {
-              throw new Error(`Contraseña: ${errorData.password[0]}`);
-            }
-          }
-          throw new Error(apiError.message || 'Datos inválidos. Por favor, revisa los campos.');
-        } else if (apiError.status === 409) {
-          throw new Error('El usuario o email ya existe. Por favor, usa otros datos.');
-        }
-      }
-      
-      throw error;
+    // Validaciones adicionales antes de enviar
+    if (!userData.username?.trim()) {
+      throw new Error('El nombre de usuario es requerido');
     }
+    if (!userData.email?.trim()) {
+      throw new Error('El email es requerido');
+    }
+    if (!userData.password?.trim()) {
+      throw new Error('La contraseña es requerida');
+    }
+    if (userData.password !== userData.password_confirm) {
+      throw new Error('Las contraseñas no coinciden');
+    }
+
+    // Usar el endpoint de registro estándar que ya existe
+    const response = await apiClient.post('/api/auth/register/', userData);
+    return response as User;
   },
 
   // Actualizar usuario por admin (edición consolidada)
   async updateUser(id: number, userData: UpdateUserData): Promise<User> {
-    try {
-      // Endpoint de edición por administrador que permite cambiar datos y campos administrativos
-      const response = await apiClient.patch(`/api/auth/admin/users/${id}/edit/`, userData);
-      return response as User;
-    } catch (error) {
-      throw error;
-    }
+    // Endpoint de edición por administrador que permite cambiar datos y campos administrativos
+    const response = await apiClient.patch(`/api/auth/admin/users/${id}/edit/`, userData);
+    return response as User;
   },
 
   // Eliminar usuario
@@ -183,15 +137,12 @@ const userManagementService = {
 
   // Verificar/Desverificar usuario
   async verifyUser(id: number, isVerified: boolean): Promise<User> {
-    try {
+    // 
       const response = await apiClient.patch(`/api/auth/admin/users/${id}/verify/`, {
         is_verified: isVerified
       });
       
       return response as User;
-    } catch (error) {
-      throw error;
-    }
   },
 
 
@@ -208,13 +159,10 @@ const userManagementService = {
 
   // Cambiar contraseña de usuario
   async changeUserPassword(id: number, newPassword: string): Promise<void> {
-    try {
+    // 
       await apiClient.post(`/api/auth/admin/users/${id}/change-password/`, {
         password: newPassword
       });
-    } catch (error) {
-      throw error;
-    }
   },
 
   // Obtener solo monitores
