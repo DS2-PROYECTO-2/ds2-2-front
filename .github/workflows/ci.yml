@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [ main, develop ]
 
-# 🔁 Cancela ejecuciones anteriores en la misma rama
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -14,6 +13,9 @@ concurrency:
 jobs:
   quality-checks:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: true
 
     steps:
     - name: Checkout code
@@ -40,9 +42,14 @@ jobs:
         test -f dist/index.html
         echo "✅ Build successful"
 
-    - name: Run tests (with coverage, safe mode)
-      # Ejecuta las pruebas sin colgarse
-      run: npx vitest run --coverage --maxWorkers=2 --reporter=verbose --testTimeout=30000
+    - name: Run tests (with coverage, low noise)
+      run: npx vitest run --coverage --coverage.reporter=text-summary,lcov --coverage.reportsDirectory=coverage --reporter=dot --silent --maxWorkers=2 --testTimeout=30000
+      # Si aún se cuelga, usa esta línea en su lugar:
+      # run: npx vitest run --coverage --coverage.reporter=text-summary,lcov --coverage.reportsDirectory=coverage --reporter=dot --silent --threads=false --testTimeout=30000
+
+    - name: List coverage (debug)
+      if: always()
+      run: ls -la coverage || true
 
     - name: Upload coverage report
       if: always()
@@ -50,3 +57,4 @@ jobs:
       with:
         name: coverage
         path: coverage
+        if-no-files-found: warn
