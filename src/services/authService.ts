@@ -55,6 +55,17 @@ export const authService = {
     return response;
   },
 
+  async updateProfile(profileData: Partial<User>): Promise<{
+    message: string;
+    user: User;
+  }> {
+    const response = await apiClient.patch<Partial<User>, {
+      message: string;
+      user: User;
+    }>('/api/auth/profile/update/', profileData);
+    return response;
+  },
+
   async getDashboard(): Promise<{
     user: {
       id: number;

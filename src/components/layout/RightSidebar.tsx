@@ -1,10 +1,120 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { User, Shield, CheckCircle, Activity, Calendar } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 const RightSidebar: React.FC = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleProfileClick = () => {
+    navigate('/profile');
+  };
+
+  // Obtener iniciales del usuario
+  const getUserInitials = (user: any) => {
+    const firstName = user?.first_name || '';
+    const lastName = user?.last_name || '';
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  };
+
+  // Obtener nombre completo
+  const getFullName = (user: any) => {
+    const firstName = user?.first_name || '';
+    const lastName = user?.last_name || '';
+    return `${firstName} ${lastName}`.trim() || user?.username || 'Usuario';
+  };
+
+  // Formatear fecha de último login
+  const formatLastLogin = (lastLogin: string | null | undefined) => {
+    if (!lastLogin) return 'Nunca';
+    
+    const date = new Date(lastLogin);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffHours < 1) {
+      return 'Hace menos de 1 hora';
+    } else if (diffHours < 24) {
+      return `Hace ${diffHours}h`;
+    } else if (diffDays < 7) {
+      return `Hace ${diffDays}d`;
+    } else {
+      return date.toLocaleDateString('es-ES', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+  };
+
+  // Formatear fecha de creación
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return 'No disponible';
+    
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  if (!user) {
+    return (
+      <aside className="right-sidebar">
+        <div className="profile-section">
+          <div className="profile-placeholder">
+            <User size={24} />
+            <p>Cargando...</p>
+          </div>
+        </div>
+      </aside>
+    );
+  }
+
   return (
     <aside className="right-sidebar">
       <div className="profile-section">
-        {/* Sección de perfil vacía por ahora */}
+        {/* Avatar y nombre */}
+        <div className="profile-summary" onClick={handleProfileClick}>
+          <div className="profile-avatar-mini">
+            <span className="avatar-initials-mini">{getUserInitials(user)}</span>
+          </div>
+          <div className="profile-info-mini">
+            <h4 className="profile-name-mini">{getFullName(user)}</h4>
+            <p className="profile-email-mini">{user.email}</p>
+            <div className="profile-role-mini">
+              <Shield size={12} />
+              <span>{user.role === 'admin' ? 'Administrador' : 'Monitor'}</span>
+            </div>
+            <div className="profile-status-mini">
+              <CheckCircle size={12} />
+              <span className={user.is_verified ? 'verified' : 'pending'}>
+                {user.is_verified ? 'Verificado' : 'Pendiente'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Actividad Reciente */}
+        <div className="profile-stats">
+          <h5>Actividad Reciente</h5>
+          <div className="stat-item">
+            <Activity size={14} />
+            <span>Último acceso: {formatLastLogin(user.last_login)}</span>
+          </div>
+          <div className="stat-item">
+            <Calendar size={14} />
+            <span>Miembro desde: {formatDate(user.created_at)}</span>
+          </div>
+          <div className="stat-item">
+            <Shield size={14} />
+            <span>Rol: {user.role === 'admin' ? 'Administrador' : 'Monitor'}</span>
+          </div>
+        </div>
       </div>
     </aside>
   );

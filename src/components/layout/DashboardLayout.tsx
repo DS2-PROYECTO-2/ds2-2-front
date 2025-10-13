@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import LeftSidebar from './LeftSidebar';
+import RightSidebar from './RightSidebar';
 import "../../styles/dashboard.css";
 import RoomPanel from '../rooms/RoomPanel';
 import RoomHistory from '../rooms/RoomHistory';
@@ -10,6 +11,7 @@ import UserManagement from './UserManagement';
 import ScheduleCalendar from '../schedule/ScheduleCalendar';
 import ReportsView from '../reports/ReportsView';
 import TurnComparisonTable from '../reports/TurnComparisonTable';
+import ProfileView from '../profile/ProfileView';
 import { useAuth } from '../../hooks/useAuth';
 import { useSecurity } from '../../hooks/useSecurity';
 
@@ -36,6 +38,7 @@ const DashboardLayout: React.FC = () => {
     if (path === '/users') return 'users';
     if (path === '/reports') return 'reports';
     if (path === '/settings') return 'settings';
+    if (path === '/profile') return 'profile';
     return 'home';
   }, [location.pathname]);
   
@@ -93,6 +96,8 @@ const DashboardLayout: React.FC = () => {
             <p>Configuración del sistema</p>
           </div>
         );
+      case 'profile':
+        return <ProfileView />;
       default:
         return null;
     }
@@ -175,11 +180,12 @@ const DashboardLayout: React.FC = () => {
   }
 
   return (
-    <div className="dashboard-layout">
+    <div className={`dashboard-layout ${activeSection === 'profile' ? 'profile-view' : ''}`}>
       <LeftSidebar onNavigate={setActiveSection} activeSection={activeSection} />
       <main className="main-content">
         {renderSection()}
       </main>
+      {activeSection !== 'profile' && <RightSidebar />}
 
       {confirmConfig && (
         <div className="modal-overlay" onClick={() => { confirmConfig.onCancel?.(); setConfirmConfig(null); }}>

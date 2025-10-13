@@ -79,6 +79,11 @@ function App() {
           </MainLayout>
         </ProtectedRoute>
       } />
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <DashboardLayout />
+        </ProtectedRoute>
+      } />
       <Route path="/" element={<Navigate to="/login" replace />} />
     </Routes>
   )
