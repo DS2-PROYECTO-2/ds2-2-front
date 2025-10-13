@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Search, 
-  Filter, 
   Plus, 
   Edit, 
   Trash2, 
@@ -644,7 +643,7 @@ const UserManagement: React.FC = () => {
         hour: '2-digit',
         minute: '2-digit'
       });
-    } catch (error) {
+    } catch {
       return 'Fecha inválida';
     }
   };

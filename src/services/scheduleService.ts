@@ -118,12 +118,8 @@ const scheduleService = {
 
   // Obtener turno por ID
   async getScheduleById(id: number): Promise<Schedule> {
-    try {
-      const response = await apiClient.get(`/api/schedule/schedules/${id}/`);
-      return response as Schedule;
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiClient.get(`/api/schedule/schedules/${id}/`);
+    return response as Schedule;
   },
 
   // Crear nuevo turno
@@ -164,22 +160,14 @@ const scheduleService = {
 
   // Obtener turnos próximos (7 días)
   async getUpcomingSchedules(): Promise<Schedule[]> {
-    try {
-      const response = await apiClient.get('/api/schedule/schedules/upcoming/');
-      return response as Schedule[];
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiClient.get('/api/schedule/schedules/upcoming/');
+    return response as Schedule[];
   },
 
   // Obtener turnos actuales (en curso)
   async getCurrentSchedules(): Promise<Schedule[]> {
-    try {
-      const response = await apiClient.get('/api/schedule/schedules/current/');
-      return response as Schedule[];
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiClient.get('/api/schedule/schedules/current/');
+    return response as Schedule[];
   },
 
   // Validar acceso a sala
@@ -198,22 +186,14 @@ const scheduleService = {
 
   // Verificar cumplimiento de turno
   async checkCompliance(scheduleId: number): Promise<{ compliant: boolean; details: string }> {
-    try {
-      const response = await apiClient.post<Record<string, never>, { compliant: boolean; details: string }>(`/api/schedule/schedules/${scheduleId}/check_compliance/`, {});
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiClient.post<Record<string, never>, { compliant: boolean; details: string }>(`/api/schedule/schedules/${scheduleId}/check_compliance/`, {});
+    return response;
   },
 
   // Verificación masiva de cumplimiento
   async runComplianceCheck(): Promise<{ checked: number; compliant: number; non_compliant: number }> {
-    try {
-      const response = await apiClient.post<Record<string, never>, { checked: number; compliant: number; non_compliant: number }>('/api/schedule/schedules/run_compliance_check/', {});
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiClient.post<Record<string, never>, { checked: number; compliant: number; non_compliant: number }>('/api/schedule/schedules/run_compliance_check/', {});
+    return response;
   },
 
   // Mis turnos (para monitores)
@@ -253,22 +233,14 @@ const scheduleService = {
 
   // Mi turno actual
   async getMyCurrentSchedule(): Promise<{ has_current_schedule: boolean; current_schedule?: Schedule } | null> {
-    try {
-      const response = await apiClient.get('/api/schedule/my-current-schedule/');
-      return response as { has_current_schedule: boolean; current_schedule?: Schedule } | null;
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiClient.get('/api/schedule/my-current-schedule/');
+    return response as { has_current_schedule: boolean; current_schedule?: Schedule } | null;
   },
 
   // Resumen general (para administradores)
   async getOverview(): Promise<ScheduleOverview> {
-    try {
-      const response = await apiClient.get('/api/schedule/admin/overview/');
-      return response as ScheduleOverview;
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiClient.get('/api/schedule/admin/overview/');
+    return response as ScheduleOverview;
   },
 
   // Eliminar todos los turnos del sistema

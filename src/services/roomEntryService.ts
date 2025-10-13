@@ -108,7 +108,7 @@ export async function createEntry(roomId: number, notes?: string) {
         newValue: String(Date.now()), 
         storageArea: localStorage 
       }));
-    } catch (error) {
+    } catch {
       // Error dispatching room entry update event
     }
     
@@ -181,7 +181,7 @@ export async function exitEntry(entryId: number, notes?: string) {
         newValue: String(Date.now()), 
         storageArea: localStorage 
       }));
-    } catch (error) {
+    } catch {
       // Error dispatching room exit update event
     }
     

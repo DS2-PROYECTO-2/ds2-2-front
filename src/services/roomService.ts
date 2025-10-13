@@ -32,12 +32,8 @@ const roomService = {
 
   // Obtener detalle de una sala específica
   async getRoomById(id: number): Promise<Room> {
-    try {
-      const response = await apiClient.get(`/api/rooms/${id}/`);
-      return response as Room;
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiClient.get(`/api/rooms/${id}/`);
+    return response as Room;
   }
 };
 

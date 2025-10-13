@@ -241,23 +241,19 @@ export const roomManagementService = {
     capacity: number;
     description: string;
   }): Promise<Room> {
-    try {
-      const response = await apiClient.post('/api/rooms/admin/rooms/create/', roomData);
-      const apiRoom = (response as any).room;
-      
-      return {
-        id: apiRoom.id.toString(),
-        name: apiRoom.name,
-        code: apiRoom.code,
-        capacity: apiRoom.capacity,
-        description: apiRoom.description,
-        computers: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiClient.post('/api/rooms/admin/rooms/create/', roomData);
+    const apiRoom = (response as any).room;
+    
+    return {
+      id: apiRoom.id.toString(),
+      name: apiRoom.name,
+      code: apiRoom.code,
+      capacity: apiRoom.capacity,
+      description: apiRoom.description,
+      computers: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
   },
 
   // Actualizar sala
@@ -288,11 +284,7 @@ export const roomManagementService = {
 
   // Eliminar sala
   async deleteRoom(roomId: string): Promise<void> {
-    try {
-      await apiClient.delete(`/api/rooms/admin/rooms/${roomId}/delete/`);
-    } catch (error) {
-      throw error;
-    }
+    await apiClient.delete(`/api/rooms/admin/rooms/${roomId}/delete/`);
   },
 
   // Crear equipo
@@ -569,10 +561,6 @@ export const roomManagementService = {
   ,
   // Eliminar reporte por ID
   async deleteReport(reportId: string): Promise<void> {
-    try {
-      await apiClient.delete(`/api/equipment/reports/${reportId}/`);
-    } catch (error) {
-      throw error;
-    }
+    await apiClient.delete(`/api/equipment/reports/${reportId}/`);
   }
 };

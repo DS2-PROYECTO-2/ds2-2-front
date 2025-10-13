@@ -89,7 +89,7 @@ const TurnComparisonTable: React.FC = () => {
         // Cargar salas
         const roomsData = await roomService.getRooms();
         setRooms(roomsData || []);
-      } catch (err) {
+      } catch {
         // Error loading filter options
       }
     };
@@ -395,7 +395,7 @@ const TurnComparisonTable: React.FC = () => {
           no_registration: comparaciones.filter(c => c.estado === 'SIN_REGISTRO').length
         };
         setSummary(summary);
-      } catch (err) {
+      } catch {
         // Error reloading data
       }
     };

@@ -41,7 +41,7 @@ const sumMinutes = (entries: { startedAt: string; endedAt?: string | null }[], r
   };
 
 const RoomStatsRow: React.FC = () => {
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const [monthly, setMonthly] = useState<string>('0 h 00 min');
   const [weekly, setWeekly]   = useState<string>('0 h 00 min');
   const [weeklyCount, setWeeklyCount] = useState(0);
@@ -100,7 +100,7 @@ const RoomStatsRow: React.FC = () => {
         const lateCount = lateArrivalsData.late_arrivals_count || lateArrivalsData.total_late_arrivals || 0;
         setLateMonth(lateCount);
         
-      } catch (error) {
+      } catch {
         // Error fetching late arrivals from monitor endpoint
       }
     } catch {

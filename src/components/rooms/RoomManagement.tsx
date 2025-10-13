@@ -91,7 +91,7 @@ export default function RoomManagement() {
         const { rooms: apiRooms, reports: apiReports } = await roomManagementService.getRooms(user?.role);
         setRooms(apiRooms);
         setReports(apiReports);
-      } catch (err) {
+      } catch {
         setError('Error al cargar los datos. Por favor, intenta de nuevo.');
       } finally {
         setIsLoading(false);
@@ -144,7 +144,7 @@ export default function RoomManagement() {
           } catch { /* silencioso */ }
             })();
           }
-        } catch (error) {
+        } catch {
           // Error processing real-time update
         }
       }
@@ -252,7 +252,7 @@ export default function RoomManagement() {
       await roomManagementService.deleteRoom(roomId);
       setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
       showNotification('Sala eliminada', 'success');
-    } catch (error) {
+    } catch {
       showNotification('Error al eliminar la sala. Por favor, intenta de nuevo.', 'error');
     }
   };
@@ -318,7 +318,7 @@ export default function RoomManagement() {
         return updatedRooms;
       });
       showNotification('Equipo eliminado', 'success');
-    } catch (error) {
+    } catch {
       showNotification('Error al eliminar el equipo. Por favor, intenta de nuevo.', 'error');
     }
   };
@@ -488,7 +488,7 @@ export default function RoomManagement() {
       
       setShowFaultReportModal(false);
       showNotification('✅ Reporte enviado exitosamente', 'success');
-    } catch (error) {
+    } catch {
       showNotification('Error al enviar el reporte. Por favor, intenta de nuevo.', 'error');
     }
   };
@@ -602,7 +602,7 @@ export default function RoomManagement() {
         });
       }
       setShowComputerModal(false);
-    } catch (error) {
+    } catch {
         showNotification('Error al guardar el equipo. Por favor, intenta de nuevo.', 'error');
     }
   };

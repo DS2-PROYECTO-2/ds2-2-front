@@ -101,12 +101,8 @@ const userManagementService = {
 
   // Obtener usuario por ID
   async getUserById(id: number): Promise<User> {
-    try {
-      const response = await apiClient.get(`/api/auth/admin/users/${id}/`);
-      return response as User;
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiClient.get(`/api/auth/admin/users/${id}/`);
+    return response as User;
   },
 
   // Crear nuevo usuario
@@ -182,11 +178,7 @@ const userManagementService = {
 
   // Eliminar usuario
   async deleteUser(id: number): Promise<void> {
-    try {
-      await apiClient.delete(`/api/auth/admin/users/${id}/`);
-    } catch (error) {
-      throw error;
-    }
+    await apiClient.delete(`/api/auth/admin/users/${id}/`);
   },
 
   // Verificar/Desverificar usuario
@@ -205,21 +197,13 @@ const userManagementService = {
 
   // Activar usuario con token
   async activateUser(token: string): Promise<User> {
-    try {
-      const response = await apiClient.post('/api/auth/admin/users/activate/', { token });
-      return response as User;
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiClient.post('/api/auth/admin/users/activate/', { token });
+    return response as User;
   },
 
   // Eliminar usuario con token
   async deleteUserWithToken(token: string): Promise<void> {
-    try {
-      await apiClient.post('/api/auth/admin/users/delete/', { token });
-    } catch (error) {
-      throw error;
-    }
+    await apiClient.post('/api/auth/admin/users/delete/', { token });
   },
 
   // Cambiar contraseña de usuario
@@ -235,11 +219,7 @@ const userManagementService = {
 
   // Obtener solo monitores
   async getMonitors(): Promise<User[]> {
-    try {
-      return await this.getUsers({ role: 'monitor' });
-    } catch (error) {
-      throw error;
-    }
+    return await this.getUsers({ role: 'monitor' });
   }
 };
 

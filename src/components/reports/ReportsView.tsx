@@ -321,7 +321,7 @@ const ReportsView: React.FC = () => {
           ) : [];
         setMonitors(validMonitors);
       }
-    } catch (error) {
+    } catch {
       // Error loading options
     }
   }, [isAdmin]);

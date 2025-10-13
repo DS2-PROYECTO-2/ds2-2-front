@@ -68,7 +68,7 @@ const SecurityGuard: React.FC<SecurityGuardProps> = ({
         }
 
         setIsAuthorized(true);
-      } catch (error) {
+      } catch {
         setIsAuthorized(false);
       } finally {
         setIsLoading(false);

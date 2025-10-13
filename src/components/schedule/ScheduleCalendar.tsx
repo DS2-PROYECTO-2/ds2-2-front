@@ -424,7 +424,7 @@ const ScheduleCalendar: React.FC = () => {
           } else {
             setMonitors([]);
           }
-        } catch (error) {
+        } catch {
           setMonitors([]);
         }
       } else {
@@ -436,7 +436,7 @@ const ScheduleCalendar: React.FC = () => {
       try {
         const roomsData = await roomService.getRooms();
         setRooms(Array.isArray(roomsData) ? roomsData : []);
-      } catch (error) {
+      } catch {
         setRooms([]);
       }
       
@@ -745,7 +745,7 @@ const ScheduleCalendar: React.FC = () => {
             
             // Notificar actualización en tiempo real
             notifyScheduleUpdate();
-          } catch (error) {
+          } catch {
             window.dispatchEvent(new CustomEvent('app-toast', {
               detail: { message: 'Error al eliminar el turno', type: 'error' }
             }));
@@ -786,7 +786,7 @@ const ScheduleCalendar: React.FC = () => {
       
       // Notificar actualización en tiempo real
       notifyScheduleUpdate();
-    } catch (error) {
+    } catch {
       window.dispatchEvent(new CustomEvent('app-toast', {
         detail: { 
           message: 'Error al eliminar todos los turnos', 
@@ -831,7 +831,7 @@ const ScheduleCalendar: React.FC = () => {
       setEditSchedule(editData);
       setFormErrors({});
       setShowEditModal(true);
-    } catch (error) {
+    } catch {
       // Fallback a los datos básicos si falla la carga detallada
       const formatDateForInput = (dateString: string) => {
         const date = new Date(dateString);
@@ -1593,7 +1593,7 @@ const ScheduleCalendar: React.FC = () => {
                                       
                                       // Notificar actualización en tiempo real
                                       notifyScheduleUpdate();
-                                    } catch (error) {
+                                    } catch {
                                       window.dispatchEvent(new CustomEvent('app-toast', {
                                         detail: { message: 'Error al eliminar el turno', type: 'error' }
                                       }));

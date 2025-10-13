@@ -40,7 +40,7 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
       if (onAccessChange) {
         onAccessChange(accessInfo.canAccess, accessInfo.reason || '');
       }
-    } catch (error) {
+    } catch {
       if (onAccessChange) {
         onAccessChange(false, 'Error al verificar acceso');
       }
@@ -68,7 +68,7 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
           room_name: (scheduleInfo as unknown as Record<string, unknown>).room_name as string
         });
       }
-    } catch (error) {
+    } catch {
       // Error getting schedule info
     }
   };
@@ -107,7 +107,7 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
       }
 
       return result;
-    } catch (error) {
+    } catch {
       return {
         success: false,
         message: 'Error al procesar entrada'
@@ -132,7 +132,7 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
       }
 
       return result;
-    } catch (error) {
+    } catch {
       return {
         success: false,
         message: 'Error al procesar salida'
@@ -152,7 +152,7 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
       if (onAccessChange) {
         onAccessChange(validation.access_granted, validation.reason || '');
       }
-    } catch (error) {
+    } catch {
       // Error validating real-time access
     }
   };
@@ -162,7 +162,7 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
     try {
       const accessInfo = await canAccessRoom(roomId);
       return accessInfo.canAccess;
-    } catch (error) {
+    } catch {
       return false;
     }
   };
@@ -172,7 +172,7 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
     try {
       const activeSchedules = await getCurrentScheduleInfo();
       return activeSchedules;
-    } catch (error) {
+    } catch {
       return null;
     }
   };
