@@ -40,7 +40,8 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
       if (onAccessChange) {
         onAccessChange(accessInfo.canAccess, accessInfo.reason || '');
       }
-    } catch {
+    } catch (error) {
+      console.error('Error checking room access:', error);
       if (onAccessChange) {
         onAccessChange(false, 'Error al verificar acceso');
       }
@@ -68,8 +69,8 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
           room_name: (scheduleInfo as unknown as Record<string, unknown>).room_name as string
         });
       }
-    } catch {
-      // Error getting schedule info
+    } catch (error) {
+      console.error('Error getting schedule info:', error);
     }
   };
 
@@ -107,7 +108,8 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
       }
 
       return result;
-    } catch {
+    } catch (error) {
+      console.error('Error handling room entry:', error);
       return {
         success: false,
         message: 'Error al procesar entrada'
@@ -132,7 +134,8 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
       }
 
       return result;
-    } catch {
+    } catch (error) {
+      console.error('Error handling room exit:', error);
       return {
         success: false,
         message: 'Error al procesar salida'
@@ -152,8 +155,8 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
       if (onAccessChange) {
         onAccessChange(validation.access_granted, validation.reason || '');
       }
-    } catch {
-      // Error validating real-time access
+    } catch (error) {
+      console.error('Error validating real-time access:', error);
     }
   };
 
@@ -162,7 +165,8 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
     try {
       const accessInfo = await canAccessRoom(roomId);
       return accessInfo.canAccess;
-    } catch {
+    } catch (error) {
+      console.error('Error checking schedule in room:', error);
       return false;
     }
   };
@@ -172,7 +176,8 @@ const RoomAccessController: React.FC<RoomAccessControllerProps> = ({
     try {
       const activeSchedules = await getCurrentScheduleInfo();
       return activeSchedules;
-    } catch {
+    } catch (error) {
+      console.error('Error getting schedules for room:', error);
       return null;
     }
   };

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import type { Computer } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
-import '../../styles/RoomManagement.css';
 
 interface FaultReportModalProps {
   computer: Computer;
@@ -100,7 +99,7 @@ const FaultReportModal: React.FC<FaultReportModalProps> = ({ computer, onSave, o
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content fault-report-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">
             <AlertCircle size={24} />
@@ -127,10 +126,7 @@ const FaultReportModal: React.FC<FaultReportModalProps> = ({ computer, onSave, o
             <label>Tipo de falla(s):</label>
             <div className="checkbox-group">
               {issueTypes.map(issue => (
-                <label 
-                  key={issue.value} 
-                  className={`checkbox-label ${formData.issues.includes(issue.value) ? 'checked' : ''}`}
-                >
+                <label key={issue.value} className="checkbox-label">
                   <input
                     type="checkbox"
                     value={issue.value}

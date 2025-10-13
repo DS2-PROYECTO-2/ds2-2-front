@@ -91,7 +91,8 @@ export default function RoomManagement() {
         const { rooms: apiRooms, reports: apiReports } = await roomManagementService.getRooms(user?.role);
         setRooms(apiRooms);
         setReports(apiReports);
-      } catch {
+      } catch (err) {
+        console.error('Error loading data:', err);
         setError('Error al cargar los datos. Por favor, intenta de nuevo.');
       } finally {
         setIsLoading(false);
@@ -144,8 +145,8 @@ export default function RoomManagement() {
           } catch { /* silencioso */ }
             })();
           }
-        } catch {
-          // Error processing real-time update
+        } catch (error) {
+          console.error('Error processing real-time update:', error);
         }
       }
     };
@@ -184,6 +185,14 @@ export default function RoomManagement() {
   }, []);
 
 
+  // Forzar re-render de la vista de detalle al cambiar los reportes
+  useEffect(() => {
+    if (selectedRoom) {
+      // Solo actualizar si realmente hay cambios en los reportes
+      // No modificar selectedRoom directamente para evitar bucle infinito
+      setSelectedRoom(prev => prev ? { ...prev, reports: reports } : prev);
+    }
+  }, [reports, selectedRoom]); // Incluir selectedRoom en las dependencias
 
   // Recalcular conteos de pendientes por equipo cada vez que cambian los reportes
   useEffect(() => {
@@ -244,7 +253,8 @@ export default function RoomManagement() {
       await roomManagementService.deleteRoom(roomId);
       setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
       showNotification('Sala eliminada', 'success');
-    } catch {
+    } catch (error) {
+      console.error('Error deleting room:', error);
       showNotification('Error al eliminar la sala. Por favor, intenta de nuevo.', 'error');
     }
   };
@@ -310,7 +320,8 @@ export default function RoomManagement() {
         return updatedRooms;
       });
       showNotification('Equipo eliminado', 'success');
-    } catch {
+    } catch (error) {
+      console.error('Error deleting computer:', error);
       showNotification('Error al eliminar el equipo. Por favor, intenta de nuevo.', 'error');
     }
   };
@@ -369,6 +380,7 @@ export default function RoomManagement() {
       emitRealTimeUpdate('report-updated', { reportId, newStatus });
       showNotification('Reporte actualizado', 'success');
     } catch (error) {
+      console.error('Error updating report status:', error);
       // Rollback
       setReports(previous);
       showNotification('No se pudo actualizar el reporte', 'error');
@@ -480,7 +492,8 @@ export default function RoomManagement() {
       
       setShowFaultReportModal(false);
       showNotification('✅ Reporte enviado exitosamente', 'success');
-    } catch {
+    } catch (error) {
+      console.error('Error saving report:', error);
       showNotification('Error al enviar el reporte. Por favor, intenta de nuevo.', 'error');
     }
   };
@@ -516,6 +529,7 @@ export default function RoomManagement() {
       }
       setShowRoomModal(false);
     } catch (error) {
+      console.error('Error saving room:', error);
       
       // Manejar error específico de código duplicado
       if (error && typeof error === 'object' && 'data' in error) {
@@ -594,7 +608,8 @@ export default function RoomManagement() {
         });
       }
       setShowComputerModal(false);
-    } catch {
+    } catch (error) {
+      console.error('Error saving computer:', error);
         showNotification('Error al guardar el equipo. Por favor, intenta de nuevo.', 'error');
     }
   };

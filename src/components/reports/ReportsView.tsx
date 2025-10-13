@@ -95,7 +95,6 @@ const ReportsView: React.FC = () => {
   
   // Estados de carga
   const [loading, setLoading] = useState(true);
-  const [isFiltering, setIsFiltering] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // ✅ Función para manejar cambios de período
@@ -181,13 +180,9 @@ const ReportsView: React.FC = () => {
   // ✅ ELIMINADAS: Funciones de cálculo locales (ahora se usa endpoint del backend)
 
   // ✅ RESTAURADA: Cargar datos usando endpoints existentes
-  const loadReportData = useCallback(async (isFilterChange = false) => {
+  const loadReportData = useCallback(async () => {
     try {
-      if (isFilterChange) {
-        setIsFiltering(true);
-      } else {
-        setLoading(true);
-      }
+      setLoading(true);
       setError(null);
 
       let dateFrom: string | undefined;
@@ -219,6 +214,15 @@ const ReportsView: React.FC = () => {
         dateFrom = `${firstDayOfMonth.getFullYear()}-${String(firstDayOfMonth.getMonth() + 1).padStart(2, '0')}-${String(firstDayOfMonth.getDate()).padStart(2, '0')}`;
         dateTo = `${lastDayOfMonth.getFullYear()}-${String(lastDayOfMonth.getMonth() + 1).padStart(2, '0')}-${String(lastDayOfMonth.getDate()).padStart(2, '0')}`;
         
+        // ✅ DEBUG: Verificar fechas del mes
+        console.log('📅 FILTRO MES:', {
+          selectedYear,
+          selectedMonth,
+          firstDayOfMonth: firstDayOfMonth.toLocaleDateString(),
+          lastDayOfMonth: lastDayOfMonth.toLocaleDateString(),
+          dateFrom,
+          dateTo
+        });
       }
       // Para 'all' no se establecen fechas (cargar todo)
 
@@ -231,6 +235,14 @@ const ReportsView: React.FC = () => {
       if (selectedMonitor) params.append('user_id', selectedMonitor.toString());
       if (selectedRoom) params.append('room_id', selectedRoom.toString());
 
+      // ✅ DEBUG: Verificar parámetros enviados
+      console.log('📊 PARÁMETROS ENVIADOS:', {
+        dateFrom,
+        dateTo,
+        selectedMonitor,
+        selectedRoom,
+        params: params.toString()
+      });
 
 
       // 📡 CARGAR DATOS EN PARALELO: ESTADÍSTICAS + DATOS PARA GRÁFICOS
@@ -277,6 +289,17 @@ const ReportsView: React.FC = () => {
       ]);
       
 
+      // ✅ DEBUG: Verificar datos recibidos
+      console.log('📊 DATOS RECIBIDOS:', {
+        statsData,
+        workedHoursData: {
+          total_worked_hours: workedHoursData.total_worked_hours,
+          overlaps_found: workedHoursData.overlaps_found?.length || 0,
+          user_hours: workedHoursData.user_hours
+        },
+        schedulesData: schedulesData.length,
+        entriesData: entriesData.length
+      });
 
       // ✅ USAR DATOS DEL BACKEND PARA CARDS + DATOS PARA GRÁFICOS
       setReportData({
@@ -297,9 +320,9 @@ const ReportsView: React.FC = () => {
     } catch (err: unknown) {
       const error = err as Error;
       setError(error.message || 'Error al cargar los datos');
+      console.error('Error loading report data:', err);
     } finally {
       setLoading(false);
-      setIsFiltering(false);
     }
   }, [selectedPeriod, selectedRoom, selectedMonitor, selectedYear, selectedMonth, selectedWeek, isAdmin, user?.id, monitors]);
 
@@ -321,8 +344,8 @@ const ReportsView: React.FC = () => {
           ) : [];
         setMonitors(validMonitors);
       }
-    } catch {
-      // Error loading options
+    } catch (error) {
+      console.error('Error loading options:', error);
     }
   }, [isAdmin]);
 
@@ -345,7 +368,7 @@ const ReportsView: React.FC = () => {
     }
     
     // Cargar datos solo si hay filtros válidos
-    loadReportData(true); // true = es un cambio de filtro
+    loadReportData();
   }, [selectedPeriod, selectedWeek, selectedMonth, selectedYear, selectedRoom, selectedMonitor, loadReportData]);
 
   // ✅ Efecto para limpiar datos cuando se cambia de período
@@ -597,10 +620,7 @@ const ReportsView: React.FC = () => {
   if (loading) {
     return (
       <div className="reports-container">
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-          <p>Cargando reportes...</p>
-        </div>
+        <div className="loading">Cargando reportes...</div>
       </div>
     );
   }
@@ -615,16 +635,6 @@ const ReportsView: React.FC = () => {
 
   return (
     <div className="reports-container">
-      {/* Overlay de carga para filtros */}
-      {isFiltering && (
-        <div className="filtering-overlay">
-          <div className="filtering-spinner">
-            <div className="spinner"></div>
-            <p>Aplicando filtros...</p>
-          </div>
-        </div>
-      )}
-      
       {/* Header */}
       <div className="reports-header">
         <div className="reports-title">
@@ -633,6 +643,30 @@ const ReportsView: React.FC = () => {
         </div>
         </div>
 
+      {/* Debug Info - Temporal */}
+      <div className="debug-info" style={{ 
+        background: '#f3f4f6', 
+        padding: '1rem', 
+        borderRadius: '0.5rem', 
+        marginBottom: '1rem',
+        fontSize: '0.875rem',
+        color: '#374151'
+      }}>
+        <strong>Debug Info:</strong><br/>
+        Período: {selectedPeriod} | 
+        Entries: {reportData.entries.length} | 
+        Schedules: {reportData.schedules.length}<br/>
+        {reportData.entries.length > 0 && (
+          <>
+            Fechas de entries: {reportData.entries.slice(0, 3).map(e => 
+              e && typeof e === 'object' && 'startedAt' in e ? 
+                new Date((e as { startedAt: string }).startedAt).toLocaleDateString() : 
+                'Fecha no disponible'
+            ).join(', ')}
+            {reportData.entries.length > 3 && '...'}
+          </>
+        )}
+      </div>
 
       {/* Advertencia de semana */}
       {selectedPeriod === 'week' && !selectedWeek && (
@@ -753,7 +787,7 @@ const ReportsView: React.FC = () => {
           <div className="stat-card__content">
             <div className="stat-card__title">Llegadas Tarde</div>
             <div className="stat-card__value">{reportData.lateArrivals}</div>
-            <div className="stat-card__hint">Turnos con retraso ≥5m</div>
+            <div className="stat-card__hint">Turnos con retraso ≥20m</div>
           </div>
         </div>
 
