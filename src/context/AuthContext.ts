@@ -23,6 +23,7 @@ interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<void>
   logout: () => void
   setAuth: (auth: {token: string|null, user: User|null}) => void
+  updateUser: (updatedUser: User) => void
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)

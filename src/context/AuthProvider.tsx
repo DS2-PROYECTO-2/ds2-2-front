@@ -86,6 +86,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(null)
   }
 
+  const updateUser = (updatedUser: User) => {
+    setUser(updatedUser)
+    // También actualizar en localStorage
+    localStorage.setItem('user', JSON.stringify(updatedUser))
+  }
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -95,7 +101,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isHydrated,
       login,
       logout,
-      setAuth
+      setAuth,
+      updateUser
     }}>
       {children}
     </AuthContext.Provider>

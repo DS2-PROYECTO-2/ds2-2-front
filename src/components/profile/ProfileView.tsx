@@ -7,7 +7,7 @@ import ProfileEditModal from './ProfileEditModal';
 import '../../styles/Profile.css';
 
 const ProfileView: React.FC = () => {
-  const { user: contextUser } = useAuth();
+  const { user: contextUser, updateUser } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -96,7 +96,10 @@ const ProfileView: React.FC = () => {
 
       // Actualizar el estado local del usuario con la respuesta del servidor
       if (user) {
-        setUser({ ...user, ...response.user });
+        const updatedUser = { ...user, ...response.user };
+        setUser(updatedUser);
+        // Actualizar el contexto de autenticación
+        updateUser(updatedUser);
       }
 
       // Cerrar modal

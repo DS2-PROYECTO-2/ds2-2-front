@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import LeftSidebar from './LeftSidebar';
 import RightSidebar from './RightSidebar';
 import "../../styles/dashboard.css";
@@ -21,6 +21,7 @@ const DashboardLayout: React.FC = () => {
   const { isAdmin } = useSecurity();
   const [historyReloadKey, setHistoryReloadKey] = useState(0);
   const location = useLocation();
+  const navigate = useNavigate();
   const [confirmConfig, setConfirmConfig] = useState<null | {
     title: string;
     message: string;
@@ -48,6 +49,32 @@ const DashboardLayout: React.FC = () => {
   useEffect(() => {
     setActiveSection(getActiveSection());
   }, [getActiveSection]);
+
+  // Función para navegar usando React Router
+  const handleNavigation = (section: string) => {
+    switch (section) {
+      case 'home':
+        navigate('/home');
+        break;
+      case 'inventory':
+        navigate('/inventory');
+        break;
+      case 'users':
+        navigate('/users');
+        break;
+      case 'reports':
+        navigate('/reports');
+        break;
+      case 'settings':
+        navigate('/settings');
+        break;
+      case 'profile':
+        navigate('/profile');
+        break;
+      default:
+        navigate('/home');
+    }
+  };
 
   // Componentes de las diferentes secciones
   const renderSection = () => {
@@ -181,7 +208,7 @@ const DashboardLayout: React.FC = () => {
 
   return (
     <div className={`dashboard-layout ${activeSection === 'profile' ? 'profile-view' : ''}`}>
-      <LeftSidebar onNavigate={setActiveSection} activeSection={activeSection} />
+      <LeftSidebar onNavigate={handleNavigation} activeSection={activeSection} />
       <main className="main-content">
         {renderSection()}
       </main>

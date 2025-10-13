@@ -1,13 +1,12 @@
-import React, { useContext } from 'react';
-// Nota: evitamos depender del Router para permitir render en tests sin contexto
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, Shield, CheckCircle, Calendar } from 'lucide-react';
-import type { User as AppUser, AuthContextType } from '../../context/AuthContext';
-import { AuthContext } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
+import type { User as AppUser } from '../../context/AuthContext';
 
 const RightSidebar: React.FC = () => {
-  // Acceso al contexto directamente (tests pueden renderizar sin Provider)
-  const auth = useContext(AuthContext) as AuthContextType | undefined;
-  const user = auth?.user ?? null;
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Obtener iniciales del usuario
   const getUserInitials = (user: AppUser) => {
@@ -36,6 +35,12 @@ const RightSidebar: React.FC = () => {
     });
   };
 
+  // Manejar click en el perfil para navegar
+  const handleProfileClick = () => {
+    console.log('Profile clicked, navigating to /profile');
+    navigate('/profile');
+  };
+
   if (!user) {
     return (
       <aside className="right-sidebar">
@@ -53,7 +58,7 @@ const RightSidebar: React.FC = () => {
     <aside className="right-sidebar">
       <div className="profile-section">
         {/* Avatar y nombre */}
-        <div className="profile-summary">
+        <div className="profile-summary" onClick={handleProfileClick}>
           <div className="profile-avatar-mini">
             <span className="avatar-initials-mini">{getUserInitials(user)}</span>
           </div>
