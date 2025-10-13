@@ -42,7 +42,7 @@ jobs:
 
     - name: Run tests (with coverage, safe mode)
       # Ejecuta las pruebas sin colgarse
-      run: npx vitest run --coverage --maxWorkers=2 --runInBand --reporter=verbose --testTimeout=30000
+      run: npx vitest run --coverage --maxWorkers=2 --reporter=verbose --testTimeout=30000
 
     - name: Upload coverage report
       if: always()
