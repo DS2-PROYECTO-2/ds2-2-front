@@ -77,6 +77,8 @@ export const forceLogout = () => {
 };
 
 export const handleTokenError = (error: unknown) => {
+  console.error('Error de token:', error);
+  
   // Solo desloguear en casos críticos de token corrupto, NO por problemas de permisos
   if (error && typeof error === 'object' && 'message' in error) {
     const errorWithMessage = error as { message: string };
@@ -85,6 +87,7 @@ export const handleTokenError = (error: unknown) => {
         errorWithMessage.message?.includes('Token con formato inválido') ||
         errorWithMessage.message?.includes('Error al decodificar')) {
     
+    console.warn('Token corrupto detectado, limpiando datos de autenticación...');
     clearAuthData();
     
     // Mostrar notificación al usuario
@@ -103,6 +106,7 @@ export const handleTokenError = (error: unknown) => {
     }
   } else {
     // Para otros errores (como permisos), solo mostrar notificación
+    console.warn('Error de token no crítico:', error);
     window.dispatchEvent(new CustomEvent('app-toast', {
       detail: { 
         type: 'warning', 

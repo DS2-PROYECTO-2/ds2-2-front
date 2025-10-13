@@ -114,6 +114,7 @@ async function resolveReporterNamesForReports(reports: Report[], apiReportsRaw: 
 export const roomManagementService = {
   // Obtener todas las salas
   async getRooms(userRole?: string): Promise<{ rooms: Room[]; reports: Report[] }> {
+    try {
       // Usar endpoints diferentes según el rol
       const roomsEndpoint = userRole === 'admin' ? '/api/rooms/admin/rooms/' : '/api/rooms/';
       
@@ -228,6 +229,10 @@ export const roomManagementService = {
       }
 
       return { rooms, reports };
+    } catch (error) {
+      console.error('Error fetching rooms:', error);
+      throw error;
+    }
   },
 
   // Crear nueva sala
@@ -237,19 +242,24 @@ export const roomManagementService = {
     capacity: number;
     description: string;
   }): Promise<Room> {
-    const response = await apiClient.post('/api/rooms/admin/rooms/create/', roomData);
-    const apiRoom = (response as any).room;
-    
-    return {
-      id: apiRoom.id.toString(),
-      name: apiRoom.name,
-      code: apiRoom.code,
-      capacity: apiRoom.capacity,
-      description: apiRoom.description,
-      computers: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+    try {
+      const response = await apiClient.post('/api/rooms/admin/rooms/create/', roomData);
+      const apiRoom = (response as any).room;
+      
+      return {
+        id: apiRoom.id.toString(),
+        name: apiRoom.name,
+        code: apiRoom.code,
+        capacity: apiRoom.capacity,
+        description: apiRoom.description,
+        computers: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Error creating room:', error);
+      throw error;
+    }
   },
 
   // Actualizar sala
@@ -259,24 +269,34 @@ export const roomManagementService = {
     description?: string;
     is_active?: boolean;
   }): Promise<Room> {
-    const response = await apiClient.patch(`/api/rooms/admin/rooms/${roomId}/update/`, roomData);
-    const apiRoom = (response as any).room;
-    
-    return {
-      id: apiRoom.id.toString(),
-      name: apiRoom.name,
-      code: apiRoom.code,
-      capacity: apiRoom.capacity,
-      description: apiRoom.description,
-      computers: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+    try {
+      const response = await apiClient.patch(`/api/rooms/admin/rooms/${roomId}/update/`, roomData);
+      const apiRoom = (response as any).room;
+      
+      return {
+        id: apiRoom.id.toString(),
+        name: apiRoom.name,
+        code: apiRoom.code,
+        capacity: apiRoom.capacity,
+        description: apiRoom.description,
+        computers: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Error updating room:', error);
+      throw error;
+    }
   },
 
   // Eliminar sala
   async deleteRoom(roomId: string): Promise<void> {
-    await apiClient.delete(`/api/rooms/admin/rooms/${roomId}/delete/`);
+    try {
+      await apiClient.delete(`/api/rooms/admin/rooms/${roomId}/delete/`);
+    } catch (error) {
+      console.error('Error deleting room:', error);
+      throw error;
+    }
   },
 
   // Crear equipo
@@ -288,33 +308,38 @@ export const roomManagementService = {
     status: 'operational' | 'maintenance' | 'out_of_service';
     acquisition_date: string;
   }): Promise<Computer> {
-    // Formatear la fecha al formato YYYY-MM-DD que espera el servidor
-    const formattedData = {
-      ...equipmentData,
-      acquisition_date: new Date(equipmentData.acquisition_date).toISOString().split('T')[0]
-    };
-    
-    const response = await apiClient.post('/api/equipment/equipment/', formattedData);
-    const apiEquipment = response as any;
-    
-    // logs removidos
-    
-    // Extraer el número del nombre (ej: "PC 5" -> 5)
-    const nameMatch = apiEquipment.name?.match(/PC (\d+)/);
-    const computerNumber = nameMatch ? parseInt(nameMatch[1]) : apiEquipment.id || 0;
-    
-    const newComputer = {
-      id: apiEquipment.id?.toString(), // ✅ Usar el ID real de la base de datos
-      number: computerNumber,
-      serial: apiEquipment.serial_number,
-      status: apiEquipment.status as 'operational' | 'maintenance' | 'out_of_service',
-      roomId: apiEquipment.room?.toString() || equipmentData.room.toString(),
-      createdAt: apiEquipment.acquisition_date || new Date().toISOString(),
-      updatedAt: apiEquipment.acquisition_date || new Date().toISOString()
-    };
-    
-    // logs removidos
-    return newComputer;
+    try {
+      // Formatear la fecha al formato YYYY-MM-DD que espera el servidor
+      const formattedData = {
+        ...equipmentData,
+        acquisition_date: new Date(equipmentData.acquisition_date).toISOString().split('T')[0]
+      };
+      
+      const response = await apiClient.post('/api/equipment/equipment/', formattedData);
+      const apiEquipment = response as any;
+      
+      // logs removidos
+      
+      // Extraer el número del nombre (ej: "PC 5" -> 5)
+      const nameMatch = apiEquipment.name?.match(/PC (\d+)/);
+      const computerNumber = nameMatch ? parseInt(nameMatch[1]) : apiEquipment.id || 0;
+      
+      const newComputer = {
+        id: apiEquipment.id?.toString(), // ✅ Usar el ID real de la base de datos
+        number: computerNumber,
+        serial: apiEquipment.serial_number,
+        status: apiEquipment.status as 'operational' | 'maintenance' | 'out_of_service',
+        roomId: apiEquipment.room?.toString() || equipmentData.room.toString(),
+        createdAt: apiEquipment.acquisition_date || new Date().toISOString(),
+        updatedAt: apiEquipment.acquisition_date || new Date().toISOString()
+      };
+      
+      // logs removidos
+      return newComputer;
+    } catch (error) {
+      console.error('Error creating equipment:', error);
+      throw error;
+    }
   },
 
   // Actualizar equipo
@@ -324,47 +349,57 @@ export const roomManagementService = {
     description?: string;
     status?: 'operational' | 'maintenance' | 'out_of_service';
   }): Promise<Computer> {
-    // logs removidos
-    const response = await apiClient.patch(`/api/equipment/equipment/${equipmentId}/`, equipmentData);
-    const apiEquipment = response as any;
-    // logs removidos
-    
-    // Extraer el número del nombre (ej: "PC 5" -> 5)
-    const nameMatch = apiEquipment.name?.match(/PC (\d+)/);
-    const computerNumber = nameMatch ? parseInt(nameMatch[1]) : apiEquipment.id || 0;
-    
-    return {
-      id: apiEquipment.id?.toString(), // ✅ Usar el ID real de la base de datos
-      number: computerNumber,
-      serial: apiEquipment.serial_number,
-      status: apiEquipment.status as 'operational' | 'maintenance' | 'out_of_service',
-      roomId: apiEquipment.room.toString(),
-      createdAt: apiEquipment.acquisition_date,
-      updatedAt: apiEquipment.acquisition_date
-    };
+    try {
+      // logs removidos
+      const response = await apiClient.patch(`/api/equipment/equipment/${equipmentId}/`, equipmentData);
+      const apiEquipment = response as any;
+      // logs removidos
+      
+      // Extraer el número del nombre (ej: "PC 5" -> 5)
+      const nameMatch = apiEquipment.name?.match(/PC (\d+)/);
+      const computerNumber = nameMatch ? parseInt(nameMatch[1]) : apiEquipment.id || 0;
+      
+      return {
+        id: apiEquipment.id?.toString(), // ✅ Usar el ID real de la base de datos
+        number: computerNumber,
+        serial: apiEquipment.serial_number,
+        status: apiEquipment.status as 'operational' | 'maintenance' | 'out_of_service',
+        roomId: apiEquipment.room.toString(),
+        createdAt: apiEquipment.acquisition_date,
+        updatedAt: apiEquipment.acquisition_date
+      };
+    } catch (error) {
+      console.error('Error updating equipment:', error);
+      throw error;
+    }
   },
 
   // Eliminar equipo
   async deleteEquipment(equipmentId: string): Promise<void> {
-    // logs removidos
-    
-    // Intentar primero con el endpoint estándar
     try {
-      await apiClient.delete(`/api/equipment/equipment/${equipmentId}/`);
-      // logs removidos
-      return;
-    } catch (firstError) {
       // logs removidos
       
-      // Si falla, intentar con el serial_number como parámetro
+      // Intentar primero con el endpoint estándar
       try {
-        await apiClient.delete(`/api/equipment/equipment/?serial_number=${equipmentId}`);
+        await apiClient.delete(`/api/equipment/equipment/${equipmentId}/`);
         // logs removidos
         return;
-      } catch {
+      } catch (firstError) {
         // logs removidos
-        throw firstError;
+        
+        // Si falla, intentar con el serial_number como parámetro
+        try {
+          await apiClient.delete(`/api/equipment/equipment/?serial_number=${equipmentId}`);
+          // logs removidos
+          return;
+        } catch {
+          // logs removidos
+          throw firstError;
+        }
       }
+    } catch (error) {
+      console.error('Error deleting equipment:', error);
+      throw error;
     }
   },
 
@@ -375,37 +410,72 @@ export const roomManagementService = {
     reported_by: number;
     issue_type?: string;
   }): Promise<Report> {
-    const response = await apiClient.post('/api/equipment/reports/', reportData);
-    const apiReport = response as any;
-    
-    return {
-      id: apiReport.id.toString(),
-      computerId: apiReport.equipment.toString(),
-      roomId: '', // Se asignará después
-      reporterId: (apiReport.reported_by ?? apiReport.user_id ?? apiReport.userId) ?? undefined,
-      issues: resolveIssues(apiReport),
-      reporter: resolveReporterName(apiReport),
-      description: apiReport.issue_description,
-      date: new Date(apiReport.created_at).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }),
-      status: 'pending'
-    };
+    try {
+      const response = await apiClient.post('/api/equipment/reports/', reportData);
+      const apiReport = response as any;
+      
+      return {
+        id: apiReport.id.toString(),
+        computerId: apiReport.equipment.toString(),
+        roomId: '', // Se asignará después
+        reporterId: (apiReport.reported_by ?? apiReport.user_id ?? apiReport.userId) ?? undefined,
+        issues: resolveIssues(apiReport),
+        reporter: resolveReporterName(apiReport),
+        description: apiReport.issue_description,
+        date: new Date(apiReport.created_at).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }),
+        status: 'pending'
+      };
+    } catch (error) {
+      console.error('Error creating report:', error);
+      throw error;
+    }
   },
 
   // Obtener reportes de un equipo
   async getEquipmentReports(equipmentId: string): Promise<Report[]> {
-    const response = await apiClient.get('/api/equipment/reports/');
-    const apiReports = (response as any) || [];
-    
-    let result = apiReports
-      .filter((report: any) => report.equipment.toString() === equipmentId)
-      .map((apiReport: any) => {
+    try {
+      const response = await apiClient.get('/api/equipment/reports/');
+      const apiReports = (response as any) || [];
+      
+      let result = apiReports
+        .filter((report: any) => report.equipment.toString() === equipmentId)
+        .map((apiReport: any) => {
+          const reporterName = resolveReporterName(apiReport);
+          const isResolved = (apiReport.resolved === true) || (apiReport.is_resolved === true) || (apiReport.status === 'resolved');
+          const issues = resolveIssues(apiReport);
+          return {
+            id: apiReport.id.toString(),
+            computerId: apiReport.equipment.toString(),
+            roomId: '', // Se asignará después
+            reporterId: (apiReport.reported_by ?? apiReport.user_id ?? apiReport.userId) ?? undefined,
+            issues,
+            reporter: reporterName,
+            description: apiReport.issue_description,
+            date: new Date(apiReport.created_at).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }),
+            status: (isResolved ? 'resolved' : 'pending')
+          } as Report;
+        });
+      result = await resolveReporterNamesForReports(result, apiReports);
+      return result;
+    } catch (error) {
+      console.error('Error fetching equipment reports:', error);
+      throw error;
+    }
+  },
+
+  // Obtener TODOS los reportes (liviano)
+  async getReports(): Promise<Report[]> {
+    try {
+      const response = await apiClient.get('/api/equipment/reports/');
+      const apiReports = (response as any).results || (response as any) || [];
+      let reports: Report[] = (Array.isArray(apiReports) ? apiReports : []).map((apiReport: any) => {
         const reporterName = resolveReporterName(apiReport);
         const isResolved = (apiReport.resolved === true) || (apiReport.is_resolved === true) || (apiReport.status === 'resolved');
         const issues = resolveIssues(apiReport);
         return {
-          id: apiReport.id.toString(),
-          computerId: apiReport.equipment.toString(),
-          roomId: '', // Se asignará después
+          id: apiReport.id?.toString?.() ?? String(apiReport.id),
+          computerId: apiReport.equipment?.toString?.() ?? String(apiReport.equipment),
+          roomId: '',
           reporterId: (apiReport.reported_by ?? apiReport.user_id ?? apiReport.userId) ?? undefined,
           issues,
           reporter: reporterName,
@@ -414,112 +484,108 @@ export const roomManagementService = {
           status: (isResolved ? 'resolved' : 'pending')
         } as Report;
       });
-    result = await resolveReporterNamesForReports(result, apiReports);
-    return result;
+      reports = await resolveReporterNamesForReports(reports, apiReports);
+      return reports;
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+      throw error;
+    }
   },
 
-  // Obtener TODOS los reportes (liviano)
-  async getReports(): Promise<Report[]> {
-    const response = await apiClient.get('/api/equipment/reports/');
-    const apiReports = (response as any).results || (response as any) || [];
-    let reports: Report[] = (Array.isArray(apiReports) ? apiReports : []).map((apiReport: any) => {
+  // Obtener reporte por ID (liviano)
+  async getReportById(reportId: string): Promise<Report | null> {
+    try {
+      const response = await apiClient.get(`/api/equipment/reports/${reportId}/`);
+      const apiReport = response as any;
+      if (!apiReport) return null;
       const reporterName = resolveReporterName(apiReport);
       const isResolved = (apiReport.resolved === true) || (apiReport.is_resolved === true) || (apiReport.status === 'resolved');
-      const issues = resolveIssues(apiReport);
-      return {
+      let report = {
         id: apiReport.id?.toString?.() ?? String(apiReport.id),
         computerId: apiReport.equipment?.toString?.() ?? String(apiReport.equipment),
         roomId: '',
         reporterId: (apiReport.reported_by ?? apiReport.user_id ?? apiReport.userId) ?? undefined,
-        issues,
+        issues: resolveIssues(apiReport),
         reporter: reporterName,
         description: apiReport.issue_description,
         date: new Date(apiReport.created_at).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }),
         status: (isResolved ? 'resolved' : 'pending')
       } as Report;
-    });
-    reports = await resolveReporterNamesForReports(reports, apiReports);
-    return reports;
-  },
-
-  // Obtener reporte por ID (liviano)
-  async getReportById(reportId: string): Promise<Report | null> {
-    const response = await apiClient.get(`/api/equipment/reports/${reportId}/`);
-    const apiReport = response as any;
-    if (!apiReport) return null;
-    const reporterName = resolveReporterName(apiReport);
-    const isResolved = (apiReport.resolved === true) || (apiReport.is_resolved === true) || (apiReport.status === 'resolved');
-    let report = {
-      id: apiReport.id?.toString?.() ?? String(apiReport.id),
-      computerId: apiReport.equipment?.toString?.() ?? String(apiReport.equipment),
-      roomId: '',
-      reporterId: (apiReport.reported_by ?? apiReport.user_id ?? apiReport.userId) ?? undefined,
-      issues: resolveIssues(apiReport),
-      reporter: reporterName,
-      description: apiReport.issue_description,
-      date: new Date(apiReport.created_at).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }),
-      status: (isResolved ? 'resolved' : 'pending')
-    } as Report;
-    // Si sigue siendo Usuario {id}, intentar lookup puntual
-    if (/^Usuario\s+\d+$/i.test(report.reporter)) {
-      const uid = apiReport?.reported_by ?? apiReport?.user_id ?? apiReport?.userId;
-      if (uid != null) {
-        const name = await fetchUserNameById(uid);
-        if (name) report = { ...report, reporter: name };
+      // Si sigue siendo Usuario {id}, intentar lookup puntual
+      if (/^Usuario\s+\d+$/i.test(report.reporter)) {
+        const uid = apiReport?.reported_by ?? apiReport?.user_id ?? apiReport?.userId;
+        if (uid != null) {
+          const name = await fetchUserNameById(uid);
+          if (name) report = { ...report, reporter: name };
+        }
       }
+      return report;
+    } catch (error) {
+      console.error('Error fetching report by id:', error);
+      throw error;
     }
-    return report;
   },
 
   // Actualizar estado de un reporte (resolver / reabrir)
   async updateReportStatus(reportId: string, newStatus: 'pending' | 'resolved'): Promise<void> {
-    // Backend espera un booleano 'resolved'
-    const resolvedFlag = newStatus === 'resolved';
-    const payload = {
-      resolved: resolvedFlag,
-      is_resolved: resolvedFlag,
-      status: resolvedFlag ? 'resolved' : 'pending'
-    } as { resolved: boolean; is_resolved: boolean; status: 'pending' | 'resolved' };
     try {
-      await apiClient.patch(`/api/equipment/reports/${reportId}/`, payload);
-      return;
-    } catch (firstError: any) {
-      // Intento 2: PUT completo (algunos backends lo requieren)
+      // Backend espera un booleano 'resolved'
+      const resolvedFlag = newStatus === 'resolved';
+      const payload = {
+        resolved: resolvedFlag,
+        is_resolved: resolvedFlag,
+        status: resolvedFlag ? 'resolved' : 'pending'
+      } as { resolved: boolean; is_resolved: boolean; status: 'pending' | 'resolved' };
       try {
-        await apiClient.patch(`/api/equipment/reports/${reportId}/`, undefined);
-      } catch { /* noop */ }
-      try {
-        // fallback con PUT a una ruta común
-        await fetch(`${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'}/api/equipment/reports/${reportId}/`, {
-          method: 'PUT',
-          headers: (() => {
-            const t = localStorage.getItem('authToken');
-            const h: Record<string, string> = { 'Content-Type': 'application/json' };
-            if (t) h.Authorization = `Token ${t}`;
-            return h;
-          })(),
-          credentials: 'include',
-          body: JSON.stringify(payload)
-        });
+        await apiClient.patch(`/api/equipment/reports/${reportId}/`, payload);
         return;
-      } catch { /* noop */ }
+      } catch (firstError: any) {
+        // Intento 2: PUT completo (algunos backends lo requieren)
+        try {
+          await apiClient.patch(`/api/equipment/reports/${reportId}/`, undefined);
+        } catch { /* noop */ }
+        try {
+          // fallback con PUT a una ruta común
+          await fetch(`${(import.meta as any).env.VITE_API_URL || 'http://127.0.0.1:8000'}/api/equipment/reports/${reportId}/`, {
+            method: 'PUT',
+            headers: (() => {
+              const t = localStorage.getItem('authToken');
+              const h: Record<string, string> = { 'Content-Type': 'application/json' };
+              if (t) h.Authorization = `Token ${t}`;
+              return h;
+            })(),
+            credentials: 'include',
+            body: JSON.stringify(payload)
+          });
+          return;
+        } catch { /* noop */ }
 
-      // Intento 3: Endpoints de acción específicos
-      try {
-        if (resolvedFlag) {
-          await apiClient.post(`/api/equipment/reports/${reportId}/resolve/`, {});
-        } else {
-          await apiClient.post(`/api/equipment/reports/${reportId}/reopen/`, {} as any);
+        // Intento 3: Endpoints de acción específicos
+        try {
+          if (resolvedFlag) {
+            await apiClient.post(`/api/equipment/reports/${reportId}/resolve/`, {});
+          } else {
+            await apiClient.post(`/api/equipment/reports/${reportId}/reopen/`, {} as any);
+          }
+          return;
+        } catch {
+          // Re-lanzar el primer error para tener más contexto del endpoint principal
+          throw firstError;
         }
-        return;
-      } catch {
-        // Re-lanzar el primer error para tener más contexto del endpoint principal
-        throw firstError;
       }
+    } catch (error) {
+      console.error('Error updating report status:', error);
+      throw error;
     }
-  },
+  }
+  ,
   // Eliminar reporte por ID
   async deleteReport(reportId: string): Promise<void> {
-    await apiClient.delete(`/api/equipment/reports/${reportId}/`);
+    try {
+      await apiClient.delete(`/api/equipment/reports/${reportId}/`);
+    } catch (error) {
+      console.error('Error deleting report:', error);
+      throw error;
+    }
   }
 };
