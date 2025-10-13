@@ -52,11 +52,6 @@ const DashboardLayout: React.FC = () => {
       case 'home':
         return (
           <>
-            {/* Calendario de turnos - visible para todos */}
-            <div className="content-panel panel-calendar">
-              <ScheduleCalendar />
-            </div>
-            
             {/* Solo monitores ven las estadísticas y panel de registro */}
             {user?.role === 'monitor' && (
               <>
@@ -66,6 +61,11 @@ const DashboardLayout: React.FC = () => {
                 </div>
               </>
             )}
+            
+            {/* Calendario de turnos - visible para todos */}
+            <div className="content-panel panel-calendar">
+              <ScheduleCalendar />
+            </div>
             
             {/* Todos ven el historial */}
             <div className="content-panel panel-list" style={{ marginTop: user?.role === 'monitor' ? '1rem' : '0' }}>
@@ -183,7 +183,7 @@ const DashboardLayout: React.FC = () => {
 
       {confirmConfig && (
         <div className="modal-overlay" onClick={() => { confirmConfig.onCancel?.(); setConfirmConfig(null); }}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content confirm-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">{confirmConfig.title}</h2>
             </div>

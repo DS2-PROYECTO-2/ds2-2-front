@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">45.2% </span>
+                <span class="strong">56.89% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>33/73</span>
+                <span class='fraction'>33/58</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">45.2% </span>
+                <span class="strong">56.89% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>33/73</span>
+                <span class='fraction'>33/58</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -138,22 +138,7 @@
 <a name='L73'></a><a href='#L73'>73</a>
 <a name='L74'></a><a href='#L74'>74</a>
 <a name='L75'></a><a href='#L75'>75</a>
-<a name='L76'></a><a href='#L76'>76</a>
-<a name='L77'></a><a href='#L77'>77</a>
-<a name='L78'></a><a href='#L78'>78</a>
-<a name='L79'></a><a href='#L79'>79</a>
-<a name='L80'></a><a href='#L80'>80</a>
-<a name='L81'></a><a href='#L81'>81</a>
-<a name='L82'></a><a href='#L82'>82</a>
-<a name='L83'></a><a href='#L83'>83</a>
-<a name='L84'></a><a href='#L84'>84</a>
-<a name='L85'></a><a href='#L85'>85</a>
-<a name='L86'></a><a href='#L86'>86</a>
-<a name='L87'></a><a href='#L87'>87</a>
-<a name='L88'></a><a href='#L88'>88</a>
-<a name='L89'></a><a href='#L89'>89</a>
-<a name='L90'></a><a href='#L90'>90</a>
-<a name='L91'></a><a href='#L91'>91</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L76'></a><a href='#L76'>76</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">32x</span>
@@ -162,23 +147,14 @@
 <span class="cline-any cline-yes">62x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">62x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">62x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -186,7 +162,6 @@
 <span class="cline-any cline-yes">62x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">32x</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -214,12 +189,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -248,63 +218,52 @@
 export const useSecurity = () =&gt; {
   const { user } = useAuth();
 &nbsp;
-  const requireAdmin = (action: string, silent: boolean = false) =&gt; {
+  const requireAdmin = () =&gt; {
     if (!user) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
-<span class="cstat-no" title="statement not covered" >      if (!silent) {</span>
-<span class="cstat-no" title="statement not covered" >        console.warn(`Acceso denegado: Usuario no autenticado para ${action}`);</span>
-<span class="cstat-no" title="statement not covered" >      }</span>
 <span class="cstat-no" title="statement not covered" >      return false;</span>
 <span class="cstat-no" title="statement not covered" >    }</span>
 &nbsp;
     // Verificar que sea administrador
     if (user.role !== 'admin') <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
-<span class="cstat-no" title="statement not covered" >      if (!silent) {</span>
-<span class="cstat-no" title="statement not covered" >        console.warn(`Acceso denegado: Solo administradores pueden ${action}. Rol actual: ${user.role}`);</span>
-<span class="cstat-no" title="statement not covered" >      }</span>
 <span class="cstat-no" title="statement not covered" >      return false;</span>
 <span class="cstat-no" title="statement not covered" >    }</span>
 &nbsp;
     // Verificar que esté verificado (los admins se verifican automáticamente)
     if (!user.is_verified) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
-<span class="cstat-no" title="statement not covered" >      if (!silent) {</span>
-<span class="cstat-no" title="statement not covered" >        console.warn(`Acceso denegado: Usuario no verificado para ${action}`);</span>
-<span class="cstat-no" title="statement not covered" >      }</span>
 <span class="cstat-no" title="statement not covered" >      return false;</span>
 <span class="cstat-no" title="statement not covered" >    }</span>
 &nbsp;
     return true;
   };
 &nbsp;
-  const requireAuth = <span class="fstat-no" title="function not covered" >(action: string) =&gt; {</span>
+  const requireAuth = <span class="fstat-no" title="function not covered" >() =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    if (!user) {</span>
-<span class="cstat-no" title="statement not covered" >      console.warn(`Acceso denegado: Usuario no autenticado para ${action}`);</span>
 <span class="cstat-no" title="statement not covered" >      return false;</span>
 <span class="cstat-no" title="statement not covered" >    }</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    return true;</span>
 <span class="cstat-no" title="statement not covered" >  };</span>
 &nbsp;
-  const canEdit = (silent: boolean = false) =&gt; {
-    return requireAdmin('editar turnos', silent);
+  const canEdit = () =&gt; {
+    return requireAdmin();
   };
 &nbsp;
-  const canDelete = (silent: boolean = false) =&gt; {
-    return requireAdmin('eliminar turnos', silent);
+  const canDelete = () =&gt; {
+    return requireAdmin();
   };
 &nbsp;
-  const canCreate = (silent: boolean = false) =&gt; {
-    return requireAdmin('crear turnos', silent);
+  const canCreate = () =&gt; {
+    return requireAdmin();
   };
 &nbsp;
   const canView = <span class="fstat-no" title="function not covered" >() =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    return requireAuth('ver turnos');</span>
+<span class="cstat-no" title="statement not covered" >    return requireAuth();</span>
 <span class="cstat-no" title="statement not covered" >  };</span>
 &nbsp;
   const handleSecurityError = <span class="fstat-no" title="function not covered" >(error: unknown, action: string) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    if (error &amp;&amp; typeof error === 'object' &amp;&amp; 'message' in error) {</span>
 <span class="cstat-no" title="statement not covered" >      const errorWithMessage = error as { message: string };</span>
 <span class="cstat-no" title="statement not covered" >      if (errorWithMessage.message?.includes('No autorizado')) {</span>
-<span class="cstat-no" title="statement not covered" >        console.warn(`Acceso denegado: ${errorWithMessage.message}`);</span>
         // Mostrar notificación al usuario
 <span class="cstat-no" title="statement not covered" >        window.dispatchEvent(new CustomEvent('app-toast', {</span>
 <span class="cstat-no" title="statement not covered" >          detail: { </span>
@@ -312,11 +271,7 @@ export const useSecurity = () =&gt; {
 <span class="cstat-no" title="statement not covered" >            message: `No tienes permisos para ${action}` </span>
 <span class="cstat-no" title="statement not covered" >          }</span>
 <span class="cstat-no" title="statement not covered" >        }));</span>
-<span class="cstat-no" title="statement not covered" >      } else {</span>
-<span class="cstat-no" title="statement not covered" >        console.error('Error de seguridad:', errorWithMessage.message || 'Error desconocido');</span>
 <span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" >    } else {</span>
-<span class="cstat-no" title="statement not covered" >      console.error('Error de seguridad:', error);</span>
 <span class="cstat-no" title="statement not covered" >    }</span>
 <span class="cstat-no" title="statement not covered" >  };</span>
 &nbsp;
@@ -340,7 +295,7 @@ export const useSecurity = () =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-12T01:49:55.443Z
+                at 2025-10-13T02:06:48.110Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

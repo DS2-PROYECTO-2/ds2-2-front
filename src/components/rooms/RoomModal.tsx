@@ -43,6 +43,12 @@ const RoomModal: React.FC<RoomModalProps> = ({ room, onSave, onClose }) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    
+    // Limitar el código de sala a 10 caracteres
+    if (name === 'code' && value.length > 10) {
+      return;
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]: name === 'capacity' ? parseInt(value) || 0 : value
@@ -98,8 +104,12 @@ const RoomModal: React.FC<RoomModalProps> = ({ room, onSave, onClose }) => {
               value={formData.code}
               onChange={handleChange}
               required
+              maxLength={10}
               placeholder="Ej: LR001, SALA-A-001, LAB-REDES"
             />
+            <small className="form-help">
+              Máximo 10 caracteres ({formData.code.length}/10)
+            </small>
           </div>
 
           <div className="form-group">

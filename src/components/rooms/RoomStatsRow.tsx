@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getMyEntries, type RoomEntryUI } from '../../services/roomEntryService';
-import scheduleService from '../../services/scheduleService';
-import { toBogotaTime, isLateArrival } from '../../utils/timeHelpers';
+import { apiClient } from '../../utils/api';
 
 const getWeekRange = (d = new Date()) => {
   const day = d.getDay();
@@ -68,159 +67,40 @@ const RoomStatsRow: React.FC = () => {
       setMonthly(formatHM(monthMin));
       setWeeklyCount(week.length);
 
-      // Calcular llegadas tarde del mes cruzando schedules + entries (regla: entry > start + 5m)
-      let lateCount = 0;
+      // ✅ NUEVO: Usar endpoint específico para monitores
       try {
-        console.log('🔍 DEBUG CARD LLEGADAS TARDE:');
-        console.log('Month range:', monthStart.toISOString().split('T')[0], 'to', monthEnd.toISOString().split('T')[0]);
-        console.log('Total entries in month:', month.length);
         
-        // Usar rango amplio para capturar turnos que cruzan meses
-        const extendedStart = new Date(monthStart);
-        extendedStart.setDate(extendedStart.getDate() - 7); // 7 días antes
-        const extendedEnd = new Date(monthEnd);
-        extendedEnd.setDate(extendedEnd.getDate() + 7); // 7 días después
+        // Construir parámetros para el endpoint específico de monitores
+        const params = new URLSearchParams();
+        params.append('from_date', monthStart.toISOString().split('T')[0]);
+        params.append('to_date', monthEnd.toISOString().split('T')[0]);
         
-        // Obtener datos de turnos
-        let data;
-        try {
-          data = await scheduleService.getMySchedules();
-        } catch {
-          // Fallback con filtros
-          data = await scheduleService.getMySchedules({
-            date_from: extendedStart.toISOString().split('T')[0],
-            date_to: extendedEnd.toISOString().split('T')[0],
-            status: 'all'
-          });
-        }
         
-        const schedules = [
-          ...(data.current || []),
-          ...(data.upcoming || []),
-          ...(data.past || [])
-        ];
         
-        console.log('Total schedules found:', schedules.length);
-        console.log('Current:', data.current?.length || 0);
-        console.log('Upcoming:', data.upcoming?.length || 0);
-        console.log('Past:', data.past?.length || 0);
+        // Llamar al endpoint específico para monitores
+        const lateArrivalsData = await apiClient.get(`/api/rooms/monitor/late-arrivals/?${params.toString()}`) as {
+          late_arrivals_count: number;
+          total_late_arrivals: number;
+          late_arrivals: Array<{
+            id: number;
+            schedule_id: number;
+            entry_id: number;
+            user: string;
+            room: string;
+            scheduled_start: string;
+            actual_entry: string;
+            late_minutes: number;
+            date: string;
+          }>;
+        };
         
-
-        // Conjunto para evitar contar la misma entrada múltiples veces
-        const processedEntries = new Set<number>();
         
-        // Para cada turno, verificar si tiene llegada tarde
-        for (const sch of schedules) {
-          const start = new Date(sch.start_datetime);
-          const end = new Date(sch.end_datetime);
-          
-          // Solo contar turnos que se solapan con el mes
-          const scheduleStartBogota = toBogotaTime(start);
-          const scheduleEndBogota = toBogotaTime(end);
-          const monthStartBogota = toBogotaTime(monthStart);
-          const monthEndBogota = toBogotaTime(monthEnd);
-          
-          // Verificar si el turno se solapa con el mes
-          if (scheduleEndBogota < monthStartBogota || scheduleStartBogota > monthEndBogota) {
-            console.log(`Schedule ${sch.id} outside month range, skipping`);
-            continue;
-          }
-          
-          console.log(`Checking schedule ${sch.id}:`, {
-            start: scheduleStartBogota,
-            end: scheduleEndBogota,
-            room: sch.room,
-            user: sch.user
-          });
-          
-          
-          // Ventana amplia para buscar entradas: 2 horas antes del inicio hasta 2 horas después del fin
-          const windowStart = new Date(start.getTime() - 2 * 60 * 60 * 1000);
-          const windowEnd = new Date(end.getTime() + 2 * 60 * 60 * 1000);
-          
-          // Buscar entradas del mes que caigan en la ventana Y sean del monitor específico del turno
-          const relevantEntries = month.filter(e => {
-            const entryTime = new Date(e.startedAt);
-            return entryTime >= windowStart && 
-                   entryTime <= windowEnd &&
-                   e.userId === sch.user && // Filtrar por monitor específico del turno
-                   e.roomId === sch.room;   // También filtrar por sala específica del turno
-          });
-          
-          console.log(`Found ${relevantEntries.length} entries in window for schedule ${sch.id} (monitor: ${sch.user}, room: ${sch.room})`);
-          
-          if (relevantEntries.length === 0) {
-            console.log(`No entries found for schedule ${sch.id} - this is non-compliance (handled by backend)`);
-            continue; // Sin entrada → incumplimiento (lo maneja backend)
-          }
-          
-          // Filtrar entradas que estén DESPUÉS del inicio del turno (no antes)
-          const entriesAfterStart = relevantEntries.filter(e => {
-            const entryTime = new Date(e.startedAt);
-            return entryTime >= start; // Solo entradas después del inicio del turno
-          });
-          
-          if (entriesAfterStart.length === 0) {
-            console.log(`No entries found after schedule start for schedule ${sch.id} - using first entry in window`);
-            // Si no hay entradas después del inicio, usar la primera entrada en la ventana
-            const firstEntry = relevantEntries
-              .sort((a, b) => new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime())[0];
-            const entryTime = new Date(firstEntry.startedAt);
-            console.log(`Using first entry in window for schedule ${sch.id}:`, entryTime);
-            
-            // Verificar si es llegada tarde
-            if (isLateArrival(entryTime, start, 5)) {
-              if (!processedEntries.has(firstEntry.id)) {
-                lateCount++;
-                processedEntries.add(firstEntry.id);
-                console.log(`🚨 LATE ARRIVAL COUNTED for schedule ${sch.id} (monitor: ${sch.user}, room: ${sch.room}) - Entry ID: ${firstEntry.id}:`, {
-                  scheduleStart: scheduleStartBogota,
-                  entryTime: toBogotaTime(entryTime),
-                  late: true
-                });
-              } else {
-                console.log(`⚠️ ENTRY ALREADY PROCESSED for schedule ${sch.id} (monitor: ${sch.user}, room: ${sch.room}) - Entry ID: ${firstEntry.id}`);
-              }
-            } else {
-              console.log(`✅ ON TIME for schedule ${sch.id} (monitor: ${sch.user}, room: ${sch.room})`);
-            }
-            continue;
-          }
-          
-          // Usar la primera entrada DESPUÉS del inicio del turno
-          const firstEntry = entriesAfterStart
-            .sort((a, b) => new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime())[0];
-          
-          const entryTime = new Date(firstEntry.startedAt);
-          console.log(`First entry AFTER schedule start for schedule ${sch.id} (monitor: ${sch.user}, room: ${sch.room}):`, entryTime);
-          
-          // Usar la función de zona horaria para verificar llegada tarde
-          if (isLateArrival(entryTime, start, 5)) {
-            // Verificar si esta entrada ya fue procesada para evitar duplicados
-            if (!processedEntries.has(firstEntry.id)) {
-              lateCount++;
-              processedEntries.add(firstEntry.id);
-              console.log(`🚨 LATE ARRIVAL COUNTED for schedule ${sch.id} (monitor: ${sch.user}, room: ${sch.room}) - Entry ID: ${firstEntry.id}:`, {
-                scheduleStart: scheduleStartBogota,
-                entryTime: toBogotaTime(entryTime),
-                late: true
-              });
-            } else {
-              console.log(`⚠️ ENTRY ALREADY PROCESSED for schedule ${sch.id} (monitor: ${sch.user}, room: ${sch.room}) - Entry ID: ${firstEntry.id}`);
-            }
-          } else {
-            console.log(`✅ ON TIME for schedule ${sch.id} (monitor: ${sch.user}, room: ${sch.room})`);
-          }
-        }
+        const lateCount = lateArrivalsData.late_arrivals_count || lateArrivalsData.total_late_arrivals || 0;
+        setLateMonth(lateCount);
         
-        console.log(`Total late arrivals this month: ${lateCount}`);
-      } catch (error) {
-        console.error('Error calculating late arrivals:', error);
-        // mantener lateCount=0 en caso de error
+      } catch {
+        // Error fetching late arrivals from monitor endpoint
       }
-      console.log('Setting lateMonth to:', lateCount);
-      setLateMonth(lateCount);
-      console.log('lateMonth state should be:', lateCount);
     } catch {
       // Valores seguros si falla el backend
       setWeekly('0 h 00 min');

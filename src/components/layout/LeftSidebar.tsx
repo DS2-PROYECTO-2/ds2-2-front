@@ -27,12 +27,12 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onNavigate, activeSection }) 
   const buttons = [
     { icon: Home, id: 'home', title: 'Inicio' },
     { icon: Monitor, id: 'inventory', title: 'Inventario' },
-    { icon: BarChart3, id: 'reports', title: 'Reportes' },
     { icon: Settings, id: 'settings', title: 'Configuración' }
   ];
 
-  // Agregar botón de usuarios solo para administradores
+  // Agregar botones solo para administradores
   if (user?.role === 'admin') {
+    buttons.splice(2, 0, { icon: BarChart3, id: 'reports', title: 'Reportes' });
     buttons.splice(3, 0, { icon: Users, id: 'users', title: 'Gestión de Usuarios' });
   }
 

@@ -27,7 +27,6 @@ const SecurityGuard: React.FC<SecurityGuardProps> = ({
 
       // Verificar rol si es requerido
       if (requiredRole && user.role !== requiredRole) {
-        console.warn(`Acceso denegado: Se requiere rol ${requiredRole}`);
         setIsAuthorized(false);
         setIsLoading(false);
         return;
@@ -35,7 +34,6 @@ const SecurityGuard: React.FC<SecurityGuardProps> = ({
 
       // Verificar verificación si es requerida
       if (requireVerified && !user.is_verified) {
-        console.warn('Acceso denegado: Usuario no verificado');
         setIsAuthorized(false);
         setIsLoading(false);
         return;
@@ -44,7 +42,6 @@ const SecurityGuard: React.FC<SecurityGuardProps> = ({
       // Verificar integridad del token
       const token = localStorage.getItem('token');
       if (!token) {
-        console.warn('Acceso denegado: Token no encontrado');
         setIsAuthorized(false);
         setIsLoading(false);
         return;
@@ -57,7 +54,6 @@ const SecurityGuard: React.FC<SecurityGuardProps> = ({
         
         // Verificar expiración
         if (payload.exp && payload.exp < currentTime) {
-          console.warn('Acceso denegado: Token expirado');
           localStorage.removeItem('token');
           setIsAuthorized(false);
           setIsLoading(false);
@@ -66,15 +62,13 @@ const SecurityGuard: React.FC<SecurityGuardProps> = ({
 
         // Verificar que el usuario del token coincida
         if (payload.user_id !== user.id) {
-          console.warn('Acceso denegado: Token no coincide con usuario');
           setIsAuthorized(false);
           setIsLoading(false);
           return;
         }
 
         setIsAuthorized(true);
-      } catch (error) {
-        console.error('Error verificando token:', error);
+      } catch {
         setIsAuthorized(false);
       } finally {
         setIsLoading(false);

@@ -40,9 +40,9 @@ const ScheduleCalendar: React.FC = () => {
   const { canEdit, canDelete, canCreate, isAdmin } = useSecurity();
   
   // Funciones silenciosas para renderizado (no generan errores de consola)
-  const canEditSilent = () => canEdit(true);
-  const canDeleteSilent = () => canDelete(true);
-  const canCreateSilent = () => canCreate(true);
+  const canEditSilent = () => canEdit();
+  const canDeleteSilent = () => canDelete();
+  const canCreateSilent = () => canCreate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<'month' | 'week'>('month');
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -424,8 +424,7 @@ const ScheduleCalendar: React.FC = () => {
           } else {
             setMonitors([]);
           }
-        } catch (error) {
-          console.error('Error loading monitors:', error);
+        } catch {
           setMonitors([]);
         }
       } else {
@@ -437,15 +436,13 @@ const ScheduleCalendar: React.FC = () => {
       try {
         const roomsData = await roomService.getRooms();
         setRooms(Array.isArray(roomsData) ? roomsData : []);
-      } catch (error) {
-        console.error('Error loading rooms:', error);
+      } catch {
         setRooms([]);
       }
       
     } catch (err: unknown) {
       const error = err as Error;
       setError(error.message || 'Error al cargar los datos');
-      console.error('Error loading data:', err);
     } finally {
       if (isInitialLoad) {
         setLoading(false);
@@ -700,7 +697,6 @@ const ScheduleCalendar: React.FC = () => {
       setRangeEndDate('');
       loadData();
     } catch (error: unknown) {
-      console.error('Error creating schedule:', error);
       
       // Usar el nuevo sistema de manejo de errores
       const errorMessage = ApiErrorHandler.handleError(error);
@@ -716,7 +712,6 @@ const ScheduleCalendar: React.FC = () => {
       
       // Verificar si debe desloguear
       if (ApiErrorHandler.shouldLogout(error)) {
-        console.warn('Deslogueando por error crítico de token');
         setTimeout(() => {
           localStorage.removeItem('authToken');
           localStorage.removeItem('user');
@@ -750,15 +745,14 @@ const ScheduleCalendar: React.FC = () => {
             
             // Notificar actualización en tiempo real
             notifyScheduleUpdate();
-          } catch (error) {
-            console.error('Error deleting schedule:', error);
+          } catch {
             window.dispatchEvent(new CustomEvent('app-toast', {
               detail: { message: 'Error al eliminar el turno', type: 'error' }
             }));
           }
         },
         onCancel: () => {
-          console.log('Eliminación cancelada');
+          // Eliminación cancelada
         }
       }
     }));
@@ -792,8 +786,7 @@ const ScheduleCalendar: React.FC = () => {
       
       // Notificar actualización en tiempo real
       notifyScheduleUpdate();
-    } catch (error) {
-      console.error('Error deleting all schedules:', error);
+    } catch {
       window.dispatchEvent(new CustomEvent('app-toast', {
         detail: { 
           message: 'Error al eliminar todos los turnos', 
@@ -808,7 +801,7 @@ const ScheduleCalendar: React.FC = () => {
   // Abrir modal de edición
   const openEditModal = async (schedule: Schedule) => {
     // Validación de seguridad: verificar permisos
-    if (!canEdit(true)) {
+    if (!canEdit()) {
       return;
     }
     
@@ -838,8 +831,7 @@ const ScheduleCalendar: React.FC = () => {
       setEditSchedule(editData);
       setFormErrors({});
       setShowEditModal(true);
-    } catch (error) {
-      console.error('Error loading schedule details:', error);
+    } catch {
       // Fallback a los datos básicos si falla la carga detallada
       const formatDateForInput = (dateString: string) => {
         const date = new Date(dateString);
@@ -878,7 +870,7 @@ const ScheduleCalendar: React.FC = () => {
   // Guardar cambios del turno editado
   const saveEditSchedule = async () => {
     // Validación de seguridad: verificar permisos
-    if (!canEdit(true)) {
+    if (!canEdit()) {
       return;
     }
     
@@ -909,7 +901,6 @@ const ScheduleCalendar: React.FC = () => {
       // Notificar actualización en tiempo real
       notifyScheduleUpdate();
     } catch (error: unknown) {
-      console.error('Error updating schedule:', error);
       
       // Usar el nuevo sistema de manejo de errores
       const errorMessage = ApiErrorHandler.handleError(error);
@@ -925,14 +916,11 @@ const ScheduleCalendar: React.FC = () => {
       
       // Solo desloguear si es un error crítico de token
       if (ApiErrorHandler.shouldLogout(error)) {
-        console.warn('Deslogueando por error crítico de token');
         setTimeout(() => {
           localStorage.removeItem('authToken');
           localStorage.removeItem('user');
           window.location.href = '/login';
         }, 3000);
-      } else {
-        console.warn('Error no crítico, manteniendo sesión:', error instanceof Error ? error.message : String(error));
       }
     }
   };
@@ -1207,7 +1195,7 @@ const ScheduleCalendar: React.FC = () => {
                           <div
                             key={schedule.id}
                             className={`week-schedule-item ${schedule.status} clickable ${totalSchedules > 1 ? 'overlapping' : ''}`}
-                            title={`${schedule.user_full_name || `Monitor ${schedule.user}`} - ${schedule.room_name || `Sala ${schedule.room}`} (${formatTime(schedule.start_datetime)} - ${formatTime(schedule.end_datetime)})${canEdit(true) ? ' - Haz clic para editar' : ''}`}
+                            title={`${schedule.user_full_name || `Monitor ${schedule.user}`} - ${schedule.room_name || `Sala ${schedule.room}`} (${formatTime(schedule.start_datetime)} - ${formatTime(schedule.end_datetime)})${canEdit() ? ' - Haz clic para editar' : ''}`}
                             onClick={(e) => {
                               e.stopPropagation();
                               // Abrir modal de detalles
@@ -1605,15 +1593,14 @@ const ScheduleCalendar: React.FC = () => {
                                       
                                       // Notificar actualización en tiempo real
                                       notifyScheduleUpdate();
-                                    } catch (error) {
-                                      console.error('Error deleting schedule:', error);
+                                    } catch {
                                       window.dispatchEvent(new CustomEvent('app-toast', {
                                         detail: { message: 'Error al eliminar el turno', type: 'error' }
                                       }));
                                     }
                                   },
                                   onCancel: () => {
-                                    console.log('Eliminación cancelada');
+                                    // Eliminación cancelada
                                   }
                                 }
                               }));
