@@ -79,7 +79,7 @@ export const apiClient = {
       headers: {
         ...getAuthHeaders(),
       },
-      credentials: 'include',
+      credentials: 'omit',
     });
     return handleResponse(res);
   },
@@ -91,7 +91,7 @@ export const apiClient = {
         'Content-Type': 'application/json',
         ...getAuthHeaders(),
       },
-      credentials: 'include',
+      credentials: 'omit',
       body: JSON.stringify(data),
     });
     return handleResponse(res);
@@ -105,7 +105,7 @@ export const apiClient = {
         ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
         ...getAuthHeaders(),
       },
-      credentials: 'include',
+      credentials: 'omit',
       ...(hasBody ? { body: JSON.stringify(data) } as RequestInit : {}),
     });
     return handleResponse(res);
@@ -117,7 +117,7 @@ export const apiClient = {
       headers: {
         ...getAuthHeaders(),
       },
-      credentials: 'include',
+      credentials: 'omit',
     });
     return handleResponse(res);
   },
