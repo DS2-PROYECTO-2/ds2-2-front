@@ -1,0 +1,376 @@
+/* Contenedor principal (fondo + sistema de partículas) */
+.login-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #F5F5F5 0%, #E5E7EB 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;  /* Necesario para pseudo-elementos */
+  overflow: hidden;    /* Oculta partículas fuera del área */
+}
+
+/* Canvas para partículas basado en <canvas> (si se usa) */
+.login-particles-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+
+/* TARJETA DE LOGIN - Z-INDEX ALTO */
+.login-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  z-index: 2;
+  animation: slideInUp 0.8s ease-out;
+}
+
+/* Keyframes de entrada de la tarjeta (si ya lo tienes, puedes conservar el tuyo) */
+@keyframes slideInUp {
+  0%   { opacity: 0; transform: translateY(50px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Caída constante de las partículas sin parpadeo al iniciar */
+@keyframes fallingParticles {
+  0%   { transform: translateY(-100vh); opacity: 0; }
+  1%   { opacity: 1; } /* Se hacen visibles ya fuera de pantalla */
+  100% { transform: translateY(100vh); opacity: 1; }
+}
+
+
+
+
+
+
+
+
+
+/* Estilos del formulario */
+.login-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+
+
+  /* Animación de entrada de la tarjeta */
+.login-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  
+  /* NUEVAS ANIMACIONES */
+  animation: slideInUp 0.8s ease-out;
+  transform: translateY(0);
+}
+
+@keyframes slideInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+  
+
+
+
+  
+
+
+
+
+  
+
+
+/* Animación del enlace de "Olvidé mi contraseña" */
+.forgot-password {
+  color: #6B7280;
+  text-decoration: none;
+  font-size: 14px;
+  text-align: center;
+  margin: 10px 0;
+  
+  /* NUEVA ANIMACIÓN */
+  animation: fadeIn 1s ease-out 1s both;
+  transition: all 0.3s ease;
+}
+
+.forgot-password:hover {
+  color: #DC2626;
+  transform: scale(1.05);
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+  
+
+
+
+
+/* BOTÓN DE LOGIN - SOLO CON ANIMACIÓN DE ENTRADA */
+.login-form .login-button {
+  background-color: #DC2626 !important;
+  color: white !important;
+  border: none !important;
+  padding: 12px 24px !important;
+  border-radius: 6px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  margin-top: 20px !important;
+  width: 100% !important;
+  text-decoration: none !important;
+
+  /* TRANSICIONES PARA HOVER */
+  transition: all 0.3s ease;
+
+  /* ANIMACIÓN DE ENTRADA */
+  animation: slideInUp 0.8s ease-out 1.2s both;
+}
+
+/* HOVER DEL BOTÓN */
+.login-form .login-button:hover {
+  background-color: #B91C1C !important;
+  color: white !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+  text-decoration: none !important;
+}
+
+/* ACTIVE DEL BOTÓN */
+.login-form .login-button:active {
+  background-color: #991B1B !important;   /* cambia el tono */
+  color: white !important;
+  transform: scale(0.95);      /* se hunde */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3) inset; /* sombra interna */
+  text-decoration: none !important;
+}
+
+
+/* KEYFRAME DE ENTRADA */
+@keyframes slideInUp {
+  0%   { opacity: 0; transform: translateY(50px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+
+
+
+
+
+
+
+
+/* Estilos para mensajes de error */
+.error-message {
+  color: #EF4444;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+  animation: slideInError 0.4s ease-out;
+}
+
+/* Mensaje de error general */
+.error-message-general {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  animation: slideInError 0.4s ease-out;
+}
+
+.login-input.error {
+  border-bottom-color: #EF4444;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes slideInError {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+  20%, 40%, 60%, 80% { transform: translateX(3px); }
+}
+
+
+
+
+/* Estilos para los grupos de inputs */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  
+  /* Animación suave */
+  animation: slideInLeft 0.6s ease-out both;
+}
+
+.input-label {
+  color: #9CA3AF;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  
+  /* Posición original: arriba del input */
+  margin-bottom: 4px;
+}
+
+.login-input {
+  border: none;
+  border-bottom: 2px solid #E5E7EB;
+  padding: 8px 0;
+  font-size: 16px;
+  background: transparent;
+  outline: none;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+/* Efecto de focus en el label */
+.input-group:focus-within .input-label {
+  color: #DC2626;
+  transform: translateY(-2px);
+  font-weight: 600;
+}
+
+.login-input:focus {
+  border-bottom-color: #DC2626;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.1);
+}
+
+
+
+
+/* Estilos para el toggle de mostrar/ocultar contraseña */
+.password-toggle {
+  margin-top: 6px;
+}
+
+.password-toggle-label {
+  font-size: 14px;
+  color: #6B7280;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.password-toggle-label input[type="checkbox"] {
+  accent-color: #DC2626; /* color del check */
+}
+
+
+/* Estilos del logo */
+.login-logo {
+  width: 140px;          /* ajusta tamaño */
+  height: auto;          /* mantiene proporción */
+  display: block;
+  margin: 0 auto 16px;   /* centrado y separación inferior */
+  image-rendering: -webkit-optimize-contrast;
+}
+@media (min-width: 768px) {
+  .login-logo { width: 160px; }
+}
+
+
+
+
+/* Animación del enlace de "Olvidé mi contraseña" */
+.register-account {
+  color: #961313;
+  text-decoration: none;
+  font-size: 14px;
+  text-align: center;
+  margin: -0px 0;
+  
+  /* NUEVA ANIMACIÓN */
+  animation: fadeIn 1s ease-out 1s both;
+  transition: all 0.3s ease;
+}
+
+.register-account:hover {
+  color: #DC2626;
+  transform: scale(1.05);
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+
+
+
+
+
+.form-links {
+  text-align: center;
+  
+}
+
+.login-form .link-button {
+  background: none;
+  border: none;
+  color: #756e6e !important;  /* Rojo con !important */
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 14px;
+  padding: 0;
+  margin: 0;
+  transition: all 0.3s ease;
+  animation: fadeIn 1s ease-out 1.5s both;
+  margin-top: 10px;
+}
+
+.login-form .link-button:hover {
+  color: #B91C1C !important;  /* Rojo más oscuro */
+  transform: scale(1.05);
+}

@@ -1,13 +1,28 @@
-import { render} from '@testing-library/react'
+import { render } from '@testing-library/react'
+import { BrowserRouter } from 'react-router-dom'
+import { AuthProvider } from './context/AuthProvider'
 import App from './App'
 
-test('renders app without crashing', () => {
-  render(<App />)
-  // Verifica que la app se renderiza sin errores
-})
+describe('App', () => {
+  it('renders app without crashing', () => {
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </BrowserRouter>
+    )
+  })
 
-test('app has main content', () => {
-  render(<App />)
-  // Verifica que hay contenido en la app
-  expect(document.body).toBeInTheDocument()
+  it('app has main content', () => {
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </BrowserRouter>
+    )
+    // Verificar que la app se renderiza correctamente
+    expect(document.body).toBeInTheDocument()
+  })
 })

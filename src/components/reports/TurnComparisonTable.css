@@ -1,0 +1,671 @@
+/* Estilos para la tabla de comparación de turnos */
+.turn-comparison-container {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin: 1.5rem 0;
+  overflow: hidden;
+  position: relative;
+}
+
+
+/* Indicador de actualización */
+.updating-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(220, 38, 38, 0.1);
+  border-bottom: 2px solid #dc2626;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 10;
+  animation: slideDown 0.3s ease-out;
+}
+
+.updating-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #dc2626;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.updating-indicator span {
+  color: #dc2626;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.turn-comparison-header {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  color: white;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.turn-comparison-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.filters-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.filters-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 1 auto;
+  min-width: fit-content;
+  max-width: 300px;
+}
+
+.filter-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1f2937;
+  white-space: nowrap;
+  min-width: fit-content;
+}
+
+.date-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0.375rem;
+  background: white;
+  color: #1f2937;
+  font-size: 0.875rem;
+  width: 100%;
+  min-width: 120px;
+  max-width: 180px;
+}
+
+.date-input::placeholder {
+  color: #6b7280;
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+  background: white;
+}
+
+.filter-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0.375rem;
+  background: white;
+  color: #1f2937;
+  font-size: 0.875rem;
+  width: 100%;
+  min-width: 100px;
+  max-width: 250px;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+  background: white;
+}
+
+.filter-select:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+  border-color: #d1d5db;
+}
+
+.filter-select:disabled:hover {
+  border-color: #d1d5db;
+  box-shadow: none;
+}
+
+.filter-select option {
+  color: #1f2937;
+  background: white;
+}
+
+.checkbox-input {
+  margin-right: 0.5rem;
+  transform: none;
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+
+/* CSS ULTRA ESPECÍFICO para el filtro "Mostrar todos los registros" */
+.turn-comparison-container .filters-row .filter-group .checkbox-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  background: white !important;
+  padding: 0.5rem 0.75rem !important;
+  border-radius: 0.375rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  max-height: 42px !important;
+  width: 100% !important;
+  min-width: 180px !important;
+  max-width: 250px !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+  vertical-align: top !important;
+  margin: 0 !important;
+}
+
+.turn-comparison-container .filters-row .filter-group .checkbox-group .checkbox-label {
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: #1f2937 !important;
+  cursor: pointer !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+  width: auto !important;
+  height: auto !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  text-overflow: visible !important;
+  overflow: visible !important;
+  flex: 1 !important;
+}
+
+.turn-comparison-container .filters-row .filter-group .checkbox-group .checkbox-input {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 14px !important;
+  height: 14px !important;
+  vertical-align: middle !important;
+  transform: none !important;
+  flex-shrink: 0 !important;
+}
+
+/* CSS de respaldo aún más agresivo */
+div.checkbox-group {
+  height: 50px !important;
+  min-height: 42px !important;
+  max-height: 47px !important;
+  padding: 0.5rem 0.75rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+  min-width: 180px !important;
+  width: 100% !important;
+  max-width: 250px !important;
+  vertical-align: top !important;
+  margin: 0 !important;
+}
+
+div.checkbox-group label {
+  font-size: 0.875rem !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: auto !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  flex: 1 !important;
+}
+
+/* Estilos para el botón de borrar filtros */
+.clear-filters-button {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 0.375rem !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  max-height: 42px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.25rem !important;
+  white-space: nowrap !important;
+  min-width: 140px !important;
+  width: auto !important;
+  max-width: 180px !important;
+  flex: 0 1 auto !important;
+  margin: 0 !important;
+}
+
+.clear-filters-button:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.clear-filters-button:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* SOBRESCRIBIR ESTILOS GLOBALES DE ROOMMANAGEMENT.CSS */
+.turn-comparison-container .checkbox-group .checkbox-label {
+  display: inline-block !important;
+  align-items: unset !important;
+  justify-content: unset !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  border: none !important;
+  min-height: auto !important;
+  box-sizing: border-box !important;
+  position: static !important;
+  z-index: auto !important;
+  font-weight: 500 !important;
+  text-align: left !important;
+  user-select: auto !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.turn-comparison-container .checkbox-group .checkbox-label:hover {
+  background: transparent !important;
+  border-color: transparent !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.refresh-btn {
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0.375rem;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loading {
+  padding: 2rem;
+  text-align: center;
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.error-message {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 1rem;
+  margin: 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* Tarjetas de resumen */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #f8fafc;
+}
+
+.summary-card {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+}
+
+.summary-number {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.summary-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.summary-card.on-time .summary-number {
+  color: #059669;
+}
+
+.summary-card.early .summary-number {
+  color: #2563eb;
+}
+
+.summary-card.late .summary-number {
+  color: #dc2626;
+}
+
+.summary-card.no-registration .summary-number {
+  color: #6b7280;
+}
+
+/* Tabla de comparación */
+.turn-comparison-table {
+  overflow-x: auto;
+}
+
+.table-scroll {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.comparison-table th {
+  background: #f1f5f9;
+  padding: 1rem 0.75rem;
+  text-align: center;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.comparison-table td {
+  padding: 1rem 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Centrar específicamente la columna de estado */
+.comparison-table td:has(.status-badge) {
+  text-align: center;
+  vertical-align: middle;
+  padding: 1rem 0.75rem;
+}
+
+.comparison-row:hover {
+  background: #f8fafc;
+}
+
+.no-data {
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+  padding: 2rem;
+}
+
+/* Celdas específicas */
+.user-cell {
+  font-weight: 500;
+  color: #1f2937;
+  text-align: center;
+}
+
+.room-cell {
+  color: #6b7280;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.assigned-cell,
+.actual-cell {
+  min-width: 200px;
+  text-align: center;
+}
+
+.time-range {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.start-time,
+.end-time {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.start-time strong,
+.end-time strong {
+  color: #374151;
+  font-weight: 600;
+}
+
+.no-registration {
+  color: #dc2626;
+  font-style: italic;
+  font-size: 0.8rem;
+}
+
+/* Estados */
+.status-badge {
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  text-transform: none !important;
+  margin: 0 auto;
+  line-height: 1.2;
+}
+
+/* Centrar badges de estado en la columna */
+td .status-badge {
+  display: inline-block;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.status-on-time {
+    background: #67f00c !important;
+    color: #000000 !important;
+    
+    font-size: 0.9rem !important;
+    font-weight: 900 !important;
+    padding: 0.4rem 0.9rem !important;
+    width: 110px !important;
+    margin: 0 auto !important;
+    vertical-align: middle !important;
+}
+
+.status-early {
+  background: #eef103 !important;
+  color: #020202 !important;
+  
+  font-size: 0.9rem !important;
+  font-weight: 900 !important;
+  padding: 0.4rem 0.9rem !important;
+  width: 134px !important;
+  margin: 0 auto !important;
+  vertical-align: middle !important;
+}
+
+.status-late {
+  background: #dc2626 !important;
+  color: white !important;
+  
+  font-size: 0.9rem !important;
+  font-weight: 900 !important;
+  padding: 0.4rem 0.9rem !important;
+  width: 70px !important;
+  margin: 0 auto !important;
+  vertical-align: middle !important;
+}
+
+.status-no-registration {
+    background: #b9b9b9 !important;
+    color: #000000 !important;
+    
+    font-size: 0.9rem !important;
+    font-weight: 900 !important;
+    padding: 0.4rem 0.9rem !important;
+    width: 130px !important;
+    margin: 0 auto !important;
+    vertical-align: middle !important;
+}
+
+/* Diferencias */
+.difference-cell {
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.delay-text {
+  color: #dc2626 !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+}
+
+.early-text {
+  color: #dc2626;
+}
+
+.on-time-text {
+  color: #dc2626;
+}
+
+.no-registration-text {
+  color: #dc2626;
+  font-style: italic;
+}
+
+/* Responsive - Solo para TurnComparisonTable */
+@media (max-width: 768px) {
+  .turn-comparison-container .turn-comparison-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .turn-comparison-container .filters-container {
+    gap: 0.75rem;
+  }
+
+  .turn-comparison-container .filters-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .turn-comparison-container .filter-group {
+    width: 100%;
+  }
+
+  .turn-comparison-container .filter-select {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .turn-comparison-container .summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .turn-comparison-container .comparison-table {
+    font-size: 0.8rem;
+  }
+
+  .turn-comparison-container .comparison-table th,
+  .turn-comparison-container .comparison-table td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .turn-comparison-container .time-range {
+    gap: 0.125rem;
+  }
+
+  .turn-comparison-container .start-time,
+  .turn-comparison-container .end-time {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .turn-comparison-container .summary-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .turn-comparison-container .filter-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .turn-comparison-container .filter-group label {
+    min-width: 60px;
+  }
+}

@@ -1,0 +1,174 @@
+import { apiClient } from '../utils/api';
+
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  full_name: string;
+  identification?: string;
+  phone?: string;
+  role: 'admin' | 'monitor';
+  is_active: boolean;
+  is_verified: boolean;
+  date_joined: string;
+  last_login?: string;
+}
+
+export interface UserFilters {
+  search?: string;
+  role?: string;
+  is_verified?: boolean;
+}
+
+export interface CreateUserData {
+  username: string;
+  email: string;
+  password: string;
+  password_confirm: string;
+  first_name: string;
+  last_name: string;
+  identification?: string;
+  phone?: string;
+  role: 'admin' | 'monitor';
+}
+
+export interface UpdateUserData {
+  username?: string;
+  email?: string;
+  full_name?: string;
+  first_name?: string;
+  last_name?: string;
+  cedula?: string;
+  identification?: string;
+  phone?: string;
+  role?: 'admin' | 'monitor';
+  is_active?: boolean;
+  is_verified?: boolean;
+}
+
+const userManagementService = {
+  // Obtener lista de usuarios
+  async getUsers(filters?: UserFilters): Promise<User[]> {
+    // 
+      const params = new URLSearchParams();
+      
+      if (filters?.search) {
+        // Usar solo un parámetro de búsqueda para evitar confusión
+        params.append('search', filters.search);
+      }
+      if (filters?.role) {
+        params.append('role', filters.role);
+      }
+      if (filters?.is_verified !== undefined) {
+        params.append('is_verified', filters.is_verified.toString());
+      }
+      
+      // Agregar ordenamiento ascendente por ID
+      params.append('ordering', 'id');
+
+      const url = `/api/auth/admin/users/?${params.toString()}`;
+      const response = await apiClient.get(url) as User[];
+      
+      // Verificar que response existe y es un array
+      if (!response || !Array.isArray(response)) {
+        return [];
+      }
+      
+      // El backend no incluye campos de último acceso
+      // Usaremos created_at como fallback si está disponible
+      
+      // Mapear usuarios con manejo robusto de campos
+      const mappedUsers = response.map(user => ({
+        id: user.id,
+        username: user.username || '',
+        email: user.email || '',
+        full_name: user.full_name || '',
+        identification: user.identification || undefined,
+        phone: user.phone || undefined,
+        role: user.role || 'monitor',
+        is_active: user.is_active !== undefined ? user.is_active : true,
+        is_verified: user.is_verified !== undefined ? user.is_verified : false,
+        date_joined: user.date_joined || '',
+        last_login: user.last_login || undefined
+      }));
+      
+      // Ordenar por ID en orden ascendente
+      return mappedUsers.sort((a, b) => a.id - b.id);
+  },
+
+  // Obtener usuario por ID
+  async getUserById(id: number): Promise<User> {
+    const response = await apiClient.get(`/api/auth/admin/users/${id}/`);
+    return response as User;
+  },
+
+  // Crear nuevo usuario
+  async createUser(userData: CreateUserData): Promise<User> {
+    // Validaciones adicionales antes de enviar
+    if (!userData.username?.trim()) {
+      throw new Error('El nombre de usuario es requerido');
+    }
+    if (!userData.email?.trim()) {
+      throw new Error('El email es requerido');
+    }
+    if (!userData.password?.trim()) {
+      throw new Error('La contraseña es requerida');
+    }
+    if (userData.password !== userData.password_confirm) {
+      throw new Error('Las contraseñas no coinciden');
+    }
+
+    // Usar el endpoint de registro estándar que ya existe
+    const response = await apiClient.post('/api/auth/register/', userData);
+    return response as User;
+  },
+
+  // Actualizar usuario por admin (edición consolidada)
+  async updateUser(id: number, userData: UpdateUserData): Promise<User> {
+    // Endpoint de edición por administrador que permite cambiar datos y campos administrativos
+    const response = await apiClient.patch(`/api/auth/admin/users/${id}/edit/`, userData);
+    return response as User;
+  },
+
+  // Eliminar usuario
+  async deleteUser(id: number): Promise<void> {
+    await apiClient.delete(`/api/auth/admin/users/${id}/`);
+  },
+
+  // Verificar/Desverificar usuario
+  async verifyUser(id: number, isVerified: boolean): Promise<User> {
+    // 
+      const response = await apiClient.patch(`/api/auth/admin/users/${id}/verify/`, {
+        is_verified: isVerified
+      });
+      
+      return response as User;
+  },
+
+
+  // Activar usuario con token
+  async activateUser(token: string): Promise<User> {
+    const response = await apiClient.post('/api/auth/admin/users/activate/', { token });
+    return response as User;
+  },
+
+  // Eliminar usuario con token
+  async deleteUserWithToken(token: string): Promise<void> {
+    await apiClient.post('/api/auth/admin/users/delete/', { token });
+  },
+
+  // Cambiar contraseña de usuario
+  async changeUserPassword(id: number, newPassword: string): Promise<void> {
+    // 
+      await apiClient.post(`/api/auth/admin/users/${id}/change-password/`, {
+        password: newPassword
+      });
+  },
+
+  // Obtener solo monitores
+  async getMonitors(): Promise<User[]> {
+    return await this.getUsers({ role: 'monitor' });
+  }
+};
+
+export default userManagementService;
