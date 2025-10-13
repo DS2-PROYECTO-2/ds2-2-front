@@ -89,8 +89,8 @@ const TurnComparisonTable: React.FC = () => {
         // Cargar salas
         const roomsData = await roomService.getRooms();
         setRooms(roomsData || []);
-      } catch {
-        // Error loading filter options
+      } catch (err) {
+        console.error('Error loading filter options:', err);
       }
     };
     
@@ -106,34 +106,9 @@ const TurnComparisonTable: React.FC = () => {
     setError(null);
 
     try {
-      // Calcular fechas basadas en filtros de año y mes
-      let fromDate, toDate;
-      
-      if (selectedYear && selectedMonth) {
-        // Si se seleccionó año y mes específicos
-        const year = parseInt(selectedYear);
-        const month = parseInt(selectedMonth);
-        const firstDay = new Date(year, month - 1, 1);
-        const lastDay = new Date(year, month, 0);
-        fromDate = firstDay.toISOString().split('T')[0];
-        toDate = lastDay.toISOString().split('T')[0];
-      } else if (selectedYear) {
-        // Si solo se seleccionó año
-        const year = parseInt(selectedYear);
-        fromDate = `${year}-01-01`;
-        toDate = `${year}-12-31`;
-      } else if (dateFrom && dateTo) {
-        // Si se configuraron fechas manuales
-        fromDate = dateFrom;
-        toDate = dateTo;
-      } else {
-        // Por defecto, mes actual
-        const today = new Date();
-        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        fromDate = firstDayOfMonth.toISOString().split('T')[0];
-        toDate = lastDayOfMonth.toISOString().split('T')[0];
-      }
+      // Usar fechas por defecto si no están establecidas
+      const fromDate = dateFrom || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const toDate = dateTo || new Date().toISOString().split('T')[0];
       
       const params = new URLSearchParams({
         date_from: fromDate,
@@ -143,10 +118,23 @@ const TurnComparisonTable: React.FC = () => {
       // Agregar filtros adicionales
       if (selectedUser) params.append('user_id', selectedUser);
       if (selectedRoom) params.append('room_id', selectedRoom);
+      if (selectedYear) params.append('year', selectedYear);
+      if (selectedMonth) params.append('month', selectedMonth);
       if (showAll) params.append('show_all', 'true');
 
+      console.log('🔍 Cargando datos de comparación con parámetros:', params.toString());
+      console.log('📋 Parámetros individuales:', {
+        date_from: fromDate,
+        date_to: toDate,
+        user_id: selectedUser,
+        room_id: selectedRoom,
+        year: selectedYear,
+        month: selectedMonth,
+        show_all: showAll
+      });
       const response = await apiClient.get(`/api/rooms/reports/turn-comparison/?${params.toString()}`) as TurnComparisonResponse;
       
+      console.log('📊 Respuesta del backend:', response);
       setData(response.comparaciones || []);
       
       // Calcular resumen desde los datos
@@ -159,6 +147,7 @@ const TurnComparisonTable: React.FC = () => {
       };
       setSummary(summary);
     } catch (err: unknown) {
+      console.error('Error loading turn comparison data:', err);
       
       // Manejar diferentes tipos de errores
       if (err && typeof err === 'object' && 'status' in err) {
@@ -188,239 +177,54 @@ const TurnComparisonTable: React.FC = () => {
     }
   }, [dateFrom, dateTo, selectedUser, selectedRoom, selectedYear, selectedMonth, showAll]);
 
-  // Cargar datos del mes actual por defecto (sin activar filtros visualmente)
+  // Cargar datos automáticamente al montar el componente (últimos 30 días)
   useEffect(() => {
     const today = new Date();
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
     
-    // Cargar datos del mes actual internamente sin establecer los estados de filtro
-    const loadCurrentMonthData = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const fromDate = firstDayOfMonth.toISOString().split('T')[0];
-        const toDate = lastDayOfMonth.toISOString().split('T')[0];
-        
-        const params = new URLSearchParams({
-          date_from: fromDate,
-          date_to: toDate
-        });
-
-        const response = await apiClient.get(`/api/rooms/reports/turn-comparison/?${params.toString()}`) as TurnComparisonResponse;
-        
-        setData(response.comparaciones || []);
-        
-        // Calcular resumen desde los datos
-        const comparaciones = response.comparaciones || [];
-        const summary = {
-          on_time: comparaciones.filter(c => c.estado === 'A_TIEMPO').length,
-          early: comparaciones.filter(c => c.estado === 'SOBRE_LA_HORA').length,
-          late: comparaciones.filter(c => c.estado === 'TARDE').length,
-          no_registration: comparaciones.filter(c => c.estado === 'SIN_REGISTRO').length
-        };
-        setSummary(summary);
-      } catch (err: unknown) {
-        
-        if (err && typeof err === 'object' && 'status' in err) {
-          const apiError = err as { status?: number };
-          if (apiError.status === 500) {
-            setError('El endpoint de comparación de turnos no está disponible. Contacta al administrador para habilitar esta funcionalidad.');
-          } else if (apiError.status === 404) {
-            setError('La funcionalidad de comparación de turnos no está implementada en el backend.');
-          } else {
-            setError('Error al cargar los datos de comparación de turnos. Verifica tu conexión.');
-          }
-        } else {
-          setError('Error al cargar los datos de comparación de turnos. Verifica tu conexión.');
-        }
-        
-        setData([]);
-        setSummary({
-          on_time: 0,
-          early: 0,
-          late: 0,
-          no_registration: 0
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadCurrentMonthData();
-  }, []);
+    setDateTo(today.toISOString().split('T')[0]);
+    setDateFrom(thirtyDaysAgo.toISOString().split('T')[0]);
+    
+    // Cargar datos automáticamente con el rango de 30 días
+    loadComparisonData(true);
+  }, [loadComparisonData]);
 
   // Recargar datos cuando cambien los filtros
   useEffect(() => {
-
-    const loadDataWithFilters = async () => {
-      setIsUpdating(true);
-      setError(null);
-
-      try {
-        // Calcular fechas basadas en filtros de año y mes
-        let fromDate, toDate;
-        
-        if (selectedYear && selectedMonth) {
-          // Si se seleccionó año y mes específicos
-          const year = parseInt(selectedYear);
-          const month = parseInt(selectedMonth);
-          const firstDay = new Date(year, month - 1, 1);
-          const lastDay = new Date(year, month, 0);
-          fromDate = firstDay.toISOString().split('T')[0];
-          toDate = lastDay.toISOString().split('T')[0];
-        } else if (selectedYear) {
-          // Si solo se seleccionó año
-          const year = parseInt(selectedYear);
-          fromDate = `${year}-01-01`;
-          toDate = `${year}-12-31`;
-        } else if (dateFrom && dateTo) {
-          // Si se configuraron fechas manuales
-          fromDate = dateFrom;
-          toDate = dateTo;
-        } else {
-          // Por defecto, mes actual
-          const today = new Date();
-          const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-          const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-          fromDate = firstDayOfMonth.toISOString().split('T')[0];
-          toDate = lastDayOfMonth.toISOString().split('T')[0];
-        }
-        
-        const params = new URLSearchParams({
-          date_from: fromDate,
-          date_to: toDate
-        });
-
-        // Agregar filtros adicionales
-        if (selectedUser) params.append('user_id', selectedUser);
-        if (selectedRoom) params.append('room_id', selectedRoom);
-        if (showAll) params.append('show_all', 'true');
-
-        const response = await apiClient.get(`/api/rooms/reports/turn-comparison/?${params.toString()}`) as TurnComparisonResponse;
-        
-        setData(response.comparaciones || []);
-        
-        // Calcular resumen desde los datos
-        const comparaciones = response.comparaciones || [];
-        const summary = {
-          on_time: comparaciones.filter(c => c.estado === 'A_TIEMPO').length,
-          early: comparaciones.filter(c => c.estado === 'SOBRE_LA_HORA').length,
-          late: comparaciones.filter(c => c.estado === 'TARDE').length,
-          no_registration: comparaciones.filter(c => c.estado === 'SIN_REGISTRO').length
-        };
-        setSummary(summary);
-      } catch (err: unknown) {
-        
-        if (err && typeof err === 'object' && 'status' in err) {
-          const apiError = err as { status?: number };
-          if (apiError.status === 500) {
-            setError('El endpoint de comparación de turnos no está disponible. Contacta al administrador para habilitar esta funcionalidad.');
-          } else if (apiError.status === 404) {
-            setError('La funcionalidad de comparación de turnos no está implementada en el backend.');
-          } else {
-            setError('Error al cargar los datos de comparación de turnos. Verifica tu conexión.');
-          }
-        } else {
-          setError('Error al cargar los datos de comparación de turnos. Verifica tu conexión.');
-        }
-        
-        setData([]);
-        setSummary({
-          on_time: 0,
-          early: 0,
-          late: 0,
-          no_registration: 0
-        });
-      } finally {
-        setIsUpdating(false);
-      }
-    };
-
-    // Ejecutar siempre que haya algún cambio en los filtros
-    loadDataWithFilters();
-  }, [selectedUser, selectedRoom, selectedYear, selectedMonth, showAll, dateFrom, dateTo]);
+    if (dateFrom && dateTo) {
+      console.log('🔄 Filtros cambiados, recargando datos:', {
+        selectedUser,
+        selectedRoom,
+        selectedYear,
+        selectedMonth,
+        showAll
+      });
+      loadComparisonData(false);
+    }
+  }, [selectedUser, selectedRoom, selectedYear, selectedMonth, showAll, loadComparisonData, dateFrom, dateTo]);
 
   // Actualizaciones en tiempo real
   useEffect(() => {
-    const reloadData = async () => {
-      try {
-        // Calcular fechas basadas en filtros de año y mes
-        let fromDate, toDate;
-        
-        if (selectedYear && selectedMonth) {
-          // Si se seleccionó año y mes específicos
-          const year = parseInt(selectedYear);
-          const month = parseInt(selectedMonth);
-          const firstDay = new Date(year, month - 1, 1);
-          const lastDay = new Date(year, month, 0);
-          fromDate = firstDay.toISOString().split('T')[0];
-          toDate = lastDay.toISOString().split('T')[0];
-        } else if (selectedYear) {
-          // Si solo se seleccionó año
-          const year = parseInt(selectedYear);
-          fromDate = `${year}-01-01`;
-          toDate = `${year}-12-31`;
-        } else if (dateFrom && dateTo) {
-          // Si se configuraron fechas manuales
-          fromDate = dateFrom;
-          toDate = dateTo;
-        } else {
-          // Por defecto, mes actual
-          const today = new Date();
-          const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-          const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-          fromDate = firstDayOfMonth.toISOString().split('T')[0];
-          toDate = lastDayOfMonth.toISOString().split('T')[0];
-        }
-        
-        const params = new URLSearchParams({
-          date_from: fromDate,
-          date_to: toDate
-        });
-
-        if (selectedUser) params.append('user_id', selectedUser);
-        if (selectedRoom) params.append('room_id', selectedRoom);
-        if (showAll) params.append('show_all', 'true');
-
-        const response = await apiClient.get(`/api/rooms/reports/turn-comparison/?${params.toString()}`) as TurnComparisonResponse;
-        setData(response.comparaciones || []);
-        
-        const comparaciones = response.comparaciones || [];
-        const summary = {
-          on_time: comparaciones.filter(c => c.estado === 'A_TIEMPO').length,
-          early: comparaciones.filter(c => c.estado === 'SOBRE_LA_HORA').length,
-          late: comparaciones.filter(c => c.estado === 'TARDE').length,
-          no_registration: comparaciones.filter(c => c.estado === 'SIN_REGISTRO').length
-        };
-        setSummary(summary);
-      } catch {
-        // Error reloading data
-      }
-    };
-
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        reloadData();
+        loadComparisonData(false);
       }
     };
 
-    const handleWindowFocus = () => {
-      reloadData();
-    };
+    const handleWindowFocus = () => loadComparisonData(false);
 
     const handleScheduleUpdate = () => {
-      reloadData();
+      loadComparisonData(false);
     };
 
     const handleRoomEntryUpdate = () => {
-      reloadData();
+      loadComparisonData(false);
     };
 
     const handleStorage = (e: StorageEvent) => {
       if (e.key === 'schedule-event' || e.key === 'room-entry-updated' || e.key === 'turn-comparison-updated') {
-        reloadData();
+        // Evento disparado desde otras pestañas/ventanas
+        loadComparisonData(false);
       }
     };
 
@@ -438,7 +242,7 @@ const TurnComparisonTable: React.FC = () => {
       window.removeEventListener('room-entry-updated', handleRoomEntryUpdate);
       window.removeEventListener('storage', handleStorage);
     };
-  }, [loadComparisonData, dateFrom, dateTo, selectedUser, selectedRoom, selectedYear, selectedMonth, showAll]);
+  }, [loadComparisonData]);
 
 
   const getStatusColor = (status: string) => {
@@ -458,6 +262,7 @@ const TurnComparisonTable: React.FC = () => {
 
 
   const formatStatusText = (status: string) => {
+    console.log('🔍 Formateando estado:', status);
     switch (status) {
       case 'A_TIEMPO':
         return 'A Tiempo';
@@ -470,77 +275,6 @@ const TurnComparisonTable: React.FC = () => {
       default:
         return status;
     }
-  };
-
-  const clearAllFilters = () => {
-    setDateFrom('');
-    setDateTo('');
-    setSelectedUser('');
-    setSelectedRoom('');
-    setSelectedYear('');
-    setSelectedMonth('');
-    setShowAll(false);
-    setShowAllRecords(false);
-    
-    // Recargar datos del mes actual después de limpiar filtros
-    const today = new Date();
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    
-    const loadCurrentMonthData = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const fromDate = firstDayOfMonth.toISOString().split('T')[0];
-        const toDate = lastDayOfMonth.toISOString().split('T')[0];
-        
-        const params = new URLSearchParams({
-          date_from: fromDate,
-          date_to: toDate
-        });
-
-        const response = await apiClient.get(`/api/rooms/reports/turn-comparison/?${params.toString()}`) as TurnComparisonResponse;
-        
-        setData(response.comparaciones || []);
-        
-        // Calcular resumen desde los datos
-        const comparaciones = response.comparaciones || [];
-        const summary = {
-          on_time: comparaciones.filter(c => c.estado === 'A_TIEMPO').length,
-          early: comparaciones.filter(c => c.estado === 'SOBRE_LA_HORA').length,
-          late: comparaciones.filter(c => c.estado === 'TARDE').length,
-          no_registration: comparaciones.filter(c => c.estado === 'SIN_REGISTRO').length
-        };
-        setSummary(summary);
-      } catch (err: unknown) {
-        
-        if (err && typeof err === 'object' && 'status' in err) {
-          const apiError = err as { status?: number };
-          if (apiError.status === 500) {
-            setError('El endpoint de comparación de turnos no está disponible. Contacta al administrador para habilitar esta funcionalidad.');
-          } else if (apiError.status === 404) {
-            setError('La funcionalidad de comparación de turnos no está implementada en el backend.');
-          } else {
-            setError('Error al cargar los datos de comparación de turnos. Verifica tu conexión.');
-          }
-        } else {
-          setError('Error al cargar los datos de comparación de turnos. Verifica tu conexión.');
-        }
-        
-        setData([]);
-        setSummary({
-          on_time: 0,
-          early: 0,
-          late: 0,
-          no_registration: 0
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadCurrentMonthData();
   };
 
   // Verificar permisos - solo administradores pueden ver esta tabla
@@ -597,13 +331,6 @@ const TurnComparisonTable: React.FC = () => {
                 ))}
               </select>
             </div>
-            <button
-              onClick={clearAllFilters}
-              className="clear-filters-button"
-              type="button"
-            >
-              🗑️ Borrar Filtros
-            </button>
             <div className="filter-group">
               <label>Sala:</label>
               <select
@@ -620,16 +347,13 @@ const TurnComparisonTable: React.FC = () => {
               </select>
             </div>
           </div>
+          
           <div className="filters-row">
             <div className="filter-group">
               <label>Año:</label>
               <select
                 value={selectedYear}
-                onChange={(e) => {
-                  setSelectedYear(e.target.value);
-                  // Limpiar mes cuando cambie el año
-                  setSelectedMonth('');
-                }}
+                onChange={(e) => setSelectedYear(e.target.value)}
                 className="filter-select"
               >
                 <option value="">Todos los años</option>
@@ -644,7 +368,6 @@ const TurnComparisonTable: React.FC = () => {
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
                 className="filter-select"
-                disabled={!selectedYear}
               >
                 <option value="">Todos los meses</option>
                 {months.map(month => (
@@ -680,16 +403,12 @@ const TurnComparisonTable: React.FC = () => {
                 background: '#4caf50',
                 color: 'white',
                 border: 'none',
-                padding: '0.5rem 0.75rem',
-                borderRadius: '0.375rem',
+                padding: '0.75rem 1.5rem',
+                borderRadius: '6px',
                 cursor: 'pointer',
-                fontSize: '0.875rem',
+                fontSize: '0.9rem',
                 fontWeight: '500',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                height: '42px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
               }}
             >
               📋 Mostrar todos los registros ({data.length} total)
@@ -702,16 +421,12 @@ const TurnComparisonTable: React.FC = () => {
                 background: '#ff9800',
                 color: 'white',
                 border: 'none',
-                padding: '0.5rem 0.75rem',
-                borderRadius: '0.375rem',
+                padding: '0.75rem 1.5rem',
+                borderRadius: '6px',
                 cursor: 'pointer',
-                fontSize: '0.875rem',
+                fontSize: '0.9rem',
                 fontWeight: '500',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                height: '42px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
               }}
             >
               📋 Mostrar solo 10 registros
@@ -719,7 +434,6 @@ const TurnComparisonTable: React.FC = () => {
           )}
         </div>
       )}
-
 
       {error && (
         <div className="error-message">
@@ -828,7 +542,7 @@ const TurnComparisonTable: React.FC = () => {
                       )}
                       {item.estado === 'SOBRE_LA_HORA' && (
                         <span className="early-text">
-                          +{item.diferencia} min 
+                          -{item.diferencia} min antes
                         </span>
                       )}
                       {item.estado === 'A_TIEMPO' && (

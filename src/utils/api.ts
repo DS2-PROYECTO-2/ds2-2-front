@@ -29,6 +29,7 @@ async function handleResponse(response: Response) {
     if (typeof payload === 'string') {
       // Si es HTML (página de error del servidor), extraer información útil
       if (payload.includes('<!DOCTYPE html>') || payload.includes('<html')) {
+        console.error('Backend returned HTML error page instead of JSON:', payload.substring(0, 500));
         msg = 'Error interno del servidor. El backend no está respondiendo correctamente.';
         errorData = { 
           _isHtmlError: true, 

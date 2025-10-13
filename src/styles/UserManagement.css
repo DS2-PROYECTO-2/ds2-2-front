@@ -132,11 +132,12 @@
 }
 
 .filters-grid {
-  display: flex;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: 0.75rem;
   align-items: center;
   width: 100%;
-  flex-wrap: wrap;
+  overflow: hidden;
 }
 
 .filter-group {
@@ -148,8 +149,6 @@
   height: 3rem; /* igual a botones */
   border-radius: 8px;
   border: 1px solid #e0e0e0;
-  flex: 0 0 auto;
-  min-width: fit-content;
 }
 
 .filter-input,
@@ -163,26 +162,10 @@
   height: 2.75rem; /* Altura unificada con botones */
   padding: 0 0.75rem;
   box-sizing: border-box;
-  min-width: 120px;
-  max-width: 300px;
 }
 
 .filter-input::placeholder {
   color: #999;
-}
-
-/* Estilos específicos para el input de búsqueda */
-.filter-group:first-child {
-  flex: 1 1 auto;
-  min-width: 200px;
-  max-width: 400px;
-}
-
-/* Estilos específicos para los selects */
-.filter-group:not(:first-child) {
-  flex: 0 0 auto;
-  min-width: 150px;
-  max-width: 200px;
 }
 
 /* Estados de carga y error */

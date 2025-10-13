@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>73/73</span>
+                <span class='fraction'>79/79</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>73/73</span>
+                <span class='fraction'>79/79</span>
             </div>
         
             
@@ -167,7 +167,13 @@
 <a name='L102'></a><a href='#L102'>102</a>
 <a name='L103'></a><a href='#L103'>103</a>
 <a name='L104'></a><a href='#L104'>104</a>
-<a name='L105'></a><a href='#L105'>105</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -200,9 +206,11 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -215,6 +223,7 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -228,9 +237,11 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -238,6 +249,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-yes">9x</span>
@@ -300,6 +312,7 @@ const SecurityGuard: React.FC&lt;SecurityGuardProps&gt; = ({
 &nbsp;
       // Verificar rol si es requerido
       if (requiredRole &amp;&amp; user.role !== requiredRole) {
+        console.warn(`Acceso denegado: Se requiere rol ${requiredRole}`);
         setIsAuthorized(false);
         setIsLoading(false);
         return;
@@ -307,6 +320,7 @@ const SecurityGuard: React.FC&lt;SecurityGuardProps&gt; = ({
 &nbsp;
       // Verificar verificación si es requerida
       if (requireVerified &amp;&amp; !user.is_verified) {
+        console.warn('Acceso denegado: Usuario no verificado');
         setIsAuthorized(false);
         setIsLoading(false);
         return;
@@ -315,6 +329,7 @@ const SecurityGuard: React.FC&lt;SecurityGuardProps&gt; = ({
       // Verificar integridad del token
       const token = localStorage.getItem('token');
       if (!token) {
+        console.warn('Acceso denegado: Token no encontrado');
         setIsAuthorized(false);
         setIsLoading(false);
         return;
@@ -327,6 +342,7 @@ const SecurityGuard: React.FC&lt;SecurityGuardProps&gt; = ({
         
         // Verificar expiración
         if (payload.exp &amp;&amp; payload.exp &lt; currentTime) {
+          console.warn('Acceso denegado: Token expirado');
           localStorage.removeItem('token');
           setIsAuthorized(false);
           setIsLoading(false);
@@ -335,13 +351,15 @@ const SecurityGuard: React.FC&lt;SecurityGuardProps&gt; = ({
 &nbsp;
         // Verificar que el usuario del token coincida
         if (payload.user_id !== user.id) {
+          console.warn('Acceso denegado: Token no coincide con usuario');
           setIsAuthorized(false);
           setIsLoading(false);
           return;
         }
 &nbsp;
         setIsAuthorized(true);
-      } catch {
+      } catch (error) {
+        console.error('Error verificando token:', error);
         setIsAuthorized(false);
       } finally {
         setIsLoading(false);
@@ -382,7 +400,7 @@ export default SecurityGuard;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-13T02:06:48.110Z
+                at 2025-10-12T01:49:55.443Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

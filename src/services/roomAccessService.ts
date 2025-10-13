@@ -175,7 +175,8 @@ class RoomAccessService {
           message: 'No tienes un turno activo en este momento'
         };
       }
-    } catch {
+    } catch (error: unknown) {
+      console.error('Error getting current schedule info:', error);
       return {
         hasActiveSchedule: false,
         message: 'Error al obtener información del turno'
