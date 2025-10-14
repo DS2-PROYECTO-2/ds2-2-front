@@ -25,10 +25,12 @@ import { useAuth } from '../../hooks/useAuth';
 import { useSecurity } from '../../hooks/useSecurity';
 import { apiClient } from '../../utils/api';
 import scheduleService from '../../services/scheduleService';
-import { getAllEntriesUnpaginated, getMyEntries } from '../../services/roomEntryService';
+import { getAllEntriesUnpaginated } from '../../services/roomEntryService';
 import roomService from '../../services/roomService';
 import userManagementService from '../../services/userManagementService';
+import monitorReportsService from '../../services/monitorReportsService';
 import '../../styles/ReportsView.css';
+import '../../styles/MonitorReports.css';
 
 interface Room {
   id: number;
@@ -68,6 +70,9 @@ interface MonitorUser {
 const ReportsView: React.FC = () => {
   const { user } = useAuth();
   const { isAdmin } = useSecurity();
+  
+  // Determinar si el usuario es monitor (solo puede ver sus propios datos)
+  const isMonitor = user?.role === 'monitor';
   
   // Estados para datos
   const [reportData, setReportData] = useState<ReportData>({
@@ -228,53 +233,79 @@ const ReportsView: React.FC = () => {
       const params = new URLSearchParams();
       if (dateFrom) params.append('from_date', dateFrom);
       if (dateTo) params.append('to_date', dateTo);
-      if (selectedMonitor) params.append('user_id', selectedMonitor.toString());
+      
+      // 🔒 FILTRADO AUTOMÁTICO POR ROL
+      if (isMonitor) {
+        // Los monitores solo ven sus propios datos
+        params.append('user_id', user?.id.toString() || '');
+      } else {
+        // Los administradores pueden filtrar por monitor específico
+        if (selectedMonitor) params.append('user_id', selectedMonitor.toString());
+      }
+      
       if (selectedRoom) params.append('room_id', selectedRoom.toString());
 
 
 
-      // 📡 CARGAR DATOS EN PARALELO: ESTADÍSTICAS + DATOS PARA GRÁFICOS
-      const [statsData, workedHoursData, schedulesData, entriesData] = await Promise.all([
-        // 1. Estadísticas del backend para las cards
-        apiClient.get(`/api/rooms/reports/stats/?${params.toString()}`) as Promise<{
-          late_arrivals_count: number;
-          total_assigned_hours: number;
-          total_worked_hours: number;
-          remaining_hours: number;
-        }>,
-        // 2. ✅ HORAS TRABAJADAS CON SUPERPOSICIÓN PARA GRÁFICOS
-        apiClient.get(`/api/rooms/reports/worked-hours/?${params.toString()}`) as Promise<{
-          total_worked_hours: number;
-          total_assigned_hours: number;
-          compliance_percentage: number;
-          overlaps_found: Array<{
-            entry_id: number;
-            schedule_id: number;
-            user: string;
-            overlap_hours: number;
-            entry_period: string;
-            schedule_period: string;
-          }>;
-          user_hours: Record<string, number>;
-          schedule_hours: Record<string, number>;
-        }>,
-        // 3. Schedules para los gráficos
-        scheduleService.getSchedules({
-          date_from: dateFrom,
-          date_to: dateTo,
-          room: selectedRoom || undefined,
-          user: isAdmin ? (selectedMonitor || undefined) : user?.id
-        }),
-        // 4. Entries para los gráficos (solo para estructura y fechas)
-        isAdmin ? getAllEntriesUnpaginated({
-          from: dateFrom,
-          to: dateTo,
-          room: selectedRoom || undefined,
-          user_name: isAdmin ? (selectedMonitor ? monitors.find(m => m.id === selectedMonitor)?.username : undefined) : undefined,
-          active: undefined,
-          document: undefined
-        }) : getMyEntries()
-      ]);
+      // 📡 CARGAR DATOS CON MANEJO DE PERMISOS POR ROL
+      let statsData, workedHoursData, schedulesData, entriesData;
+
+      if (isMonitor) {
+        // 🔒 SERVICIO ESPECÍFICO PARA MONITORES CON FALLBACKS
+        [statsData, workedHoursData, schedulesData, entriesData] = await Promise.all([
+          // 1. Estadísticas del monitor con fallback
+          monitorReportsService.getMonitorStats(params),
+          // 2. Horas trabajadas del monitor con fallback
+          monitorReportsService.getMonitorWorkedHours(params),
+          // 3. Schedules del monitor
+          monitorReportsService.getMonitorSchedules(params, user?.id || 0),
+          // 4. Entries del monitor con filtros
+          monitorReportsService.getMonitorEntries(params)
+        ]);
+      } else {
+        // 🔓 ENDPOINTS COMPLETOS PARA ADMINISTRADORES
+        [statsData, workedHoursData, schedulesData, entriesData] = await Promise.all([
+          // 1. Estadísticas del backend para las cards
+          apiClient.get(`/api/rooms/reports/stats/?${params.toString()}`) as Promise<{
+            late_arrivals_count: number;
+            total_assigned_hours: number;
+            total_worked_hours: number;
+            remaining_hours: number;
+          }>,
+          // 2. ✅ HORAS TRABAJADAS CON SUPERPOSICIÓN PARA GRÁFICOS
+          apiClient.get(`/api/rooms/reports/worked-hours/?${params.toString()}`) as Promise<{
+            total_worked_hours: number;
+            total_assigned_hours: number;
+            compliance_percentage: number;
+            overlaps_found: Array<{
+              entry_id: number;
+              schedule_id: number;
+              user: string;
+              overlap_hours: number;
+              entry_period: string;
+              schedule_period: string;
+            }>;
+            user_hours: Record<string, number>;
+            schedule_hours: Record<string, number>;
+          }>,
+          // 3. Schedules para los gráficos
+          scheduleService.getSchedules({
+            date_from: dateFrom,
+            date_to: dateTo,
+            room: selectedRoom || undefined,
+            user: selectedMonitor || undefined
+          }),
+          // 4. Entries para los gráficos (solo para estructura y fechas)
+          getAllEntriesUnpaginated({
+            from: dateFrom,
+            to: dateTo,
+            room: selectedRoom || undefined,
+            user_name: selectedMonitor ? monitors.find(m => m.id === selectedMonitor)?.username : undefined,
+            active: undefined,
+            document: undefined
+          })
+        ]);
+      }
       
 
 
@@ -296,12 +327,18 @@ const ReportsView: React.FC = () => {
 
     } catch (err: unknown) {
       const error = err as Error;
-      setError(error.message || 'Error al cargar los datos');
+      
+      // 🔒 MANEJO ESPECÍFICO DE ERRORES DE PERMISOS PARA MONITORES
+      if (isMonitor && (error.message.includes('permiso') || error.message.includes('permission') || error.message.includes('403'))) {
+        setError('Los reportes detallados no están disponibles para tu rol. Contacta al administrador si necesitas acceso a estadísticas específicas.');
+      } else {
+        setError(error.message || 'Error al cargar los datos');
+      }
     } finally {
       setLoading(false);
       setIsFiltering(false);
     }
-  }, [selectedPeriod, selectedRoom, selectedMonitor, selectedYear, selectedMonth, selectedWeek, isAdmin, user?.id, monitors]);
+  }, [selectedPeriod, selectedRoom, selectedMonitor, selectedYear, selectedMonth, selectedWeek, user?.id, monitors, isMonitor]);
 
   // Cargar opciones (salas y monitores)
   const loadOptions = useCallback(async () => {
@@ -310,8 +347,12 @@ const ReportsView: React.FC = () => {
       const roomsData = await roomService.getRooms();
       setRooms(Array.isArray(roomsData) ? roomsData : []);
 
-      // Cargar monitores solo para admins
-      if (isAdmin) {
+      // 🔒 FILTRADO POR ROL
+      if (isMonitor) {
+        // Los monitores no necesitan ver otros monitores
+        setMonitors([]);
+      } else if (isAdmin) {
+        // Solo los administradores pueden ver otros monitores
         const usersData = await userManagementService.getUsers({ role: 'monitor' });
         const validMonitors = Array.isArray(usersData) ? 
           usersData.filter(user => 
@@ -324,7 +365,7 @@ const ReportsView: React.FC = () => {
     } catch {
       // Error loading options
     }
-  }, [isAdmin]);
+  }, [isAdmin, isMonitor]);
 
   // Efectos
   useEffect(() => {
@@ -361,7 +402,7 @@ const ReportsView: React.FC = () => {
       });
       setLoading(false); // ✅ CORRECCIÓN: Establecer loading en false
     }
-  }, [selectedPeriod, selectedWeek]);
+  }, [selectedPeriod, selectedWeek, isMonitor]);
 
   // ✅ OPTIMIZADO: Gráfico de entradas y salidas con mejor rendimiento
   const entriesExitsData = useMemo(() => {
@@ -369,10 +410,66 @@ const ReportsView: React.FC = () => {
     
     const dateData = new Map<string, { entradas: number; salidas: number }>();
     
+    // ✅ APLICAR FILTROS DE FECHA ADICIONALES SI ES NECESARIO
+    const currentDateFrom = selectedPeriod === 'week' && selectedWeek ? 
+      getWeekDates(selectedWeek).start : 
+      selectedPeriod === 'month' ? 
+        `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01` : 
+        null;
+    
+    const currentDateTo = selectedPeriod === 'week' && selectedWeek ? 
+      getWeekDates(selectedWeek).end : 
+      selectedPeriod === 'month' ? 
+        `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${new Date(selectedYear, selectedMonth, 0).getDate()}` : 
+        null;
+    
     // ✅ OPTIMIZACIÓN: Procesar en una sola pasada con cache de fechas
-    for (const entry of reportData.entries as Array<{ startedAt: string; [key: string]: unknown }>) {
+    for (const entry of reportData.entries as Array<{ 
+      startedAt?: string; 
+      entry_time?: string; 
+      created_at?: string;
+      endedAt?: string; 
+      exit_time?: string;
+      room?: number;
+      room_id?: number;
+      roomName?: string;
+      room_name?: string;
+      [key: string]: unknown 
+    }>) {
+      // ✅ MANEJAR DIFERENTES FORMATOS DE FECHA
+      const entryTime = entry.startedAt || entry.entry_time || entry.created_at;
+      const exitTime = entry.endedAt || entry.exit_time;
+      
+      if (!entryTime) continue;
+      
+      // ✅ APLICAR FILTRO POR SALA SI ESTÁ SELECCIONADA
+      if (selectedRoom) {
+        const entryRoomId = entry.room || entry.room_id;
+        if (entryRoomId && entryRoomId !== selectedRoom) {
+          continue;
+        }
+      }
+      
+      // ✅ APLICAR FILTRO POR MONITOR SI ESTÁ SELECCIONADO
+      if (selectedMonitor) {
+        const entryUserId = entry.user_id || entry.user || entry.userId;
+        if (entryUserId && entryUserId !== selectedMonitor) {
+          continue;
+        }
+      }
+      
       // ✅ OPTIMIZACIÓN: Cache de fechas para evitar recálculos
-      const date = new Date(entry.startedAt);
+      const date = new Date(entryTime);
+      if (isNaN(date.getTime())) continue;
+      
+      // ✅ APLICAR FILTROS DE FECHA ADICIONALES
+      if (currentDateFrom && currentDateTo) {
+        const entryDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        if (entryDateStr < currentDateFrom || entryDateStr > currentDateTo) {
+          continue;
+        }
+      }
+      
       const dateKey = `${date.getDate()}/${date.getMonth() + 1}`;
       
       // ✅ OPTIMIZACIÓN: Usar Map para mejor rendimiento
@@ -383,7 +480,7 @@ const ReportsView: React.FC = () => {
       const stats = dateData.get(dateKey)!;
       stats.entradas++;
       
-      if (entry.endedAt) {
+      if (exitTime) {
         stats.salidas++;
       }
     }
@@ -398,21 +495,97 @@ const ReportsView: React.FC = () => {
     return sortedDates.map(date => {
       const stats = dateData.get(date)!;
       return {
-      dia: date,
+        dia: date,
         entradas: stats.entradas,
         salidas: stats.salidas
       };
     });
-  }, [reportData.entries]);
+  }, [reportData.entries, selectedPeriod, selectedWeek, selectedYear, selectedMonth, selectedRoom, selectedMonitor]);
 
   // ✅ OPTIMIZADO: Gráfico de horas por día con datos de superposición
   const hoursData = useMemo(() => {
     // ✅ USAR DATOS DEL ENDPOINT DE SUPERPOSICIÓN
     const overlapsFound = reportData.overlapsFound || [];
     
-    if (!overlapsFound.length) return [];
-    
     const dateHours = new Map<string, number>();
+    
+    // ✅ APLICAR FILTROS DE FECHA ADICIONALES SI ES NECESARIO
+    const currentDateFrom = selectedPeriod === 'week' && selectedWeek ? 
+      getWeekDates(selectedWeek).start : 
+      selectedPeriod === 'month' ? 
+        `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01` : 
+        null;
+    
+    const currentDateTo = selectedPeriod === 'week' && selectedWeek ? 
+      getWeekDates(selectedWeek).end : 
+      selectedPeriod === 'month' ? 
+        `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${new Date(selectedYear, selectedMonth, 0).getDate()}` : 
+        null;
+    
+    // ✅ FALLBACK: Si no hay superposiciones, calcular desde entries
+    if (!overlapsFound.length) {
+      // Calcular horas desde entries para monitores
+      for (const entry of reportData.entries as Array<{ 
+        startedAt?: string; 
+        entry_time?: string; 
+        created_at?: string;
+        endedAt?: string; 
+        exit_time?: string;
+        room?: number;
+        room_id?: number;
+        roomName?: string;
+        room_name?: string;
+        [key: string]: unknown 
+      }>) {
+        const entryTime = entry.startedAt || entry.entry_time || entry.created_at;
+        const exitTime = entry.endedAt || entry.exit_time;
+        
+        if (!entryTime || !exitTime) continue;
+        
+        // ✅ APLICAR FILTRO POR SALA SI ESTÁ SELECCIONADA
+        if (selectedRoom) {
+          const entryRoomId = entry.room || entry.room_id;
+          if (entryRoomId && entryRoomId !== selectedRoom) {
+            continue;
+          }
+        }
+        
+        // ✅ APLICAR FILTRO POR MONITOR SI ESTÁ SELECCIONADO
+        if (selectedMonitor) {
+          const entryUserId = entry.user_id || entry.user || entry.userId;
+          if (entryUserId && entryUserId !== selectedMonitor) {
+            continue;
+          }
+        }
+        
+        try {
+          const start = new Date(entryTime);
+          const end = new Date(exitTime);
+          
+          if (isNaN(start.getTime()) || isNaN(end.getTime())) continue;
+          
+          // ✅ APLICAR FILTROS DE FECHA ADICIONALES
+          if (currentDateFrom && currentDateTo) {
+            const entryDateStr = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
+            if (entryDateStr < currentDateFrom || entryDateStr > currentDateTo) {
+              continue;
+            }
+          }
+          
+          const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+          if (hours <= 0) continue;
+          
+          const dateKey = `${start.getDate()}/${start.getMonth() + 1}`;
+          const currentHours = dateHours.get(dateKey) || 0;
+          dateHours.set(dateKey, currentHours + hours);
+        } catch {
+          continue;
+        }
+      }
+      
+      // Si aún no hay datos, retornar array vacío
+      if (dateHours.size === 0) return [];
+    }
     
     // ✅ PROCESAR SOLO SUPERPOSICIONES VÁLIDAS
     for (const overlap of overlapsFound) {
@@ -464,16 +637,107 @@ const ReportsView: React.FC = () => {
         horas: Math.round(hours * 100) / 100 // ✅ OPTIMIZACIÓN: Redondear solo al final
       };
     });
-  }, [reportData.overlapsFound, reportData.entries]);
+  }, [reportData.overlapsFound, reportData.entries, selectedPeriod, selectedWeek, selectedYear, selectedMonth, selectedRoom, selectedMonitor]);
 
   // ✅ OPTIMIZADO: Gráfico de distribución por sala con datos de superposición
   const roomDistributionData = useMemo(() => {
     // ✅ USAR DATOS DEL ENDPOINT DE SUPERPOSICIÓN
     const overlapsFound = reportData.overlapsFound || [];
     
-    if (!overlapsFound.length) return [];
-    
     const roomStats = new Map<string, { totalHours: number; totalEntries: number; activeEntries: number }>();
+    
+    // ✅ APLICAR FILTROS DE FECHA ADICIONALES SI ES NECESARIO
+    const currentDateFrom = selectedPeriod === 'week' && selectedWeek ? 
+      getWeekDates(selectedWeek).start : 
+      selectedPeriod === 'month' ? 
+        `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01` : 
+        null;
+    
+    const currentDateTo = selectedPeriod === 'week' && selectedWeek ? 
+      getWeekDates(selectedWeek).end : 
+      selectedPeriod === 'month' ? 
+        `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${new Date(selectedYear, selectedMonth, 0).getDate()}` : 
+        null;
+    
+    // ✅ FALLBACK: Si no hay superposiciones, calcular desde entries
+    if (!overlapsFound.length) {
+      // Calcular desde entries para monitores
+      for (const entry of reportData.entries as Array<{ 
+        startedAt?: string; 
+        entry_time?: string; 
+        created_at?: string;
+        endedAt?: string; 
+        exit_time?: string;
+        roomName?: string;
+        room_name?: string;
+        room?: string;
+        room_id?: number;
+        [key: string]: unknown 
+      }>) {
+        const roomName = entry.roomName || entry.room_name || entry.room || 'Sala Desconocida';
+        const entryTime = entry.startedAt || entry.entry_time || entry.created_at;
+        const exitTime = entry.endedAt || entry.exit_time;
+        
+        if (!entryTime) continue;
+        
+        // ✅ APLICAR FILTRO POR SALA SI ESTÁ SELECCIONADA
+        if (selectedRoom) {
+          const entryRoomId = entry.room_id || entry.room;
+          if (entryRoomId && entryRoomId !== selectedRoom) {
+            continue;
+          }
+        }
+        
+        // ✅ APLICAR FILTRO POR MONITOR SI ESTÁ SELECCIONADO
+        if (selectedMonitor) {
+          const entryUserId = entry.user_id || entry.user || entry.userId;
+          if (entryUserId && entryUserId !== selectedMonitor) {
+            continue;
+          }
+        }
+        
+        // ✅ APLICAR FILTROS DE FECHA ADICIONALES
+        if (currentDateFrom && currentDateTo) {
+          const entryDate = new Date(entryTime);
+          if (!isNaN(entryDate.getTime())) {
+            const entryDateStr = `${entryDate.getFullYear()}-${String(entryDate.getMonth() + 1).padStart(2, '0')}-${String(entryDate.getDate()).padStart(2, '0')}`;
+            if (entryDateStr < currentDateFrom || entryDateStr > currentDateTo) {
+              continue;
+            }
+          }
+        }
+        
+        if (!roomStats.has(roomName)) {
+          roomStats.set(roomName, { totalHours: 0, totalEntries: 0, activeEntries: 0 });
+        }
+        
+        const stats = roomStats.get(roomName)!;
+        stats.totalEntries++;
+        
+        // Calcular horas si hay tiempo de salida
+        if (exitTime) {
+          try {
+            const start = new Date(entryTime);
+            const end = new Date(exitTime);
+            
+            if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+              const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+              if (hours > 0) {
+                stats.totalHours += hours;
+              }
+            }
+          } catch {
+            // Ignorar errores de fecha
+          }
+        } else {
+          // Entrada activa
+          stats.activeEntries++;
+        }
+      }
+      
+      // Si aún no hay datos, retornar array vacío
+      if (roomStats.size === 0) return [];
+    }
     
     // ✅ PROCESAR SOLO SUPERPOSICIONES VÁLIDAS
     for (const overlap of overlapsFound) {
@@ -568,7 +832,7 @@ const ReportsView: React.FC = () => {
       .sort((a, b) => b.value - a.value);
     
     return result;
-  }, [reportData.overlapsFound, reportData.entries, selectedRoom, rooms]);
+  }, [reportData.overlapsFound, reportData.entries, selectedRoom, rooms, selectedPeriod, selectedWeek, selectedYear, selectedMonth, selectedMonitor]);
 
 
 
@@ -585,7 +849,7 @@ const ReportsView: React.FC = () => {
       title = `${baseTitle} (Totales)`;
     }
     
-    // Agregar monitor si está seleccionado
+    // Agregar monitor si está seleccionado (solo para admins)
     if (selectedMonitor && isAdmin) {
       const monitor = monitors.find(m => m.id === selectedMonitor);
       title = `${title} - ${monitor?.full_name || 'Monitor'}`;
@@ -725,6 +989,7 @@ const ReportsView: React.FC = () => {
             </select>
           </div>
           
+          {/* 🔒 FILTRO DE MONITOR SOLO PARA ADMINISTRADORES */}
           {isAdmin && (
             <div className="filter-group">
               <label>Monitor:</label>
@@ -741,23 +1006,28 @@ const ReportsView: React.FC = () => {
                 ))}
               </select>
             </div>
-        )}
+          )}
+          
+          {/* 📊 INDICADOR PARA MONITORES */}
       </div>
 
       {/* Cards de Estadísticas */}
       <div className="stats-cards">
-        <div className="stat-card stat-card--late">
-          <div className="stat-card__icon">
-            <Clock className="stat-icon" />
+        {/* Ocultar tarjeta de llegadas tarde para monitores */}
+        {!isMonitor && (
+          <div className={`stat-card stat-card--late ${isMonitor ? 'stat-card--personal' : ''}`}>
+            <div className="stat-card__icon">
+              <Clock className="stat-icon" />
+            </div>
+            <div className="stat-card__content">
+              <div className="stat-card__title">Llegadas Tarde</div>
+              <div className="stat-card__value">{reportData.lateArrivals}</div>
+              <div className="stat-card__hint">Turnos con retraso ≥5m</div>
+            </div>
           </div>
-          <div className="stat-card__content">
-            <div className="stat-card__title">Llegadas Tarde</div>
-            <div className="stat-card__value">{reportData.lateArrivals}</div>
-            <div className="stat-card__hint">Turnos con retraso ≥5m</div>
-          </div>
-        </div>
+        )}
 
-        <div className="stat-card stat-card--assigned">
+        <div className={`stat-card stat-card--assigned ${isMonitor ? 'stat-card--personal' : ''}`}>
           <div className="stat-card__icon">
             <Calendar className="stat-icon" />
           </div>
@@ -768,7 +1038,7 @@ const ReportsView: React.FC = () => {
           </div>
         </div>
 
-        <div className="stat-card stat-card--worked">
+        <div className={`stat-card stat-card--worked ${isMonitor ? 'stat-card--personal' : ''}`}>
           <div className="stat-card__icon">
             <Activity className="stat-icon" />
           </div>
@@ -779,7 +1049,7 @@ const ReportsView: React.FC = () => {
           </div>
         </div>
 
-        <div className="stat-card stat-card--remaining">
+        <div className={`stat-card stat-card--remaining ${isMonitor ? 'stat-card--personal' : ''}`}>
           <div className="stat-card__icon">
             <Clock className="stat-icon" />
           </div>
@@ -795,7 +1065,7 @@ const ReportsView: React.FC = () => {
       <div className="charts-grid">
         
         {/* Gráfico 1: Entradas y Salidas por Día */}
-        <div className="chart-container">
+        <div className={`chart-container ${isMonitor ? 'monitor-chart-container' : ''}`}>
           <div className="chart-header">
             <Users className="chart-icon" />
             <h3>{getChartTitle('Entradas y Salidas por Día')}</h3>
@@ -813,7 +1083,7 @@ const ReportsView: React.FC = () => {
         </div>
 
         {/* Gráfico 2: Horas por Día de la Semana */}
-        <div className="chart-container">
+        <div className={`chart-container ${isMonitor ? 'monitor-chart-container' : ''}`}>
           <div className="chart-header">
             <Calendar className="chart-icon" />
             <h3>{getChartTitle('Horas por Día')}</h3>
@@ -830,7 +1100,7 @@ const ReportsView: React.FC = () => {
         </div>
 
         {/* Gráfico 3: Distribución por Sala */}
-        <div className="chart-container chart-container--distribution" style={{ 
+        <div className={`chart-container chart-container--distribution ${isMonitor ? 'monitor-chart-container' : ''}`} style={{ 
           display: 'flex', 
           gap: '20px',
           alignItems: 'flex-start',

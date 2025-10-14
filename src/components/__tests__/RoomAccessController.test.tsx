@@ -1,47 +1,102 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, waitFor } from '@testing-library/react';
 import RoomAccessController from '../rooms/RoomAccessController';
 
+// Mock de useAuth
+const mockUser = {
+  id: 1,
+  username: 'testuser',
+  email: 'test@example.com',
+  role: 'monitor' as const,
+  is_verified: true
+};
+
+// Mock de useRoomAccess
+const mockRoomAccess = {
+  validateAccess: vi.fn(),
+  registerEntry: vi.fn(),
+  registerExit: vi.fn(),
+  canAccessRoom: vi.fn(),
+  getCurrentScheduleInfo: vi.fn()
+};
+
+vi.mock('../../hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: mockUser
+  })
+}));
+
+vi.mock('../../hooks/useRoomAccess', () => ({
+  useRoomAccess: () => mockRoomAccess
+}));
+
 describe('RoomAccessController', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('debería ser un componente React', () => {
     expect(RoomAccessController).toBeDefined();
     expect(typeof RoomAccessController).toBe('function');
   });
 
-  it('debería tener props definidas', () => {
+  it('debería renderizar sin errores', () => {
     const mockProps = {
       roomId: 1,
-      onAccessChange: (hasAccess: boolean, reason: string) => {
-        console.log('Access changed:', hasAccess, reason);
-      },
-      onScheduleInfo: (scheduleInfo: {
-        id: number;
-        start_datetime: string;
-        end_datetime: string;
-        room: number;
-        room_name?: string;
-      }) => {
-        console.log('Schedule info:', scheduleInfo);
-      }
+      onAccessChange: vi.fn(),
+      onScheduleInfo: vi.fn()
     };
 
-    expect(mockProps.roomId).toBe(1);
-    expect(typeof mockProps.onAccessChange).toBe('function');
-    expect(typeof mockProps.onScheduleInfo).toBe('function');
+    expect(() => render(<RoomAccessController {...mockProps} />)).not.toThrow();
   });
 
   it('debería manejar props opcionales', () => {
-    const mockProps: { 
-      roomId: number; 
-      onAccessChange?: (hasAccess: boolean, reason: string) => void; 
-      onScheduleInfo?: (scheduleInfo: { id: number; start_datetime: string; end_datetime: string; room: number; room_name?: string }) => void; 
-    } = {
+    const mockProps = {
       roomId: 1
     };
 
-    expect(mockProps.roomId).toBe(1);
-    expect(mockProps.onAccessChange).toBeUndefined();
-    expect(mockProps.onScheduleInfo).toBeUndefined();
+    expect(() => render(<RoomAccessController {...mockProps} />)).not.toThrow();
   });
+
+  it('debería llamar a canAccessRoom cuando el usuario es monitor', async () => {
+    const mockOnAccessChange = vi.fn();
+    const mockAccessInfo = {
+      canAccess: true,
+      reason: 'Acceso permitido'
+    };
+
+    mockRoomAccess.canAccessRoom.mockResolvedValueOnce(mockAccessInfo);
+
+    render(
+      <RoomAccessController 
+        roomId={1} 
+        onAccessChange={mockOnAccessChange} 
+      />
+    );
+
+    await waitFor(() => {
+      expect(mockRoomAccess.canAccessRoom).toHaveBeenCalledWith(1);
+    });
+  });
+
+  it('debería manejar errores en la verificación de acceso', async () => {
+    const mockOnAccessChange = vi.fn();
+    const mockError = new Error('Error de acceso');
+
+    mockRoomAccess.canAccessRoom.mockRejectedValueOnce(mockError);
+
+    render(
+      <RoomAccessController 
+        roomId={1} 
+        onAccessChange={mockOnAccessChange} 
+      />
+    );
+
+    await waitFor(() => {
+      expect(mockOnAccessChange).toHaveBeenCalledWith(false, 'Error al verificar acceso');
+    });
+  });
+
 
   it('debería manejar callbacks correctamente', () => {
     const mockOnAccessChange = (hasAccess: boolean, reason: string) => {
@@ -72,4 +127,5 @@ describe('RoomAccessController', () => {
       room_name: 'Sala A'
     });
   });
+
 });

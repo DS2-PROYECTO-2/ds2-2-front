@@ -22,9 +22,9 @@ const NotificationBell: React.FC = () => {
       return;
     }
     
-    // Debounce: evitar cargas muy frecuentes (mínimo 1 segundo entre cargas)
+    // Debounce: evitar cargas muy frecuentes (mínimo 2 segundos entre cargas)
     const now = Date.now();
-    if (now - lastLoadTimeRef.current < 1000) {
+    if (now - lastLoadTimeRef.current < 2000) {
       return;
     }
     lastLoadTimeRef.current = now;

@@ -77,7 +77,7 @@ const equipmentService = {
   },
 
   // Obtener reportes de equipamiento
-  async getEquipmentReports(dateFrom?: string, dateTo?: string): Promise<Report[]> {
+  async getEquipmentReports(dateFrom?: string, dateTo?: string): Promise<unknown[]> {
     try {
       const params = new URLSearchParams();
       if (dateFrom) params.append('date_from', dateFrom);

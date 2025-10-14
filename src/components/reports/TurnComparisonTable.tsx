@@ -2,9 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '../../utils/api';
 import { useAuth } from '../../hooks/useAuth';
 import { useSecurity } from '../../hooks/useSecurity';
+import { usePassiveUpdates } from '../../hooks/usePassiveUpdates';
 import userManagementService from '../../services/userManagementService';
 import roomService from '../../services/roomService';
-import './TurnComparisonTable.css';
+import '../../styles/TurnComparisonTable.css';
 
 interface TurnComparisonData {
   id?: number;
@@ -342,7 +343,16 @@ const TurnComparisonTable: React.FC = () => {
     loadDataWithFilters();
   }, [selectedUser, selectedRoom, selectedYear, selectedMonth, showAll, dateFrom, dateTo]);
 
-  // Actualizaciones en tiempo real
+  // Actualizaciones pasivas inteligentes
+  usePassiveUpdates({
+    minUpdateInterval: 120000, // 2 minutos mínimo entre actualizaciones
+    inactivityThreshold: 20000, // 20 segundos de inactividad
+    enableVisibilityUpdates: true,
+    enableFocusUpdates: false,
+    onUpdate: loadComparisonData
+  });
+
+  // Actualizaciones en tiempo real (solo eventos críticos)
   useEffect(() => {
     const reloadData = async () => {
       try {
@@ -400,16 +410,6 @@ const TurnComparisonTable: React.FC = () => {
       }
     };
 
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        reloadData();
-      }
-    };
-
-    const handleWindowFocus = () => {
-      reloadData();
-    };
-
     const handleScheduleUpdate = () => {
       reloadData();
     };
@@ -424,16 +424,12 @@ const TurnComparisonTable: React.FC = () => {
       }
     };
 
-    // Listeners para actualizaciones automáticas
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleWindowFocus);
+    // Solo listeners para eventos críticos
     window.addEventListener('schedule-updated', handleScheduleUpdate);
     window.addEventListener('room-entry-updated', handleRoomEntryUpdate);
     window.addEventListener('storage', handleStorage);
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleWindowFocus);
       window.removeEventListener('schedule-updated', handleScheduleUpdate);
       window.removeEventListener('room-entry-updated', handleRoomEntryUpdate);
       window.removeEventListener('storage', handleStorage);

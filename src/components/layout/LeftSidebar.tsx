@@ -8,7 +8,6 @@ import {
   Home, 
   Monitor, 
   BarChart3, 
-  Settings,
   Users
 } from 'lucide-react';
 
@@ -27,8 +26,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onNavigate, activeSection }) 
   const buttons = [
     { icon: Home, id: 'home', title: 'Inicio' },
     { icon: Monitor, id: 'inventory', title: 'Inventario' },
-    { icon: BarChart3, id: 'reports', title: 'Reportes' },
-    { icon: Settings, id: 'settings', title: 'Configuración' }
+    { icon: BarChart3, id: 'reports', title: 'Reportes' }
   ];
 
   // Agregar botón de usuarios solo para administradores

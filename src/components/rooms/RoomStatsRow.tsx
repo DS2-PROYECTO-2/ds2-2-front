@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { usePassiveUpdates } from '../../hooks/usePassiveUpdates';
 import { getMyEntries, type RoomEntryUI } from '../../services/roomEntryService';
 import { apiClient } from '../../utils/api';
 
@@ -99,19 +100,28 @@ const RoomStatsRow: React.FC = () => {
 
   useEffect(() => { recalc(); }, []);
 
+  // Actualizaciones pasivas inteligentes
+  usePassiveUpdates({
+    minUpdateInterval: 30000, // 30 segundos mínimo entre actualizaciones
+    inactivityThreshold: 10000, // 10 segundos de inactividad
+    enableVisibilityUpdates: true,
+    enableFocusUpdates: false,
+    onUpdate: recalc
+  });
+
   useEffect(() => {
     const handler = () => {
       recalc();
     };
+    // Solo eventos críticos que requieren actualización inmediata
     window.addEventListener('room-stats-reload', handler);
     window.addEventListener('room-entry-added', handler);      // Nueva entrada registrada
     window.addEventListener('room-entry-exited', handler);     // Salida registrada
-    window.addEventListener('schedule-updated', handler);      // Turnos actualizados
+    // Remover schedule-updated para evitar recargas innecesarias
     return () => {
       window.removeEventListener('room-stats-reload', handler);
       window.removeEventListener('room-entry-added', handler);
       window.removeEventListener('room-entry-exited', handler);
-      window.removeEventListener('schedule-updated', handler);
     };
   }, []);
 

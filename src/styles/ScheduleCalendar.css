@@ -82,7 +82,9 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+  overflow-x: auto;
+  max-width: 100%;
 }
 
 /* Contenido desplegable del calendario */
@@ -108,6 +110,9 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  flex-wrap: wrap;
+  overflow-x: auto;
+  max-width: 100%;
 }
 
 .filter-select {
@@ -232,13 +237,13 @@
   height: 20px;
 }
 
-/* Botón crear turno */
-.btn-create-schedule {
+/* Botón crear turno - Específico para calendario */
+.schedule-calendar-container .btn-create-schedule {
   height: 2.5rem;
   padding: 0.5rem 0.75rem;
-  background: #dc2626;
-  color: white;
-  border: none;
+  background: #dc2626 !important;
+  color: white !important;
+  border: none !important;
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
@@ -252,13 +257,13 @@
   min-width: fit-content;
 }
 
-.btn-create-schedule:hover {
-  background: #b91c1c;
+.schedule-calendar-container .btn-create-schedule:hover {
+  background: #b91c1c !important;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 
-.btn-create-schedule:active {
+.schedule-calendar-container .btn-create-schedule:active {
   transform: translateY(0);
   box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
 }
@@ -266,6 +271,37 @@
 .btn-icon {
   width: 16px;
   height: 16px;
+}
+
+/* Botón crear curso - Específico para calendario */
+.schedule-calendar-container .btn-course {
+  height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #dc2626 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  min-width: fit-content;
+}
+
+.schedule-calendar-container .btn-course:hover {
+  background: #b91c1c !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.schedule-calendar-container .btn-course:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
 }
 
 
@@ -373,7 +409,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+  box-shadow: 0 2px 4px rgba(245, 240, 240, 0.3);
 }
 
 .day-schedules {
@@ -413,9 +449,11 @@
 }
 
 .schedule-time {
-  font-weight: 600;
-  font-size: 0.625rem;
+  font-weight: 900;
+  font-size: 10px !important;
   margin-bottom: 0.125rem;
+  text-align: center;
+  margin-bottom: 20px !important; /* Justificar el texto "Ver turnos agendados" */
 }
 
 .schedule-info {
@@ -427,6 +465,7 @@
 .schedule-user {
   font-weight: 500;
   font-size: 0.75rem;
+  color: #ffffff; /* Color del texto "2 turnos" */
 }
 
 .schedule-room {
@@ -860,6 +899,122 @@
   padding: 1.5rem;
 }
 
+/* Estilos específicos para modal de confirmación de eliminación */
+.confirm-modal .modal-content {
+  max-height: 300px;
+  min-height: auto;
+  padding: 1rem 1.5rem;
+}
+
+.confirm-modal .modal-header {
+  padding: 1rem 0 0.5rem 0;
+  margin-bottom: 0.5rem;
+}
+
+.confirm-modal .modal-body {
+  padding: 0.5rem 0;
+  margin-bottom: 0.5rem;
+}
+
+.confirm-modal .modal-actions {
+  padding: 0.5rem 0 0 0;
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.confirm-modal .modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.confirm-modal .modal-body p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #374151;
+}
+
+.confirm-modal .btn-cancel,
+.confirm-modal .btn-confirm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  border-radius: 0.375rem;
+  border: 1px solid;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.confirm-modal .btn-cancel {
+  background: #ffffff;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.confirm-modal .btn-cancel:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.confirm-modal .btn-confirm {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.confirm-modal .btn-confirm:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
+/* Estilos específicos para modal de creación de curso */
+.course-modal .modal-content {
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.course-modal .modal-header {
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.course-modal .modal-body {
+  padding: 1.5rem;
+}
+
+.course-modal .modal-actions {
+  padding: 1rem 1.5rem 1.5rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+/* Estilos específicos para modal de selección de actividad */
+.activity-selection-modal .modal-content {
+  max-width: 500px;
+  max-height: 400px;
+}
+
+.activity-selection-modal .modal-header {
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.activity-selection-modal .modal-body {
+  padding: 1.5rem;
+}
+
+.activity-selection-modal .modal-actions {
+  padding: 1rem 1.5rem 1.5rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .schedule-info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -968,41 +1123,44 @@
   border: 1px solid transparent;
 }
 
-.btn-primary {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
+/* Botones primarios - Específicos para calendario */
+.schedule-calendar-container .btn-primary {
+  background: #3b82f6 !important;
+  color: white !important;
+  border-color: #3b82f6 !important;
 }
 
-.btn-primary:hover {
-  background: #2563eb;
-  border-color: #2563eb;
+.schedule-calendar-container .btn-primary:hover {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
 }
 
-.btn-danger {
-  background: #ef4444;
-  color: white;
-  border-color: #ef4444;
+/* Botones de peligro - Específicos para calendario */
+.schedule-calendar-container .btn-danger {
+  background: #ef4444 !important;
+  color: white !important;
+  border-color: #ef4444 !important;
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.btn-danger:hover {
-  background: #dc2626;
-  border-color: #dc2626;
+.schedule-calendar-container .btn-danger:hover {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
 }
 
-.btn-secondary {
-  background: #6b7280;
-  color: white;
-  border-color: #6b7280;
+/* Botones secundarios - Específicos para calendario */
+.schedule-calendar-container .btn-secondary {
+  background: #6b7280 !important;
+  color: white !important;
+  border-color: #6b7280 !important;
 }
 
-.btn-secondary:hover {
-  background: #4b5563;
-  border-color: #4b5563;
+.schedule-calendar-container .btn-secondary:hover {
+  background: #4b5563 !important;
+  border-color: #4b5563 !important;
 }
 
 /* Responsive para el modal */
@@ -1173,12 +1331,61 @@
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
   min-width: 0;
-  align-items: end; /* Alinear campos por la parte inferior para que queden al mismo nivel */
+  align-items: start; /* Alinear campos por la parte superior */
 }
 
 .form-row .form-group {
   min-width: 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Alineación específica para campos de hora en el modal de curso */
+.course-modal .form-row .form-group {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 120px; /* Altura mínima fija para ambos campos */
+}
+
+/* Margen superior para el primer campo (Hora de inicio) */
+.course-modal .form-row .form-group:first-child {
+  margin-top: 1.3rem; /* Bajar el campo de hora de inicio */
+}
+
+.course-modal .form-row .form-group label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #374151;
+  flex-shrink: 0; /* Evitar que el label se comprima */
+}
+
+.course-modal .form-row .form-group input[type="time"] {
+  height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  flex-shrink: 0; /* Evitar que el input se comprima */
+}
+
+.course-modal .form-row .form-group input[type="time"]:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Estilos para el texto de ayuda para mantener altura consistente */
+.course-modal .form-row .form-group .helper-text {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+  min-height: 2.5rem; /* Altura mínima para el texto de ayuda */
+  display: flex;
+  align-items: flex-start;
+  line-height: 1.2;
 }
 
 .form-row .form-input {
@@ -1231,12 +1438,13 @@
   justify-content: flex-end;
 }
 
-.btn-cancel {
+/* Botón cancelar - Específico para calendario */
+.schedule-calendar-container .btn-cancel {
   height: 2.5rem;
   padding: 0.5rem 0.75rem;
-  background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: white !important;
+  color: #374151 !important;
+  border: 1px solid #d1d5db !important;
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
@@ -1250,17 +1458,18 @@
   justify-content: center;
 }
 
-.btn-cancel:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
+.schedule-calendar-container .btn-cancel:hover {
+  background: #f9fafb !important;
+  border-color: #9ca3af !important;
 }
 
-.btn-save {
+/* Botón guardar - Específico para calendario */
+.schedule-calendar-container .btn-save {
   height: 2.5rem;
   padding: 0.5rem 0.75rem;
-  background: #dc2626;
-  color: white;
-  border: none;
+  background: #dc2626 !important;
+  color: white !important;
+  border: none !important;
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
@@ -1274,8 +1483,8 @@
   justify-content: center;
 }
 
-.btn-save:hover {
-  background: #b91c1c;
+.schedule-calendar-container .btn-save:hover {
+  background: #b91c1c !important;
   transform: translateY(-1px);
 }
 
@@ -1363,31 +1572,49 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem;
+  padding: 1.25rem;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #f9fafb;
   transition: all 0.2s ease;
+  min-height: 80px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .schedule-detail-item:hover {
   background: #f3f4f6;
   border-color: #d1d5db;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .schedule-detail-time {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #dc2626;
-  min-width: 200px;
+  min-width: 180px;
+  flex-shrink: 0;
+  font-size: 0.95rem;
+  background: #fef2f2;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid #fecaca;
 }
 
 .schedule-detail-info {
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.schedule-detail-info > div {
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
 }
 
@@ -1396,8 +1623,20 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.875rem;
-  color: #374151;
+  font-size: 0.9rem;
+  color: #1f2937;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.schedule-detail-user {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.schedule-detail-room {
+  color: #059669;
+  font-weight: 600;
 }
 
 .schedule-detail-notes {
@@ -1430,7 +1669,7 @@
 }
 
 .btn-edit-schedule {
-  background: #3b82f6;
+  background: #3B82F6;
   color: white;
 }
 
@@ -1448,8 +1687,10 @@
 }
 
 .schedule-detail-icon {
-  width: 16px;
-  height: 16px;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: #dc2626;
+  flex-shrink: 0;
 }
 
 .no-schedules {
@@ -1660,5 +1901,418 @@
   to { 
     opacity: 1; 
     transform: translateY(0);
+  }
+}
+
+/* Estilos para modal de selección de actividad */
+.activity-selection-text {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.activity-options {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.activity-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 250px;
+  text-align: left;
+}
+
+.activity-option-btn:hover {
+  border-color: #3b82f6;
+  background: #f8fafc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.activity-option-btn.schedule-option:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.activity-option-btn.course-option:hover {
+  border-color: #10b981;
+  background: #ecfdf5;
+}
+
+.activity-option-icon {
+  width: 2rem;
+  height: 2rem;
+  color: #6b7280;
+}
+
+.activity-option-btn.schedule-option .activity-option-icon {
+  color: #3b82f6;
+}
+
+.activity-option-btn.course-option .activity-option-icon {
+  color: #10b981;
+}
+
+.activity-option-content h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.activity-option-content p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* Estilos para modal de actividades (turnos + cursos) */
+.activities-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.activities-column {
+  width: 100%;
+}
+
+.activities-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.activities-title:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.activities-title.active {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1e40af;
+}
+
+.activities-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.activities-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  border: 1px solid transparent;
+  border-top: none;
+  border-radius: 0 0 0.5rem 0.5rem;
+}
+
+.activities-content.expanded {
+  max-height: 400px;
+  border-color: #e5e7eb;
+  border-top: 1px solid #e5e7eb;
+}
+
+.activities-content-inner {
+  padding: 1rem;
+  background: #ffffff;
+}
+
+.activities-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #6b7280;
+}
+
+.activities-expand-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #6b7280;
+  transition: transform 0.2s ease;
+}
+
+.activities-expand-icon.expanded {
+  transform: rotate(180deg);
+  color: #3b82f6;
+}
+
+.course-detail-item {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  transition: all 0.2s ease;
+}
+
+.course-detail-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.course-detail-time {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.course-detail-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #6b7280;
+}
+
+.course-detail-info {
+  flex: 1;
+}
+
+.course-detail-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.course-detail-description {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.course-detail-monitor,
+.course-detail-room {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.course-detail-status {
+  margin-top: 0.5rem;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.scheduled {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.in_progress {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.completed {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.status-badge.cancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.course-detail-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 1rem;
+}
+
+.btn-edit-course,
+.btn-delete-course {
+  padding: 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  background: #ffffff;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-edit-course:hover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.btn-delete-course:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.no-courses {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Responsive Design - Tablet */
+@media (max-width: 1024px) {
+  .schedule-calendar-container {
+    padding: 1.5rem;
+  }
+  
+  .calendar-controls {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .calendar-filters {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .modal-content {
+    max-width: 90vw;
+    margin: 2rem auto;
+  }
+}
+
+/* Responsive Design - Mobile Large */
+@media (max-width: 768px) {
+  .schedule-calendar-container {
+    padding: 1rem;
+  }
+  
+  .calendar-controls {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .calendar-filters {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .modal-content {
+    padding: 1.5rem;
+    margin: 1rem;
+    max-width: 95vw;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Mejorar botones en móvil */
+  .btn-create-schedule,
+  .btn-course,
+  .btn-primary,
+  .btn-danger,
+  .btn-secondary {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Ajustar modales en móvil */
+  .course-modal .modal-content,
+  .activity-selection-modal .modal-content,
+  .confirm-modal .modal-content {
+    margin: 0.5rem;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+/* Responsive Design - Mobile Small */
+@media (max-width: 480px) {
+  .schedule-calendar-container {
+    padding: 0.5rem;
+  }
+  
+  .calendar-controls {
+    gap: 0.5rem;
+  }
+  
+  .calendar-day {
+    min-height: 80px;
+    padding: 0.125rem;
+  }
+  
+  .week-grid {
+    grid-template-columns: 40px 1fr;
+  }
+  
+  .time-slot {
+    height: 40px;
+    font-size: 0.5rem;
+  }
+  
+  .hour-cell {
+    height: 40px;
+  }
+  
+  .modal-content {
+    padding: 1rem;
+    margin: 0.5rem;
+    max-width: 98vw;
+  }
+  
+  /* Ajustar texto en móvil pequeño */
+  .schedule-item,
+  .course-item {
+    font-size: 0.75rem;
+    padding: 0.25rem;
+  }
+  
+  /* Ajustar formularios en móvil pequeño */
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 16px; /* Evitar zoom en iOS */
   }
 }
