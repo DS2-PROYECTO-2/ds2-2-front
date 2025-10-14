@@ -1,0 +1,296 @@
+/* Estilos específicos para cursos en el calendario */
+
+/* Colores diferenciados para cursos */
+.course-item {
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  border: 2px solid #3B82F6;
+  color: white;
+  font-weight: 500;
+}
+
+.course-item.scheduled {
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  border-color: #3B82F6;
+}
+
+.course-item.in_progress {
+  background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%);
+  border-color: #2563EB;
+}
+
+.course-item.completed {
+  background: linear-gradient(135deg, #1E40AF 0%, #1E3A8A 100%);
+  border-color: #1E40AF;
+}
+
+.course-item.cancelled {
+  background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+  border-color: #6B7280;
+}
+
+/* Indicadores de estado para cursos */
+.course-status-indicator {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.course-status-indicator.scheduled {
+  background: #10B981;
+}
+
+.course-status-indicator.in_progress {
+  background: #F59E0B;
+  animation: pulse 2s infinite;
+}
+
+.course-status-indicator.completed {
+  background: #6B7280;
+}
+
+.course-status-indicator.cancelled {
+  background: #EF4444;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Diferenciación visual entre turnos y cursos */
+.schedule-item {
+  border-left: 4px solid #6e74c0;
+}
+
+.course-item {
+  border-left: 4px solid #10B981;
+  position: relative;
+}
+
+/* Iconos específicos para cursos */
+.course-icon {
+  margin-right: 4px;
+  opacity: 0.9;
+}
+
+/* Modal específico para cursos */
+.course-modal .modal-header {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: white;
+}
+
+.course-modal .modal-title {
+  color: white;
+}
+
+.course-modal .btn-save {
+  background: #10B981;
+  border-color: #10B981;
+}
+
+.course-modal .btn-save:hover {
+  background: #059669;
+  border-color: #059669;
+}
+
+/* Formulario de curso */
+.course-form .form-group label {
+  color: #374151;
+  font-weight: 500;
+}
+
+.course-form .form-input:focus {
+  border-color: #10B981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Selector de turno para curso */
+.schedule-selector {
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.schedule-selector h4 {
+  margin: 0 0 8px 0;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.schedule-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.schedule-info .schedule-time {
+  font-weight: 500;
+  color: #374151;
+}
+
+.schedule-info .schedule-monitor {
+  color: #6B7280;
+}
+
+/* Validaciones específicas para cursos */
+.course-validation {
+  background: #FEF3C7;
+  border: 1px solid #F59E0B;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.course-validation.warning {
+  background: #FEF3C7;
+  border-color: #F59E0B;
+  color: #92400E;
+}
+
+.course-validation.error {
+  background: #FEE2E2;
+  border-color: #EF4444;
+  color: #991B1B;
+}
+
+.course-validation.success {
+  background: #D1FAE5;
+  border-color: #10B981;
+  color: #065F46;
+}
+
+/* Botones específicos para cursos */
+.btn-course {
+  background: #10B981;
+  border-color: #10B981;
+  color: white;
+}
+
+.btn-course:hover {
+  background: #059669;
+  border-color: #059669;
+  color: white;
+}
+
+.btn-course:disabled {
+  background: #9CA3AF;
+  border-color: #9CA3AF;
+  color: #6B7280;
+}
+
+/* Vista combinada (turnos + cursos) */
+.calendar-view-toggle {
+  display: flex;
+  gap: 8px;
+  margin-left: 16px;
+}
+
+.view-toggle-btn {
+  padding: 6px 12px;
+  border: 1px solid #D1D5DB;
+  background: white;
+  color: #374151;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-toggle-btn:hover {
+  background: #F9FAFB;
+  border-color: #9CA3AF;
+}
+
+.view-toggle-btn.active {
+  background: #10B981;
+  border-color: #10B981;
+  color: white;
+}
+
+/* Filtros específicos para cursos */
+.course-filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #F9FAFB;
+  border-radius: 8px;
+  border: 1px solid #E5E7EB;
+}
+
+.course-filters select {
+  padding: 6px 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  background: white;
+  font-size: 14px;
+}
+
+.course-filters .filter-label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .course-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .course-filters select {
+    width: 100%;
+  }
+  
+  .calendar-view-toggle {
+    flex-direction: column;
+    margin-left: 0;
+    margin-top: 8px;
+  }
+}
+
+/* Animaciones para transiciones suaves */
+.course-item {
+  transition: all 0.3s ease;
+}
+
+.course-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Estados de carga para cursos */
+.course-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #6B7280;
+}
+
+.course-loading .spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #E5E7EB;
+  border-top: 2px solid #10B981;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

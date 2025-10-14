@@ -1,4 +1,5 @@
 import { apiClient } from '../utils/api'
+import { cacheManager } from '../utils/cacheManager'
 import type { User } from '../context/AuthContext'
 
 export interface LoginCredentials {
@@ -92,4 +93,55 @@ export const authService = {
     }>('/api/auth/dashboard/');
     return response;
   },
-}
+
+  async getDashboardCached(): Promise<{
+    user: {
+      id: number;
+      username: string;
+      email: string;
+      role: string;
+    };
+    stats: {
+      total_schedules: number;
+      active_schedules: number;
+    };
+  }> {
+    // Usar caché para datos del dashboard (TTL de 2 minutos)
+    const cached = cacheManager.get<{
+      user: {
+        id: number;
+        username: string;
+        email: string;
+        role: string;
+      };
+      stats: {
+        total_schedules: number;
+        active_schedules: number;
+      };
+    }>('dashboard_data');
+    
+    if (cached) {
+      return cached;
+    }
+
+    const response = await apiClient.get<{
+      user: {
+        id: number;
+        username: string;
+        email: string;
+        role: string;
+      };
+      stats: {
+        total_schedules: number;
+        active_schedules: number;
+      };
+    }>('/api/auth/dashboard/');
+    
+    // Guardar en caché por 2 minutos
+    cacheManager.set('dashboard_data', response, 2 * 60 * 1000);
+    
+    return response;
+  },
+};
+
+export default authService;

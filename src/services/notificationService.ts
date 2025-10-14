@@ -76,3 +76,5 @@ export const notificationService = {
     return apiClient.get('/api/notifications/summary/');
   },
 };
+
+export default notificationService;

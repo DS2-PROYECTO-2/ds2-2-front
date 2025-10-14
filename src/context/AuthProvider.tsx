@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { authService, type LoginCredentials } from '../services/authService'
 import { AuthContext, type User } from './AuthContext'
 
@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     bootstrap();
   }, [setAuth, user])
 
-  const login = async (credentials: LoginCredentials) => {
+  const login = useCallback(async (credentials: LoginCredentials) => {
     setIsLoading(true)
     try {
       const response = await authService.login(credentials)
@@ -78,32 +78,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
-  const logout = () => {
+  const logout = useCallback(() => {
     authService.logout()
     setUser(null)
     setToken(null)
-  }
+  }, [])
 
-  const updateUser = (updatedUser: User) => {
+  const updateUser = useCallback((updatedUser: User) => {
     setUser(updatedUser)
     // También actualizar en localStorage
     localStorage.setItem('user', JSON.stringify(updatedUser))
-  }
+  }, [])
+
+  // Memoizar el valor del contexto para evitar re-renders innecesarios
+  const contextValue = useMemo(() => ({
+    user,
+    token,
+    isAuthenticated: !!user,
+    isLoading,
+    isHydrated,
+    login,
+    logout,
+    setAuth,
+    updateUser
+  }), [user, token, isLoading, isHydrated, login, logout, setAuth, updateUser])
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      token,
-      isAuthenticated: !!user,
-      isLoading,
-      isHydrated,
-      login,
-      logout,
-      setAuth,
-      updateUser
-    }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   )
