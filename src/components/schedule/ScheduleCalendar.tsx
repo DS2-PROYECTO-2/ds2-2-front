@@ -11,9 +11,14 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
-  X
+  X,
+  BookOpen,
+  Eye,
+  EyeOff
 } from 'lucide-react';
+import { usePassiveUpdates } from '../../hooks/usePassiveUpdates';
 import scheduleService, { type Schedule, type CreateScheduleData, type UpdateScheduleData } from '../../services/scheduleService';
+import courseService, { type Course, type CreateCourseData, type UpdateCourseData } from '../../services/courseService';
 import ScheduleDetailsModal from './ScheduleDetailsModal';
 import roomService from '../../services/roomService';
 import userManagementService from '../../services/userManagementService';
@@ -21,6 +26,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useSecurity } from '../../hooks/useSecurity';
 import { ApiErrorHandler } from '../../utils/errorHandler';
 import '../../styles/ScheduleCalendar.css';
+import '../../styles/CourseCalendar.css';
 
 interface Room {
   id: number;
@@ -46,12 +52,17 @@ const ScheduleCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<'month' | 'week'>('month');
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [monitors, setMonitors] = useState<MonitorUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(true);
+  
+  // Estados para vista combinada
+  const [showSchedules, setShowSchedules] = useState(true);
+  const [showCourses, setShowCourses] = useState(true);
   
   
   // Estados para modales
@@ -63,6 +74,22 @@ const ScheduleCalendar: React.FC = () => {
   const [showSchedulesModal, setShowSchedulesModal] = useState(false);
   const [selectedDaySchedules, setSelectedDaySchedules] = useState<Schedule[]>([]);
   const [selectedDayDate, setSelectedDayDate] = useState<Date | null>(null);
+  
+  // Estados para modales de cursos
+  const [showCourseModal, setShowCourseModal] = useState(false);
+  const [showEditCourseModal, setShowEditCourseModal] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedDayCourses, setSelectedDayCourses] = useState<Course[]>([]);
+  const [filteredSchedules, setFilteredSchedules] = useState<Schedule[]>([]);
+  const [selectedScheduleInfo, setSelectedScheduleInfo] = useState<Schedule | null>(null);
+  
+  // Estados para modal de selección de actividad
+  const [showActivitySelectionModal, setShowActivitySelectionModal] = useState(false);
+  const [selectedHour, setSelectedHour] = useState<string | null>(null);
+  
+  // Estados para acordeones de actividades
+  const [schedulesExpanded, setSchedulesExpanded] = useState(true);
+  const [coursesExpanded, setCoursesExpanded] = useState(true);
   
   // Estados para eliminación masiva
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
@@ -79,6 +106,17 @@ const ScheduleCalendar: React.FC = () => {
     notes: ''
   });
 
+  // Estados para formulario de curso
+  const [newCourse, setNewCourse] = useState<CreateCourseData>({
+    name: '',
+    description: '',
+    room: 0,
+    schedule: 0,
+    start_datetime: '',
+    end_datetime: '',
+    status: 'scheduled'
+  });
+
   // Estados para el modo rango
   const [isRangeMode, setIsRangeMode] = useState(false);
   const [rangeStartDate, setRangeStartDate] = useState('');
@@ -90,6 +128,17 @@ const ScheduleCalendar: React.FC = () => {
     start_datetime: '',
     end_datetime: '',
     notes: ''
+  });
+
+  // Estados para edición de curso
+  const [editCourse, setEditCourse] = useState<UpdateCourseData>({
+    name: '',
+    description: '',
+    room: 0,
+    schedule: 0,
+    start_datetime: '',
+    end_datetime: '',
+    status: 'scheduled'
   });
   
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
@@ -277,7 +326,113 @@ const ScheduleCalendar: React.FC = () => {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
-  // Validar formulario en tiempo real
+  // Validar formulario de curso
+  const validateCourseForm = () => {
+    const errors: {[key: string]: string} = {};
+    
+    if (!newCourse.name || newCourse.name.trim() === '') {
+      errors.name = 'El nombre del curso es requerido';
+    }
+    
+    if (!newCourse.description || newCourse.description.trim() === '') {
+      errors.description = 'La descripción del curso es requerida';
+    }
+    
+    if (!newCourse.room || newCourse.room === 0) {
+      errors.room = 'Debes seleccionar una sala';
+    }
+    
+    if (!newCourse.schedule || newCourse.schedule === 0) {
+      errors.schedule = 'Debes seleccionar un turno';
+    }
+    
+    if (!newCourse.start_datetime) {
+      errors.start_datetime = 'Debes seleccionar una fecha y hora de inicio';
+    } else {
+      const startDate = new Date(newCourse.start_datetime);
+      const now = getBogotaDate();
+      if (startDate < now) {
+        errors.start_datetime = 'No se pueden crear cursos en fechas pasadas';
+      }
+    }
+    
+    if (!newCourse.end_datetime) {
+      errors.end_datetime = 'Debes seleccionar una fecha y hora de fin';
+    } else if (newCourse.start_datetime) {
+      const startDate = new Date(newCourse.start_datetime);
+      const endDate = new Date(newCourse.end_datetime);
+      if (endDate <= startDate) {
+        errors.end_datetime = 'La fecha de fin debe ser posterior a la fecha de inicio';
+      }
+      
+      // Validar que el curso esté dentro del rango del turno
+      if (selectedScheduleInfo && newCourse.start_datetime && newCourse.end_datetime) {
+        const scheduleStart = new Date(selectedScheduleInfo.start_datetime);
+        const scheduleEnd = new Date(selectedScheduleInfo.end_datetime);
+        
+        // Comparar solo las fechas (sin hora) para evitar problemas de zona horaria
+        const courseStartDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+        const courseEndDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+        const scheduleStartDate = new Date(scheduleStart.getFullYear(), scheduleStart.getMonth(), scheduleStart.getDate());
+        const scheduleEndDate = new Date(scheduleEnd.getFullYear(), scheduleEnd.getMonth(), scheduleEnd.getDate());
+        
+        // Debug logs
+        console.log('=== VALIDACIÓN DE FECHAS ===');
+        console.log('Curso inicio:', newCourse.start_datetime, '→ Fecha:', courseStartDate.toISOString().split('T')[0]);
+        console.log('Curso fin:', newCourse.end_datetime, '→ Fecha:', courseEndDate.toISOString().split('T')[0]);
+        console.log('Turno inicio:', selectedScheduleInfo.start_datetime, '→ Fecha:', scheduleStartDate.toISOString().split('T')[0]);
+        console.log('Turno fin:', selectedScheduleInfo.end_datetime, '→ Fecha:', scheduleEndDate.toISOString().split('T')[0]);
+        console.log('Comparación inicio:', courseStartDate.getTime(), 'vs', scheduleStartDate.getTime(), 'vs', scheduleEndDate.getTime());
+        console.log('Comparación fin:', courseEndDate.getTime(), 'vs', scheduleStartDate.getTime(), 'vs', scheduleEndDate.getTime());
+        
+        if (courseStartDate < scheduleStartDate || courseStartDate > scheduleEndDate) {
+          errors.start_datetime = `El curso debe estar en la fecha del turno (${scheduleStartDate.toLocaleDateString()})`;
+        }
+        
+        if (courseEndDate < scheduleStartDate || courseEndDate > scheduleEndDate) {
+          errors.end_datetime = `El curso debe estar en la fecha del turno (${scheduleEndDate.toLocaleDateString()})`;
+        }
+        
+        // Validar horas solo si las fechas coinciden
+        if (courseStartDate.getTime() === scheduleStartDate.getTime()) {
+          const startTime = startDate.getHours() * 60 + startDate.getMinutes();
+          
+          if (startTime < scheduleStartTime) {
+            errors.start_datetime = `El curso no puede iniciar antes del turno (${scheduleStart.toLocaleTimeString()})`;
+          }
+        }
+        
+        if (courseEndDate.getTime() === scheduleEndDate.getTime()) {
+          const endTime = endDate.getHours() * 60 + endDate.getMinutes();
+          
+          if (endTime > scheduleEndTime) {
+            errors.end_datetime = `El curso no puede terminar después del turno (${scheduleEnd.toLocaleTimeString()})`;
+          }
+        }
+      }
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Debounce para validaciones
+  const [validationTimeout, setValidationTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  // Validar formulario de curso con debounce
+  const validateCourseFormWithDebounce = () => {
+    if (validationTimeout) {
+      clearTimeout(validationTimeout);
+    }
+    
+    const timeout = setTimeout(() => {
+      validateCourseForm();
+    }, 500); // 500ms de delay
+    
+    setValidationTimeout(timeout);
+  };
+
+  // Validar formulario en tiempo real con debounce
   const validateForm = () => {
     const errors: {[key: string]: string} = {};
     
@@ -396,8 +551,13 @@ const ScheduleCalendar: React.FC = () => {
         user: user?.role === 'admin' ? (selectedMonitor || undefined) : user?.id
       };
       
-      const schedulesData = await scheduleService.getSchedules(filters);
+      const [schedulesData, coursesData] = await Promise.all([
+        scheduleService.getSchedules(filters),
+        courseService.getCourses(filters)
+      ]);
+      
       setSchedules(Array.isArray(schedulesData) ? schedulesData : []);
+      setCourses(Array.isArray(coursesData) ? coursesData : []);
       
       // Cargar monitores solo para administradores
       if (user?.role === 'admin') {
@@ -459,16 +619,21 @@ const ScheduleCalendar: React.FC = () => {
     loadData(true); // Carga inicial
   }, [loadData]);
 
-  // Actualizaciones en tiempo real
+  // Actualizaciones pasivas inteligentes
+  usePassiveUpdates({
+    minUpdateInterval: 60000, // 1 minuto mínimo entre actualizaciones
+    inactivityThreshold: 15000, // 15 segundos de inactividad
+    enableVisibilityUpdates: true,
+    enableFocusUpdates: false, // Deshabilitar actualizaciones por foco
+    shouldUpdate: () => {
+      // Solo actualizar si hay cambios reales en los datos
+      return true; // Por ahora permitir todas las actualizaciones
+    },
+    onUpdate: loadData
+  });
+
+  // Actualizaciones en tiempo real (solo eventos importantes)
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        loadData();
-      }
-    };
-
-    const handleWindowFocus = () => loadData();
-
     const handleScheduleUpdate = () => {
       loadData();
     };
@@ -480,15 +645,11 @@ const ScheduleCalendar: React.FC = () => {
       }
     };
 
-    // Listeners para actualizaciones automáticas
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleWindowFocus);
+    // Solo listeners para eventos importantes
     window.addEventListener('schedule-updated', handleScheduleUpdate);
     window.addEventListener('storage', handleStorage);
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleWindowFocus);
       window.removeEventListener('schedule-updated', handleScheduleUpdate);
       window.removeEventListener('storage', handleStorage);
     };
@@ -561,6 +722,27 @@ const ScheduleCalendar: React.FC = () => {
     });
   };
 
+  // Obtener cursos para un día
+  const getCoursesForDay = (date: Date | null) => {
+    if (!date) return [];
+    return courses.filter(course => {
+      const courseDate = new Date(course.start_datetime).toDateString();
+      const dateMatch = courseDate === date.toDateString();
+      
+      // Aplicar filtro de monitor si está seleccionado
+      if (selectedMonitor) {
+        // Buscar el monitor por ID en la lista de monitores
+        const monitor = monitors.find(m => m.id === selectedMonitor);
+        if (monitor) {
+          return dateMatch && course.monitor_name === monitor.full_name;
+        }
+        return dateMatch && course.monitor_name === monitor?.full_name;
+      }
+      
+      return dateMatch;
+    });
+  };
+
   // Obtener turnos para una hora específica
   const getSchedulesForHour = (date: Date, hour: string) => {
     const dateStr = date.toISOString().split('T')[0];
@@ -589,6 +771,101 @@ const ScheduleCalendar: React.FC = () => {
       
       return timeMatch;
     });
+  };
+
+  // Obtener cursos para una hora específica
+  const getCoursesForHour = (date: Date, hour: string) => {
+    const dateStr = date.toISOString().split('T')[0];
+    const hourNum = parseInt(hour.split(':')[0]);
+    
+    return courses.filter(course => {
+      const courseStart = new Date(course.start_datetime);
+      const courseDate = courseStart.toISOString().split('T')[0];
+      
+      if (courseDate !== dateStr) return false;
+      
+      const courseStartHour = courseStart.getHours();
+      
+      // Solo mostrar el curso en la hora de inicio, no en todas las horas que abarca
+      const timeMatch = courseStartHour === hourNum;
+      
+      // Aplicar filtro de monitor si está seleccionado
+      if (selectedMonitor) {
+        // Buscar el monitor por ID en la lista de monitores
+        const monitor = monitors.find(m => m.id === selectedMonitor);
+        if (monitor) {
+          return timeMatch && course.monitor_name === monitor.full_name;
+        }
+        return timeMatch && course.monitor_name === monitor?.full_name;
+      }
+      
+      return timeMatch;
+    });
+  };
+
+  // Abrir modal de selección de actividad
+  const openActivitySelectionModal = (date: Date, hour: string | null = null) => {
+    setSelectedDayDate(date);
+    setSelectedHour(hour);
+    setShowActivitySelectionModal(true);
+  };
+
+  // Cerrar modal de selección de actividad
+  const closeActivitySelectionModal = () => {
+    setShowActivitySelectionModal(false);
+    setSelectedDayDate(null);
+    setSelectedHour(null);
+  };
+
+  // Abrir modal de curso
+  const openCourseModal = (date: Date, hour: string | null = null) => {
+    // Validación de seguridad: solo administradores pueden abrir el modal
+    if (!canCreateSilent()) {
+      return;
+    }
+    
+    // Reiniciar estados del modal
+    setFormErrors({});
+    setFilteredSchedules([]);
+    setSelectedScheduleInfo(null);
+    setShowCourseModal(true);
+    
+    // Establecer valores por defecto usando zona horaria de Bogotá
+    const now = getBogotaDate();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    if (hour) {
+      const hourNum = parseInt(hour.split(':')[0]);
+      const startTime = `${date.toISOString().split('T')[0]}T${hour.padStart(5, '0')}:00`;
+      const endTime = `${date.toISOString().split('T')[0]}T${(hourNum + 1).toString().padStart(2, '0')}:00:00`;
+      
+      setNewCourse({
+        name: '',
+        description: '',
+        room: 0,
+        schedule: 0,
+        start_datetime: startTime,
+        end_datetime: endTime,
+        status: 'scheduled'
+      });
+    } else {
+      // Si no se especifica hora, usar mañana a las 9 AM en zona horaria de Bogotá
+      const tomorrowBogota = new Date(tomorrow);
+      tomorrowBogota.setHours(9, 0, 0, 0);
+      const tomorrowEnd = new Date(tomorrow);
+      tomorrowEnd.setHours(10, 0, 0, 0);
+      
+      setNewCourse({
+        name: '',
+        description: '',
+        room: 0,
+        schedule: 0,
+        start_datetime: formatDateForInput(tomorrowBogota),
+        end_datetime: formatDateForInput(tomorrowEnd),
+        status: 'scheduled'
+      });
+    }
   };
 
   // Abrir modal
@@ -635,6 +912,97 @@ const ScheduleCalendar: React.FC = () => {
         recurring: false,
         notes: ''
       });
+    }
+  };
+
+  // Guardar curso
+  const saveCourse = async () => {
+    // Validación de seguridad: verificar permisos
+    if (!canCreate()) {
+      return;
+    }
+    
+    if (!validateCourseForm()) {
+      return;
+    }
+
+    try {
+      // Convertir fechas a zona horaria de Bogotá para evitar problemas de UTC
+      const startDate = new Date(newCourse.start_datetime);
+      const endDate = new Date(newCourse.end_datetime);
+      
+      // Crear fechas en zona horaria local de Bogotá
+      const bogotaStart = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), 
+                                  startDate.getHours(), startDate.getMinutes(), 0);
+      const bogotaEnd = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 
+                                endDate.getHours(), endDate.getMinutes(), 0);
+      
+      // Formatear para envío al backend
+      const formatForBackend = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}:00`;
+      };
+      
+      const courseData: CreateCourseData = {
+        name: newCourse.name,
+        description: newCourse.description,
+        room: newCourse.room,
+        schedule: newCourse.schedule,
+        start_datetime: formatForBackend(bogotaStart),
+        end_datetime: formatForBackend(bogotaEnd),
+        status: newCourse.status
+      };
+      
+      console.log('Datos del curso a enviar:', courseData);
+
+      await courseService.createCourse(courseData);
+      
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { message: 'Curso creado exitosamente', type: 'success' }
+      }));
+      
+      // Notificar actualización en tiempo real
+      notifyScheduleUpdate();
+      
+      setShowCourseModal(false);
+      setNewCourse({
+        name: '',
+        description: '',
+        room: 0,
+        schedule: 0,
+        start_datetime: '',
+        end_datetime: '',
+        status: 'scheduled'
+      });
+      loadData();
+    } catch (error: unknown) {
+      console.error('Error creating course:', error);
+      
+      // Usar el nuevo sistema de manejo de errores
+      const errorMessage = ApiErrorHandler.handleError(error);
+      
+      // Mostrar error como notificación toast
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { 
+          message: errorMessage, 
+          type: 'error',
+          title: 'Error al crear curso'
+        }
+      }));
+      
+      // Verificar si debe desloguear
+      if (ApiErrorHandler.shouldLogout(error)) {
+        console.warn('Deslogueando por error crítico de token');
+        setTimeout(() => {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+        }, 3000);
+      }
     }
   };
 
@@ -724,6 +1092,71 @@ const ScheduleCalendar: React.FC = () => {
         }, 3000);
       }
   };
+  };
+
+  // Eliminar curso
+  const deleteCourse = async (id: number) => {
+    // Validación de seguridad: verificar permisos
+    if (!canDelete()) {
+      return;
+    }
+    
+    // Usar el sistema de confirmación personalizado de la aplicación
+    window.dispatchEvent(new CustomEvent('app-confirm', {
+      detail: {
+        title: 'Eliminar Curso',
+        message: '¿Estás seguro de que quieres eliminar este curso?',
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        onConfirm: async () => {
+          try {
+            await courseService.deleteCourse(id);
+            loadData();
+            window.dispatchEvent(new CustomEvent('app-toast', {
+              detail: { message: 'Curso eliminado exitosamente', type: 'success' }
+            }));
+            
+            // Notificar actualización en tiempo real
+            notifyScheduleUpdate();
+          } catch (error) {
+            console.error('Error deleting course:', error);
+            window.dispatchEvent(new CustomEvent('app-toast', {
+              detail: { message: 'Error al eliminar el curso', type: 'error' }
+            }));
+          }
+        },
+        onCancel: () => {
+          console.log('Eliminación cancelada');
+        }
+      }
+    }));
+  };
+
+  // Actualizar curso
+  const updateCourse = async () => {
+    if (!canEdit()) {
+      return;
+    }
+
+    if (!selectedCourse) return;
+
+    try {
+      await courseService.updateCourse(selectedCourse.id, editCourse);
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { message: 'Curso actualizado exitosamente', type: 'success' }
+      }));
+      setShowEditCourseModal(false);
+      setEditCourse({});
+      loadData();
+      
+      // Notificar actualización en tiempo real
+      notifyScheduleUpdate();
+    } catch (error) {
+      console.error('Error updating course:', error);
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { message: 'Error al actualizar el curso', type: 'error' }
+      }));
+    }
   };
 
   // Eliminar turno
@@ -939,7 +1372,11 @@ const ScheduleCalendar: React.FC = () => {
 
   // Abrir modal de turnos del día
   const openSchedulesModal = (schedules: Schedule[], date: Date) => {
+    // Obtener cursos del día
+    const dayCourses = getCoursesForDay(date);
+    
     setSelectedDaySchedules(schedules);
+    setSelectedDayCourses(dayCourses);
     setSelectedDayDate(date);
     setShowSchedulesModal(true);
   };
@@ -956,6 +1393,153 @@ const ScheduleCalendar: React.FC = () => {
     if (!date) return false;
     const today = new Date();
     return date.toDateString() === today.toDateString();
+  };
+
+  // Obtener turnos activos para selección en cursos
+  const getActiveSchedules = () => {
+    const now = new Date();
+    console.log('getActiveSchedules - Total schedules:', schedules.length);
+    console.log('getActiveSchedules - Current time:', now);
+    
+    const activeSchedules = schedules.filter(schedule => {
+      const endDate = new Date(schedule.end_datetime);
+      const isActive = schedule.status === 'active';
+      const isFuture = endDate > now;
+      
+      console.log(`Schedule ${schedule.id}: status=${schedule.status}, isActive=${isActive}, endDate=${endDate}, isFuture=${isFuture}`);
+      
+      return isActive && isFuture;
+    });
+    
+    console.log('getActiveSchedules - Active schedules found:', activeSchedules.length);
+    return activeSchedules;
+  };
+
+  // Manejar cambio de sala en el formulario de curso
+  const handleRoomChange = (roomId: number) => {
+    setNewCourse({...newCourse, room: roomId, schedule: 0});
+    
+    if (roomId === 0) {
+      setFilteredSchedules([]);
+      setSelectedScheduleInfo(null);
+      return;
+    }
+
+    // Encontrar la sala seleccionada para obtener su nombre
+    const selectedRoom = rooms.find(room => room.id === roomId);
+    const selectedRoomName = selectedRoom?.name || selectedRoom?.room_name || '';
+
+    // Verificar que tenemos datos de turnos
+    if (!schedules || schedules.length === 0) {
+      setFilteredSchedules([]);
+      setSelectedScheduleInfo(null);
+      return;
+    }
+
+    // Filtrar turnos por sala seleccionada
+    const activeSchedules = getActiveSchedules();
+    const schedulesForRoom = activeSchedules.filter(schedule => {
+      // Usar room_name para comparar con el nombre de la sala seleccionada
+      const scheduleRoomName = schedule.room_name;
+      return scheduleRoomName === selectedRoomName;
+    });
+    
+    setFilteredSchedules(schedulesForRoom);
+    setSelectedScheduleInfo(null);
+  };
+
+  // Manejar cambio de turno en el formulario de curso
+  const handleScheduleChange = (scheduleId: number) => {
+    setNewCourse({...newCourse, schedule: scheduleId});
+    
+    if (scheduleId === 0) {
+      setSelectedScheduleInfo(null);
+      return;
+    }
+
+    // Obtener información del turno seleccionado
+    const selectedSchedule = filteredSchedules.find(schedule => schedule.id === scheduleId);
+    setSelectedScheduleInfo(selectedSchedule || null);
+    
+    if (selectedSchedule) {
+      // Usar la fecha del turno para evitar problemas de zona horaria
+      const scheduleStart = new Date(selectedSchedule.start_datetime);
+      const scheduleEnd = new Date(selectedSchedule.end_datetime);
+      
+      // Crear fechas en zona horaria local para evitar conversiones
+      const startDate = new Date(scheduleStart.getFullYear(), scheduleStart.getMonth(), scheduleStart.getDate());
+      const endDate = new Date(scheduleEnd.getFullYear(), scheduleEnd.getMonth(), scheduleEnd.getDate());
+      
+      // Formatear para datetime-local (YYYY-MM-DDTHH:MM)
+      const formatDateTime = (date: Date, time: string) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}T${time}`;
+      };
+      
+      // Extraer solo la hora del turno
+      const startTime = selectedSchedule.start_datetime.split('T')[1].substring(0, 5);
+      const endTime = selectedSchedule.end_datetime.split('T')[1].substring(0, 5);
+      
+      setNewCourse({
+        ...newCourse,
+        schedule: scheduleId,
+        start_datetime: formatDateTime(startDate, startTime),
+        end_datetime: formatDateTime(endDate, endTime)
+      });
+    }
+  };
+
+  // Obtener nombre del día de la semana
+  const getDayName = (dateString: string) => {
+    const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const date = new Date(dateString);
+    return days[date.getDay()];
+  };
+
+  // Obtener color del curso según su estado
+  const getCourseColor = (status: string) => {
+    switch (status) {
+      case 'scheduled':
+        return '#10b981'; // Verde
+      case 'in_progress':
+        return '#f59e0b'; // Naranja
+      case 'completed':
+        return '#6366f1'; // Azul
+      case 'cancelled':
+        return '#ef4444'; // Rojo
+      default:
+        return '#6b7280'; // Gris
+    }
+  };
+
+  // Verificar si un turno ya tiene cursos asignados
+  const getCoursesForSchedule = (scheduleId: number) => {
+    // Buscar el turno específico para obtener sus fechas y horas
+    const targetSchedule = schedules.find(s => s.id === scheduleId);
+    if (!targetSchedule) {
+      return [];
+    }
+    
+    // Filtrar cursos que coincidan con la fecha, hora y sala del turno
+    const scheduleCourses = courses.filter(course => {
+      const courseStart = new Date(course.start_datetime);
+      const courseEnd = new Date(course.end_datetime);
+      const scheduleStart = new Date(targetSchedule.start_datetime);
+      const scheduleEnd = new Date(targetSchedule.end_datetime);
+      
+      // Verificar que el curso esté en la misma fecha y sala
+      const sameDate = courseStart.toDateString() === scheduleStart.toDateString();
+      const sameRoom = course.room_name === targetSchedule.room_name;
+      
+      // Verificar que el curso esté dentro del horario del turno
+      const withinSchedule = courseStart >= scheduleStart && courseEnd <= scheduleEnd;
+      
+      return sameDate && sameRoom && withinSchedule;
+    });
+    
+    return scheduleCourses;
   };
 
   // Formatear hora
@@ -1067,8 +1651,35 @@ const ScheduleCalendar: React.FC = () => {
             </button>
           </div>
 
+          {/* Controles de vista combinada */}
+          <div className="calendar-view-toggle">
+            <button
+              onClick={() => {
+                setShowSchedules(!showSchedules);
+                if (!showSchedules && !showCourses) setShowCourses(true);
+              }}
+              className={`view-toggle-btn ${showSchedules ? 'active' : ''}`}
+              title={showSchedules ? 'Ocultar turnos' : 'Mostrar turnos'}
+            >
+              {showSchedules ? <Eye className="btn-icon" /> : <EyeOff className="btn-icon" />}
+              Turnos
+            </button>
+            <button
+              onClick={() => {
+                setShowCourses(!showCourses);
+                if (!showSchedules && !showCourses) setShowSchedules(true);
+              }}
+              className={`view-toggle-btn ${showCourses ? 'active' : ''}`}
+              title={showCourses ? 'Ocultar cursos' : 'Mostrar cursos'}
+            >
+              {showCourses ? <Eye className="btn-icon" /> : <EyeOff className="btn-icon" />}
+              Cursos
+            </button>
+          </div>
+
           {/* Botones de administración */}
           {canCreateSilent() && (
+            <>
             <button
               onClick={() => openModal(new Date())}
               className="btn-create-schedule"
@@ -1076,6 +1687,14 @@ const ScheduleCalendar: React.FC = () => {
               <Plus className="btn-icon" />
               Nuevo Turno
             </button>
+              <button
+                onClick={() => openCourseModal(new Date())}
+                className="btn-course"
+              >
+                <BookOpen className="btn-icon" />
+                Nuevo Curso
+              </button>
+            </>
           )}
 
           {canDeleteSilent() && (
@@ -1180,7 +1799,8 @@ const ScheduleCalendar: React.FC = () => {
             {getWeekDays(currentDate).map((date, dayIndex) => (
               <div key={dayIndex} className="day-column">
                 {horas.map(hour => {
-                  const hourSchedules = getSchedulesForHour(date, hour);
+                  const hourSchedules = showSchedules ? getSchedulesForHour(date, hour) : [];
+                  const hourCourses = showCourses ? getCoursesForHour(date, hour) : [];
                   
                   return (
                     <div
@@ -1188,10 +1808,11 @@ const ScheduleCalendar: React.FC = () => {
                       className={`hour-cell ${!canCreateSilent() ? 'disabled' : ''}`}
                       onClick={() => {
                         if (canCreateSilent()) {
-                          openModal(date, hour);
+                          openActivitySelectionModal(date, hour);
                         }
                       }}
                     >
+                      {/* Mostrar turnos */}
                       {hourSchedules.map((schedule, scheduleIndex) => {
                         // Calcular la duración del turno en horas
                         const scheduleStart = new Date(schedule.start_datetime);
@@ -1241,6 +1862,72 @@ const ScheduleCalendar: React.FC = () => {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 deleteSchedule(schedule.id);
+                              }}
+                              className="schedule-delete-btn"
+                            >
+                              <X className="delete-icon" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                      
+                      {/* Mostrar cursos */}
+                      {hourCourses.map((course, courseIndex) => {
+                        // Calcular la duración del curso en horas
+                        const courseStart = new Date(course.start_datetime);
+                        const courseEnd = new Date(course.end_datetime);
+                        const durationHours = (courseEnd.getTime() - courseStart.getTime()) / (1000 * 60 * 60);
+                        
+                        // Calcular posición y ancho para evitar superposición
+                        const totalItems = hourSchedules.length + hourCourses.length;
+                        const itemWidth = totalItems > 1 ? `${100 / totalItems}%` : '100%';
+                        const itemLeft = totalItems > 1 ? `${((hourSchedules.length + courseIndex) * 100) / totalItems}%` : '0%';
+                        
+                        return (
+                          <div
+                            key={`course-${course.id}`}
+                            className={`course-item ${course.status} clickable ${totalItems > 1 ? 'overlapping' : ''}`}
+                            title={`${course.name} - ${course.monitor_name} - ${course.room_name} (${formatTime(course.start_datetime)} - ${formatTime(course.end_datetime)})${canEdit(true) ? ' - Haz clic para editar' : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (canEditSilent()) {
+                                // Abrir modal de edición del curso
+                                setSelectedCourse(course);
+                                setShowEditCourseModal(true);
+                              } else {
+                                // Si no puede editar, mostrar detalles
+                                setSelectedCourse(course);
+                                setShowCourseDetailsModal(true);
+                              }
+                            }}
+                            style={{
+                              height: `${Math.max(durationHours * 4, 4)}rem`, // 4rem por hora, mínimo 4rem
+                              width: itemWidth,
+                              left: itemLeft,
+                              zIndex: 10 + hourSchedules.length + courseIndex, // Z-index basado en el índice
+                              position: 'absolute'
+                            }}
+                          >
+                            <div className="course-status-indicator scheduled"></div>
+                            <div className="schedule-title">
+                              <BookOpen className="course-icon" size={12} />
+                              {course.name}
+                              {totalItems > 1 && (
+                                <span className="schedule-count-badge">
+                                  {hourSchedules.length + courseIndex + 1}/{totalItems}
+                                </span>
+                              )}
+                            </div>
+                            <div className="schedule-time">
+                              {formatTime(course.start_datetime)} - {formatTime(course.end_datetime)}
+                            </div>
+                            <div className="schedule-room">
+                              {course.room_name}
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteCourse(course.id);
                               }}
                               className="schedule-delete-btn"
                             >
@@ -1524,7 +2211,7 @@ const ScheduleCalendar: React.FC = () => {
             <div className="modal-header">
               <h3 className="modal-title">
                 <Calendar className="modal-icon" />
-                Turnos del {selectedDayDate.toLocaleDateString('es-ES', { 
+                Actividades del {selectedDayDate.toLocaleDateString('es-ES', { 
                   weekday: 'long', 
                   year: 'numeric', 
                   month: 'long', 
@@ -1540,6 +2227,24 @@ const ScheduleCalendar: React.FC = () => {
             </div>
 
             <div className="modal-body">
+              <div className="activities-container">
+                {/* Acordeón de Turnos */}
+                <div className="activities-column">
+                  <div 
+                    className={`activities-title ${schedulesExpanded ? 'active' : ''}`}
+                    onClick={() => setSchedulesExpanded(!schedulesExpanded)}
+                  >
+                    <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                      <Clock className="activities-icon" />
+                      Turnos ({selectedDaySchedules.length})
+                    </div>
+                    <div className="activities-toggle">
+                      {schedulesExpanded ? 'Ocultar' : 'Mostrar'}
+                      <ChevronDown className={`activities-expand-icon ${schedulesExpanded ? 'expanded' : ''}`} />
+                    </div>
+                  </div>
+                  <div className={`activities-content ${schedulesExpanded ? 'expanded' : ''}`}>
+                    <div className="activities-content-inner">
               {selectedDaySchedules.length > 0 ? (
                 <div className="schedules-list">
                   {selectedDaySchedules.map(schedule => (
@@ -1633,6 +2338,104 @@ const ScheduleCalendar: React.FC = () => {
                   <p>No hay turnos programados para este día.</p>
                 </div>
               )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Acordeón de Cursos */}
+                <div className="activities-column">
+                  <div 
+                    className={`activities-title ${coursesExpanded ? 'active' : ''}`}
+                    onClick={() => setCoursesExpanded(!coursesExpanded)}
+                  >
+                    <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                      <BookOpen className="activities-icon" />
+                      Cursos ({selectedDayCourses.length})
+                    </div>
+                    <div className="activities-toggle">
+                      {coursesExpanded ? 'Ocultar' : 'Mostrar'}
+                      <ChevronDown className={`activities-expand-icon ${coursesExpanded ? 'expanded' : ''}`} />
+                    </div>
+                  </div>
+                  <div className={`activities-content ${coursesExpanded ? 'expanded' : ''}`}>
+                    <div className="activities-content-inner">
+                      {selectedDayCourses.length > 0 ? (
+                        <div className="courses-list">
+                      {selectedDayCourses.map(course => (
+                        <div 
+                          key={course.id} 
+                          className="course-detail-item"
+                          style={{
+                            borderLeftColor: getCourseColor(course.status),
+                            borderLeftWidth: '4px',
+                            borderLeftStyle: 'solid'
+                          }}
+                        >
+                          <div className="course-detail-time">
+                            <Clock className="course-detail-icon" />
+                            {formatTime(course.start_datetime)} - {formatTime(course.end_datetime)}
+                          </div>
+                          <div className="course-detail-info">
+                            <div className="course-detail-name">
+                              <BookOpen className="course-detail-icon" />
+                              {course.name}
+                            </div>
+                            <div className="course-detail-description">
+                              {course.description}
+                            </div>
+                            <div className="course-detail-monitor">
+                              <User className="course-detail-icon" />
+                              {course.monitor_name}
+                            </div>
+                            <div className="course-detail-room">
+                              <MapPin className="course-detail-icon" />
+                              {course.room_name}
+                            </div>
+                            <div className="course-detail-status">
+                              <span className={`status-badge ${course.status}`}>
+                                {course.status === 'scheduled' ? 'Programado' :
+                                 course.status === 'in_progress' ? 'En Progreso' :
+                                 course.status === 'completed' ? 'Completado' : 'Cancelado'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="course-detail-actions">
+                            {canEditSilent() && (
+                              <button
+                                onClick={() => {
+                                  closeSchedulesModal();
+                                  // TODO: Implementar edición de curso
+                                }}
+                                className="btn-edit-course"
+                                title="Editar curso"
+                              >
+                                <Edit className="btn-icon" />
+                              </button>
+                            )}
+                            {canDeleteSilent() && (
+                              <button
+                                onClick={() => {
+                                  // TODO: Implementar eliminación de curso
+                                }}
+                                className="btn-delete-course"
+                                title="Eliminar curso"
+                              >
+                                <X className="btn-icon" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                        </div>
+                      ) : (
+                        <div className="no-courses">
+                          <p>No hay cursos programados para este día.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="modal-actions">
@@ -1751,6 +2554,348 @@ const ScheduleCalendar: React.FC = () => {
         canEdit={canEditSilent()}
         canDelete={canDeleteSilent()}
       />
+
+      {/* Modal para crear curso */}
+      {showCourseModal && (
+        <div className="modal-overlay">
+          <div className="modal-content course-modal">
+            <div className="modal-header">
+              <h3 className="modal-title">
+                <BookOpen className="modal-icon" />
+                Nuevo Curso
+              </h3>
+              <button
+                onClick={() => setShowCourseModal(false)}
+                className="modal-close"
+              >
+                <X className="close-icon" />
+              </button>
+      </div>
+
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Nombre del Curso *</label>
+                <input
+                  type="text"
+                  value={newCourse.name}
+                  onChange={(e) => setNewCourse({...newCourse, name: e.target.value})}
+                  className={`form-input ${formErrors.name ? 'error' : ''}`}
+                  placeholder="Ej: Curso de Programación"
+                />
+                {formErrors.name && (
+                  <span className="error-message">{formErrors.name}</span>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>Descripción *</label>
+                <textarea
+                  value={newCourse.description}
+                  onChange={(e) => setNewCourse({...newCourse, description: e.target.value})}
+                  className={`form-input ${formErrors.description ? 'error' : ''}`}
+                  rows={3}
+                  placeholder="Descripción del curso..."
+                />
+                {formErrors.description && (
+                  <span className="error-message">{formErrors.description}</span>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>Sala *</label>
+                <select
+                  value={newCourse.room}
+                  onChange={(e) => handleRoomChange(parseInt(e.target.value))}
+                  className={`form-input ${formErrors.room ? 'error' : ''}`}
+                >
+                  <option value={0}>Seleccionar sala</option>
+                  {rooms.map(room => (
+                    <option key={room.id} value={room.id}>
+                      {room.name}
+                    </option>
+                  ))}
+                </select>
+                {formErrors.room && (
+                  <span className="error-message">{formErrors.room}</span>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>Turno *</label>
+                <select
+                  value={newCourse.schedule}
+                  onChange={(e) => handleScheduleChange(parseInt(e.target.value))}
+                  className={`form-input ${formErrors.schedule ? 'error' : ''}`}
+                  disabled={filteredSchedules.length === 0}
+                >
+                  <option value={0}>
+                    {filteredSchedules.length === 0 ? 'Primero selecciona una sala' : 'Seleccionar turno'}
+                  </option>
+                  {filteredSchedules.map(schedule => {
+                    const existingCourses = getCoursesForSchedule(schedule.id);
+                    return (
+                      <option key={schedule.id} value={schedule.id}>
+                        {getDayName(schedule.start_datetime)} - {schedule.user_full_name} ({formatTime(schedule.start_datetime)} - {formatTime(schedule.end_datetime)}) {existingCourses.length > 0 ? `[${existingCourses.length} curso(s)]` : ''}
+                      </option>
+                    );
+                  })}
+                </select>
+                {formErrors.schedule && (
+                  <span className="error-message">{formErrors.schedule}</span>
+                )}
+                
+                {/* Información del turno seleccionado */}
+                {selectedScheduleInfo && (
+                  <div style={{marginTop: '0.5rem', padding: '0.75rem', background: '#f8fafc', border: '1px solid #e5e7eb', borderRadius: '0.375rem'}}>
+                    <div style={{fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.25rem'}}>
+                      Información del Turno
+                    </div>
+                    <div style={{fontSize: '0.8rem', color: '#6b7280', lineHeight: '1.4'}}>
+                      <div><strong>Monitor:</strong> {selectedScheduleInfo.user_full_name}</div>
+                      <div><strong>Día:</strong> {getDayName(selectedScheduleInfo.start_datetime)}</div>
+                      <div><strong>Horario:</strong> {formatTime(selectedScheduleInfo.start_datetime)} - {formatTime(selectedScheduleInfo.end_datetime)}</div>
+                      <div><strong>Cursos existentes:</strong> {getCoursesForSchedule(selectedScheduleInfo.id).length}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Hora de inicio *</label>
+                  <input
+                    type="time"
+                    value={selectedScheduleInfo ? newCourse.start_datetime.split('T')[1] : ''}
+                    onChange={(e) => {
+                      if (selectedScheduleInfo) {
+                        const dateStr = newCourse.start_datetime.split('T')[0];
+                        setNewCourse({...newCourse, start_datetime: `${dateStr}T${e.target.value}`});
+                        validateCourseFormWithDebounce();
+                      }
+                    }}
+                    className={`form-input ${formErrors.start_datetime ? 'error' : ''}`}
+                    disabled={!selectedScheduleInfo}
+                    min={selectedScheduleInfo ? selectedScheduleInfo.start_datetime.split('T')[1].substring(0, 5) : ''}
+                    max={selectedScheduleInfo ? selectedScheduleInfo.end_datetime.split('T')[1].substring(0, 5) : ''}
+                  />
+                  {formErrors.start_datetime && (
+                    <span className="error-message">{formErrors.start_datetime}</span>
+                  )}
+                  {selectedScheduleInfo && (
+                    <div className="helper-text">
+                      Horario disponible: {formatTime(selectedScheduleInfo.start_datetime)} - {formatTime(selectedScheduleInfo.end_datetime)}
+                    </div>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label>Hora de fin *</label>
+                  <input
+                    type="time"
+                    value={selectedScheduleInfo ? newCourse.end_datetime.split('T')[1] : ''}
+                    onChange={(e) => {
+                      if (selectedScheduleInfo) {
+                        const dateStr = newCourse.end_datetime.split('T')[0];
+                        setNewCourse({...newCourse, end_datetime: `${dateStr}T${e.target.value}`});
+                        validateCourseFormWithDebounce();
+                      }
+                    }}
+                    className={`form-input ${formErrors.end_datetime ? 'error' : ''}`}
+                    disabled={!selectedScheduleInfo}
+                    min={selectedScheduleInfo ? selectedScheduleInfo.start_datetime.split('T')[1].substring(0, 5) : ''}
+                    max={selectedScheduleInfo ? selectedScheduleInfo.end_datetime.split('T')[1].substring(0, 5) : ''}
+                  />
+                  {formErrors.end_datetime && (
+                    <span className="error-message">{formErrors.end_datetime}</span>
+                  )}
+                  {selectedScheduleInfo && (
+                    <div className="helper-text">
+                      Debe estar dentro del horario del turno
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Estado</label>
+                <select
+                  value={newCourse.status}
+                  onChange={(e) => setNewCourse({...newCourse, status: e.target.value as 'scheduled' | 'in_progress' | 'completed' | 'cancelled'})}
+                  className="form-input"
+                >
+                  <option value="scheduled">Programado</option>
+                  <option value="in_progress">En Progreso</option>
+                  <option value="completed">Completado</option>
+                  <option value="cancelled">Cancelado</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                onClick={() => setShowCourseModal(false)}
+                className="btn-cancel"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={saveCourse}
+                className="btn-save"
+              >
+                Guardar Curso
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de edición de curso */}
+      {showEditCourseModal && selectedCourse && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3 className="modal-title">
+                <BookOpen className="modal-icon" />
+                Editar Curso
+              </h3>
+              <button
+                onClick={() => setShowEditCourseModal(false)}
+                className="modal-close"
+              >
+                <X className="close-icon" />
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Nombre del Curso *</label>
+                <input
+                  type="text"
+                  value={editCourse.name || selectedCourse.name}
+                  onChange={(e) => setEditCourse({...editCourse, name: e.target.value})}
+                  className={`form-input ${formErrors.name ? 'error' : ''}`}
+                  placeholder="Ingresa el nombre del curso"
+                />
+                {formErrors.name && (
+                  <span className="error-message">{formErrors.name}</span>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>Descripción *</label>
+                <textarea
+                  value={editCourse.description || selectedCourse.description}
+                  onChange={(e) => setEditCourse({...editCourse, description: e.target.value})}
+                  className={`form-input ${formErrors.description ? 'error' : ''}`}
+                  placeholder="Describe el contenido del curso"
+                  rows={3}
+                />
+                {formErrors.description && (
+                  <span className="error-message">{formErrors.description}</span>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>Estado</label>
+                <select
+                  value={editCourse.status || selectedCourse.status}
+                  onChange={(e) => setEditCourse({...editCourse, status: e.target.value as 'active' | 'inactive'})}
+                  className="form-input"
+                >
+                  <option value="scheduled">Programado</option>
+                  <option value="in_progress">En Progreso</option>
+                  <option value="completed">Completado</option>
+                  <option value="cancelled">Cancelado</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                onClick={() => setShowEditCourseModal(false)}
+                className="btn-cancel"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={updateCourse}
+                className="btn-save"
+              >
+                Actualizar Curso
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de selección de actividad */}
+      {showActivitySelectionModal && selectedDayDate && (
+        <div className="modal-overlay">
+          <div className="modal-content activity-selection-modal">
+            <div className="modal-header">
+              <h3 className="modal-title">
+                <Calendar className="modal-icon" />
+                Crear Nueva Actividad
+              </h3>
+              <button
+                onClick={closeActivitySelectionModal}
+                className="modal-close"
+              >
+                <X className="close-icon" />
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <p className="activity-selection-text">
+                ¿Qué tipo de actividad quieres crear para el {selectedDayDate.toLocaleDateString('es-ES', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })} {selectedHour ? `a las ${selectedHour}` : ''}?
+              </p>
+              
+              <div className="activity-options">
+                <button
+                  onClick={() => {
+                    closeActivitySelectionModal();
+                    openModal(selectedDayDate, selectedHour);
+                  }}
+                  className="activity-option-btn schedule-option"
+                >
+                  <Clock className="activity-option-icon" />
+                  <div className="activity-option-content">
+                    <h4>Nuevo Turno</h4>
+                    <p>Asignar un monitor a una sala en un horario específico</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    closeActivitySelectionModal();
+                    openCourseModal(selectedDayDate, selectedHour);
+                  }}
+                  className="activity-option-btn course-option"
+                >
+                  <BookOpen className="activity-option-icon" />
+                  <div className="activity-option-content">
+                    <h4>Nuevo Curso</h4>
+                    <p>Crear un curso dentro de un turno existente</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                onClick={closeActivitySelectionModal}
+                className="btn-cancel"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );

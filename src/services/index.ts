@@ -11,3 +11,4 @@ export { default as passwordService } from './passwordService';
 export { default as registerService } from './registerService';
 export { default as roomEntryService } from './roomEntryService';
 export { default as equipmentService } from './equipmentService';
+export { default as courseService } from './courseService';

@@ -56,7 +56,7 @@ describe('LeftSidebar', () => {
     expect(screen.getByTitle('Inicio')).toBeInTheDocument();
     expect(screen.getByTitle('Inventario')).toBeInTheDocument();
     expect(screen.getByTitle('Reportes')).toBeInTheDocument();
-    expect(screen.getByTitle('Configuración')).toBeInTheDocument();
+    expect(screen.getByTitle('Gestión de Usuarios')).toBeInTheDocument();
   });
 
   it('marca el botón activo correctamente', () => {

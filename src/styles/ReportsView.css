@@ -37,12 +37,29 @@
 /* Filtros */
 .reports-filters {
   display: grid; /* evitar solapamientos entre filtros */
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* columnas flexibles con ancho mínimo */
   grid-auto-flow: row dense; /* empaquetado denso para ocupar bien las filas */
-  gap: 1rem 1.5rem; /* filas x columnas */
+  gap: 1rem 0.75rem; /* filas x columnas - reducido el gap horizontal */
   align-items: end; /* alinear por la base */
   width: 100%;
+  max-height: 120px; /* máximo dos líneas de altura */
+  overflow: hidden;
+}
 
+/* Responsive: en pantallas más pequeñas, usar menos columnas */
+@media (max-width: 1200px) {
+  .reports-filters {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* columnas flexibles más pequeñas */
+    gap: 1rem 0.75rem; /* mantener gap reducido */
+  }
+}
+
+@media (max-width: 900px) {
+  .reports-filters {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); /* columnas flexibles aún más pequeñas */
+    gap: 1rem 0.75rem; /* mantener gap reducido */
+    max-height: 180px; /* permitir 3 líneas en pantallas pequeñas */
+  }
 }
 
 .filter-group {
@@ -59,6 +76,23 @@
   min-width: 300px;
   width: 300PX;
 /* contenedor más ancho para que el control no desborde */
+}
+
+/* Filtros de sala y monitor más anchos - Usando el selector correcto */
+.filter-group:not(:first-child) {
+  grid-column: span 1; /* ocupar una columna */
+  min-width: 200px; /* reducir ancho mínimo */
+  width: 100%;
+  max-width: 100%; /* asegurar que no se desborde */
+  overflow: hidden; /* ocultar contenido que se desborde */
+}
+
+/* Ajustar el ancho de los selects de sala y monitor */
+.filter-group:not(:first-child) select {
+  min-width: 150px; /* reducir ancho mínimo */
+  width: 100%;
+  max-width: 100%; /* usar todo el espacio disponible */
+  box-sizing: border-box; /* incluir padding y border en el ancho */
 }
 
 .filter-group label {
@@ -153,6 +187,11 @@
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2.5rem;
+}
+
+/* Ajuste para cuando se oculta la tarjeta de llegadas tarde (monitores) */
+.stats-cards:has(.stat-card--late:not(:first-child)) {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
 .stat-card {

@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">1.33% </span>
+                <span class="strong">1.48% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>9/676</span>
+                <span class='fraction'>10/672</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">1.33% </span>
+                <span class="strong">1.48% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>9/676</span>
+                <span class='fraction'>10/672</span>
             </div>
         
             
@@ -917,11 +917,8 @@
 <a name='L852'></a><a href='#L852'>852</a>
 <a name='L853'></a><a href='#L853'>853</a>
 <a name='L854'></a><a href='#L854'>854</a>
-<a name='L855'></a><a href='#L855'>855</a>
-<a name='L856'></a><a href='#L856'>856</a>
-<a name='L857'></a><a href='#L857'>857</a>
-<a name='L858'></a><a href='#L858'>858</a>
-<a name='L859'></a><a href='#L859'>859</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L855'></a><a href='#L855'>855</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -1269,6 +1266,15 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1326,16 +1332,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -1351,11 +1347,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -1783,9 +1775,10 @@
 import { apiClient } from '../../utils/api';
 import { useAuth } from '../../hooks/useAuth';
 import { useSecurity } from '../../hooks/useSecurity';
+import { usePassiveUpdates } from '../../hooks/usePassiveUpdates';
 import userManagementService from '../../services/userManagementService';
 import roomService from '../../services/roomService';
-import './TurnComparisonTable.css';
+import '../../styles/TurnComparisonTable.css';
 &nbsp;
 interface TurnComparisonData {
   id?: number;
@@ -2123,7 +2116,16 @@ const TurnComparisonTable: React.FC = <span class="fstat-no" title="function not
 <span class="cstat-no" title="statement not covered" >    loadDataWithFilters();</span>
 <span class="cstat-no" title="statement not covered" >  }, [selectedUser, selectedRoom, selectedYear, selectedMonth, showAll, dateFrom, dateTo]);</span>
 &nbsp;
-  // Actualizaciones en tiempo real
+  // Actualizaciones pasivas inteligentes
+<span class="cstat-no" title="statement not covered" >  usePassiveUpdates({</span>
+<span class="cstat-no" title="statement not covered" >    minUpdateInterval: 120000, // 2 minutos mínimo entre actualizaciones</span>
+<span class="cstat-no" title="statement not covered" >    inactivityThreshold: 20000, // 20 segundos de inactividad</span>
+<span class="cstat-no" title="statement not covered" >    enableVisibilityUpdates: true,</span>
+<span class="cstat-no" title="statement not covered" >    enableFocusUpdates: false,</span>
+<span class="cstat-no" title="statement not covered" >    onUpdate: loadComparisonData</span>
+<span class="cstat-no" title="statement not covered" >  });</span>
+&nbsp;
+  // Actualizaciones en tiempo real (solo eventos críticos)
 <span class="cstat-no" title="statement not covered" >  useEffect(() =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    const reloadData = async () =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >      try {</span>
@@ -2181,16 +2183,6 @@ const TurnComparisonTable: React.FC = <span class="fstat-no" title="function not
 <span class="cstat-no" title="statement not covered" >      }</span>
 <span class="cstat-no" title="statement not covered" >    };</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    const handleVisibilityChange = () =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >      if (!document.hidden) {</span>
-<span class="cstat-no" title="statement not covered" >        reloadData();</span>
-<span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" >    };</span>
-&nbsp;
-<span class="cstat-no" title="statement not covered" >    const handleWindowFocus = () =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >      reloadData();</span>
-<span class="cstat-no" title="statement not covered" >    };</span>
-&nbsp;
 <span class="cstat-no" title="statement not covered" >    const handleScheduleUpdate = () =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >      reloadData();</span>
 <span class="cstat-no" title="statement not covered" >    };</span>
@@ -2205,16 +2197,12 @@ const TurnComparisonTable: React.FC = <span class="fstat-no" title="function not
 <span class="cstat-no" title="statement not covered" >      }</span>
 <span class="cstat-no" title="statement not covered" >    };</span>
 &nbsp;
-    // Listeners para actualizaciones automáticas
-<span class="cstat-no" title="statement not covered" >    document.addEventListener('visibilitychange', handleVisibilityChange);</span>
-<span class="cstat-no" title="statement not covered" >    window.addEventListener('focus', handleWindowFocus);</span>
+    // Solo listeners para eventos críticos
 <span class="cstat-no" title="statement not covered" >    window.addEventListener('schedule-updated', handleScheduleUpdate);</span>
 <span class="cstat-no" title="statement not covered" >    window.addEventListener('room-entry-updated', handleRoomEntryUpdate);</span>
 <span class="cstat-no" title="statement not covered" >    window.addEventListener('storage', handleStorage);</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    return () =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >      document.removeEventListener('visibilitychange', handleVisibilityChange);</span>
-<span class="cstat-no" title="statement not covered" >      window.removeEventListener('focus', handleWindowFocus);</span>
 <span class="cstat-no" title="statement not covered" >      window.removeEventListener('schedule-updated', handleScheduleUpdate);</span>
 <span class="cstat-no" title="statement not covered" >      window.removeEventListener('room-entry-updated', handleRoomEntryUpdate);</span>
 <span class="cstat-no" title="statement not covered" >      window.removeEventListener('storage', handleStorage);</span>
@@ -2644,7 +2632,7 @@ export default TurnComparisonTable;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-13T22:19:36.114Z
+                at 2025-10-14T06:02:35.645Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

@@ -589,3 +589,5 @@ export const roomManagementService = {
     }
   }
 };
+
+export default roomManagementService;

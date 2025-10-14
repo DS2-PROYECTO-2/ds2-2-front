@@ -1,0 +1,100 @@
+/* Estilos específicos para la vista de reportes de monitores */
+
+.monitor-indicator {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.monitor-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  animation: pulse-glow 2s ease-in-out infinite alternate;
+}
+
+.monitor-icon {
+  width: 18px;
+  height: 18px;
+  opacity: 0.9;
+}
+
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  }
+  100% {
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+  }
+}
+
+/* Indicador de datos personales en las cards */
+.stat-card--personal {
+  position: relative;
+  border-left: 4px solid #667eea;
+}
+
+.stat-card--personal::before {
+  content: "👤";
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 1.2rem;
+  opacity: 0.7;
+}
+
+/* Estilo para gráficos de monitores */
+.monitor-chart-container {
+  position: relative;
+}
+
+.monitor-chart-container::before {
+  content: "Datos personales";
+  position: absolute;
+  top: -0.5rem;
+  right: 0;
+  background: #667eea;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  z-index: 10;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .monitor-badge {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+  
+  .monitor-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Animación de entrada para el indicador */
+.monitor-indicator {
+  animation: slideInFromTop 0.5s ease-out;
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
