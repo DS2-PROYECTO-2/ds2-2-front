@@ -864,6 +864,39 @@
   border-top: 1px solid #e0e0e0;
 }
 
+/* Asegurar que los botones del modal mantengan su estructura */
+.modal-actions .btn-danger {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  min-height: 2.75rem !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+/* Forzar tamaño del spinner en botón de eliminar - SOBRESCRIBIR TODO */
+.user-management-container .btn-danger .loading-spinner,
+.modal-actions .btn-danger .loading-spinner,
+.btn-danger .loading-spinner {
+  width: 12px !important;
+  height: 12px !important;
+  border: 1.5px solid transparent !important;
+  border-top: 1.5px solid white !important;
+  border-radius: 50% !important;
+  animation: spin 1s linear infinite !important;
+  flex-shrink: 0 !important;
+  margin-right: 6px !important;
+  display: inline-block !important;
+  box-sizing: border-box !important;
+  max-width: 12px !important;
+  max-height: 12px !important;
+  min-width: 12px !important;
+  min-height: 12px !important;
+  transform: none !important;
+  scale: 1 !important;
+}
+
 .spinner-small {
   width: 16px;
   height: 16px;
@@ -995,6 +1028,23 @@
   background-color: #c82333;
 }
 
+/* Estilos específicos para spinner en botones de verificación */
+.btn-verify .loading-spinner,
+.btn-unverify .loading-spinner {
+  width: 14px !important;
+  height: 14px !important;
+  border-width: 2px !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-top-color: white !important;
+  border-radius: 50% !important;
+  animation: spin 1s linear infinite !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline-block !important;
+}
+
 /* Estilos para botones en línea horizontal */
 .user-actions-horizontal {
   display: flex;
@@ -1010,9 +1060,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden; /* Prevenir desbordamiento del spinner */
+  position: relative; /* Para contener el spinner */
 }
 
 /* Animación de carga */
+.user-actions-horizontal .btn-action .loading-spinner {
+  width: 16px !important;
+  height: 16px !important;
+  border: 2px solid transparent !important;
+  border-top: 2px solid currentColor !important;
+  border-radius: 50% !important;
+  animation: spin 1s linear infinite !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Spinner general para otros usos */
 .loading-spinner {
   width: 16px;
   height: 16px;
@@ -1062,6 +1127,24 @@
 .btn-danger:disabled:hover {
   background-color: #dc3545;
   transform: none;
+}
+
+/* Spinner específico para botón de eliminar en modal - MÁXIMA ESPECIFICIDAD */
+.user-management-container .modal-overlay .modal .modal-actions .btn-danger .loading-spinner {
+  width: 12px !important;
+  height: 12px !important;
+  border: 1.5px solid transparent !important;
+  border-top: 1.5px solid white !important;
+  border-radius: 50% !important;
+  animation: spin 1s linear infinite !important;
+  flex-shrink: 0 !important;
+  margin-right: 6px !important;
+  display: inline-block !important;
+  box-sizing: border-box !important;
+  max-width: 12px !important;
+  max-height: 12px !important;
+  min-width: 12px !important;
+  min-height: 12px !important;
 }
 
 /* Estilos específicos para botón secundario deshabilitado */
