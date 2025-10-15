@@ -579,23 +579,6 @@ const TurnComparisonTable: React.FC = () => {
               />
             </div>
             <div className="filter-group">
-              <label>Usuario:</label>
-              <select
-                value={selectedUser}
-                onChange={(e) => setSelectedUser(e.target.value)}
-                className="filter-select"
-              >
-                <option value="">Todos los usuarios</option>
-                {users.map(user => (
-                  <option key={user.id} value={user.id}>
-                    {user.full_name} ({user.username})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="filters-row">
-            <div className="filter-group">
               <label>Sala:</label>
               <select
                 value={selectedRoom}
@@ -610,6 +593,8 @@ const TurnComparisonTable: React.FC = () => {
                 ))}
               </select>
             </div>
+          </div>
+          <div className="filters-row">
             <div className="filter-group">
               <label>Año:</label>
               <select
@@ -643,8 +628,6 @@ const TurnComparisonTable: React.FC = () => {
                 ))}
               </select>
             </div>
-          </div>
-          <div className="filters-row">
             <div className="filter-group checkbox-group">
               <input
                 type="checkbox"
@@ -656,6 +639,25 @@ const TurnComparisonTable: React.FC = () => {
               <label htmlFor="showAllCheckbox" className="checkbox-label">
                 Mostrar todos los registros
               </label>
+            </div>
+          </div>
+          
+          <div className="filters-row">
+            <div className="filter-group user-filter">
+              <label>Usuario:</label>
+              <select
+                value={selectedUser}
+                onChange={(e) => setSelectedUser(e.target.value)}
+                className="filter-select"
+                id="userFilterSelect"
+              >
+                <option value="">Todos los usuarios</option>
+                {users.map(user => (
+                  <option key={user.id} value={user.id}>
+                    {user.full_name} ({user.username})
+                  </option>
+                ))}
+              </select>
             </div>
             <button
               onClick={clearAllFilters}
