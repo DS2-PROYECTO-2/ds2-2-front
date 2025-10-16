@@ -20,6 +20,7 @@ const DashboardLayout: React.FC = () => {
   const { user, isLoading, isHydrated } = useAuth();
   const { isAdmin } = useSecurity();
   const [historyReloadKey, setHistoryReloadKey] = useState(0);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const [confirmConfig, setConfirmConfig] = useState<null | {
@@ -207,9 +208,26 @@ const DashboardLayout: React.FC = () => {
   }
 
   return (
-    <div className={`dashboard-layout ${activeSection === 'profile' ? 'profile-view' : ''}`}>
-      <LeftSidebar onNavigate={handleNavigation} activeSection={activeSection} />
+    <div className={`dashboard-layout ${activeSection === 'profile' ? 'profile-view' : ''} ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+      <LeftSidebar onNavigate={(section) => { handleNavigation(section); setIsSidebarOpen(false); }} activeSection={activeSection} onClose={() => setIsSidebarOpen(false)} />
       <main className="main-content">
+        {/* Header móvil */}
+        <header className="mobile-header">
+          <button className="hamburger-btn" aria-label="Abrir menú" onClick={() => setIsSidebarOpen(true)}>
+            <span className="hamburger-bar"></span>
+            <span className="hamburger-bar"></span>
+            <span className="hamburger-bar"></span>
+          </button>
+          <h1 className="mobile-title">Salas EISC</h1>
+          <button
+            className="mobile-avatar"
+            aria-label="Ir a Perfil"
+            onClick={() => navigate('/profile')}
+            title="Perfil"
+          >
+            {user?.username?.[0]?.toUpperCase() || 'P'}
+          </button>
+        </header>
         {renderSection()}
       </main>
       {activeSection !== 'profile' && <RightSidebar />}
@@ -253,6 +271,11 @@ const DashboardLayout: React.FC = () => {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Overlay móvil */}
+      {isSidebarOpen && (
+        <div className="mobile-overlay" onClick={() => setIsSidebarOpen(false)} />
       )}
     </div>
   );

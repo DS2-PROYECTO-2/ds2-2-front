@@ -74,19 +74,27 @@
   border-color: #d0d0d0;
 }
 
-.btn-danger {
-  background: #dc3545;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: 'Poppins', sans-serif;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  height: 2.75rem; /* Altura unificada */
+/* BOTÓN BASE UNIFICADO - FORZAR MISMAS PROPIEDADES */
+.btn-danger,
+.btn-clear-filters {
+  background: #dc3545 !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-weight: 500 !important;
+  font-size: 0.9rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  height: 2.75rem !important;
+  width: 180px !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3) !important;
+  opacity: 1 !important;
 }
 
 /* Botón Limpiar Filtros */
@@ -96,29 +104,13 @@
   margin-bottom: 1rem;
 }
 
-.btn-clear-filters {
-  background: #dc3545;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 500;
-  font-size: 0.9rem;
-  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  height: 2.75rem; /* Altura unificada */
-}
-
+/* HOVER UNIFICADO PARA AMBOS BOTONES - FORZAR MISMAS PROPIEDADES */
+.btn-danger:hover,
 .btn-clear-filters:hover {
-  background: #c82333;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+  background: #c82333 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4) !important;
+  opacity: 1 !important;
 }
 
 /* Filtros */
@@ -129,14 +121,24 @@
   margin-bottom: 2rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  width: 100%;
 }
 
 .filters-grid {
   display: flex;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.filters-row {
+  display: flex;
+  gap: 2rem;
   align-items: center;
   width: 100%;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  min-width: 100%;
 }
 
 .filter-group {
@@ -144,12 +146,13 @@
   align-items: center;
   gap: 0.5rem;
   background: #f8f9fa;
-  padding: 0 0.75rem; /* sin padding vertical para igualar altura */
-  height: 3rem; /* igual a botones */
+  padding: 0 0.75rem;
+  height: 3rem;
   border-radius: 8px;
   border: 1px solid #e0e0e0;
   flex: 0 0 auto;
   min-width: fit-content;
+  white-space: nowrap;
 }
 
 .filter-input,
@@ -160,29 +163,71 @@
   flex: 1;
   font-family: 'Poppins', sans-serif;
   font-size: 0.9rem;
-  height: 2.75rem; /* Altura unificada con botones */
-  padding: 0 0.75rem;
+  height: 2.75rem;
+  padding: 0 0.5rem;
   box-sizing: border-box;
   min-width: 120px;
-  max-width: 300px;
+  width: auto;
 }
 
 .filter-input::placeholder {
   color: #999;
 }
 
-/* Estilos específicos para el input de búsqueda */
-.filter-group:first-child {
-  flex: 1 1 auto;
-  min-width: 200px;
-  max-width: 400px;
+/* Input de búsqueda: ANCHO FIJO MÁS GRANDE */
+.user-management-container .search-filter {
+  flex: 1 1 50% !important;
+  min-width: 370px !important;
+  max-width: 60% !important;
+  width: 50% !important;
 }
 
-/* Estilos específicos para los selects */
+/* Selects: ancho según contenido */
 .filter-group:not(:first-child) {
   flex: 0 0 auto;
-  min-width: 150px;
-  max-width: 200px;
+  min-width: 120px;
+  max-width: 160px;
+}
+
+/* FILTRO DE ROLES - INDIVIDUAL */
+.user-management-container .filters-row:first-child .filter-group:nth-child(1) {
+  min-width: 370px;
+  max-width: 60%;
+  width: 60%;
+  flex: 1 1 60%;
+  margin-right: 2rem;
+}
+
+/* FILTRO DE ESTADOS - INDIVIDUAL */
+.user-management-container .filters-row:first-child .filter-group:nth-child(2) {
+  min-width: 350px;
+  max-width: 50%;
+  width: 50%;
+  flex: 1 1 50%;
+  margin-left: 8rem;
+}
+
+/* RESET GENERAL PARA FILTROS */
+.user-management-container .filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Asegurar que los iconos se vean correctamente */
+.user-management-container .filter-group svg {
+  width: 20px !important;
+  height: 20px !important;
+  flex-shrink: 0 !important;
+  margin-right: 0.5rem !important;
+}
+
+/* FILTRO DE BÚSQUEDA - INDIVIDUAL */
+.user-management-container .search-filter {
+  min-width: 370px;
+  max-width: 60%;
+  width: 50%;
+  flex: 1 1 50%;
 }
 
 /* Estados de carga y error */
@@ -227,7 +272,8 @@
 .users-table-container {
   background: white;
   border-radius: 12px;
-  overflow: auto;
+  overflow: visible; /* para que los menús desplegables no se corten */
+  overflow-x: auto; /* Scroll horizontal cuando sea necesario */
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   border: 1px solid #f0f0f0;
   max-height: 70vh;
@@ -236,7 +282,7 @@
 
 .users-table {
   width: auto !important;
-  min-width: 100% !important;
+  min-width: 900px !important; /* ancho mínimo para evitar colapso y habilitar scroll */
   border-collapse: collapse !important;
   font-family: 'Poppins', sans-serif !important;
   table-layout: auto !important;
@@ -822,26 +868,7 @@
   font-weight: 600;
 }
 
-.btn-danger {
-  background: #dc3545;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.btn-danger:hover {
-  background: #c82333;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-}
+/* REGLA DUPLICADA ELIMINADA - USAR REGLA UNIFICADA ARRIBA */
 
 .form-error {
   display: flex;
@@ -925,14 +952,45 @@
   }
   
   .btn-clear-filters {
-    width: 100%;
-    max-width: 200px;
+    width: 180px !important;
+    max-width: 180px !important;
   }
   
   .filters-grid {
-    grid-template-columns: 1fr;
     gap: 0.75rem;
-    overflow: visible;
+  }
+  
+  .filters-row {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+  
+  .filter-group {
+    width: 100%;
+    max-width: none;
+    min-width: auto;
+  }
+
+  /* Botones de filtros en Gestión de Usuarios */
+  .filters-section .btn,
+  .filters-section button,
+  .clear-filters-container .btn-clear-filters {
+    width: 100% !important;
+    height: 44px !important;
+    font-size: 0.95rem !important;
+  }
+  
+  .search-filter {
+    flex: 1 1 auto;
+    min-width: auto;
+    max-width: none;
+  }
+  
+  .filter-group:not(.search-filter) {
+    flex: 1 1 auto;
+    min-width: auto;
+    max-width: none;
   }
   
   .users-table-container {

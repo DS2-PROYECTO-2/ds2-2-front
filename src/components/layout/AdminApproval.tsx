@@ -7,17 +7,27 @@ const AdminApproval: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [componentError, setComponentError] = useState<string | null>(null);
 
   const action = searchParams.get('action');
   const user = searchParams.get('user');
   const error = searchParams.get('error');
 
   useEffect(() => {
-    // Simular carga para mejor UX
-    setTimeout(() => setLoading(false), 1000);
+    try {
+      // Simular carga para mejor UX
+      setTimeout(() => setLoading(false), 1000);
+    } catch (err) {
+      console.error('Error en AdminApproval:', err);
+      setComponentError('Error al cargar el componente');
+      setLoading(false);
+    }
   }, []);
 
   const getMessage = () => {
+    // Debug: Log para verificar parámetros
+    console.log('AdminApproval - Parámetros recibidos:', { action, user, error });
+    
     if (error) {
       switch (error) {
         case 'missing_token':
@@ -52,7 +62,7 @@ const AdminApproval: React.FC = () => {
           return {
             type: 'error',
             title: 'Error desconocido',
-            message: 'Ha ocurrido un error inesperado.',
+            message: `Ha ocurrido un error inesperado: ${error}`,
             icon: '❌'
           };
       }
@@ -76,15 +86,55 @@ const AdminApproval: React.FC = () => {
       };
     }
 
+    // Si no hay parámetros, mostrar mensaje de carga o error
+    if (!action && !error) {
+      return {
+        type: 'info',
+        title: 'Cargando...',
+        message: 'Procesando la solicitud, por favor espera.',
+        icon: '⏳'
+      };
+    }
+
     return {
       type: 'info',
       title: 'Acción no reconocida',
-      message: 'No se pudo determinar la acción realizada.',
+      message: `No se pudo determinar la acción realizada. Parámetros: action=${action}, user=${user}`,
       icon: '❓'
     };
   };
 
   const message = getMessage();
+
+  // Manejo de errores del componente
+  if (componentError) {
+    return (
+      <div className="admin-approval-container">
+        <BackgroundRainParticles density={110} speed={0.9} />
+        <div className="admin-approval-form">
+          <div className="message-card error">
+            <div className="status-icon">❌</div>
+            <h2>Error del Componente</h2>
+            <p className="status-message">{componentError}</p>
+            <div className="action-buttons">
+              <button 
+                onClick={() => window.location.reload()}
+                className="primary-button"
+              >
+                Recargar Página
+              </button>
+              <button 
+                onClick={() => navigate('/login')}
+                className="secondary-button"
+              >
+                Ir al Login
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -106,8 +156,10 @@ const AdminApproval: React.FC = () => {
       <BackgroundRainParticles density={110} speed={0.9} />
       <div className="admin-approval-form">
         <div className={`message-card ${message.type}`}>
-          <div className="status-icon">{message.icon}</div>
-          <h2>{message.title}</h2>
+          <div className="title-container">
+            <div className="status-icon">{message.icon}</div>
+            <h2>{message.title}</h2>
+          </div>
           <p className="status-message">{message.message}</p>
           
           <div className="action-buttons">

@@ -14,9 +14,10 @@ import {
 interface LeftSidebarProps {
   onNavigate: (section: string) => void;
   activeSection: string;
+  onClose?: () => void;
 }
 
-const LeftSidebar: React.FC<LeftSidebarProps> = ({ onNavigate, activeSection }) => {
+const LeftSidebar: React.FC<LeftSidebarProps> = ({ onNavigate, activeSection, onClose }) => {
   const { logout, user } = useAuth();
 
   const handleLogout = () => {
@@ -36,6 +37,15 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onNavigate, activeSection }) 
 
   return (
     <aside className="left-sidebar">
+      <button
+        type="button"
+        aria-label="Cerrar menú"
+        className="sidebar-close-btn"
+        onClick={() => onClose?.()}
+        title="Cerrar"
+      >
+        ×
+      </button>
       <div className="sidebar-header">
         <div className="sidebar-logo-container">
           <img src={logo2} alt="Monitores EISC" className="sidebar-logo-img" />
