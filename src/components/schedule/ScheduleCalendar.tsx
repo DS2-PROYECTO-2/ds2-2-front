@@ -26,6 +26,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useSecurity } from '../../hooks/useSecurity';
 import { ApiErrorHandler } from '../../utils/errorHandler';
 import '../../styles/ScheduleCalendar.css';
+import CustomSelect from '../reports/CustomSelect';
 import '../../styles/CourseCalendar.css';
 
 interface Room {
@@ -396,6 +397,7 @@ const ScheduleCalendar: React.FC = () => {
         // Validar horas solo si las fechas coinciden
         if (courseStartDate.getTime() === scheduleStartDate.getTime()) {
           const startTime = startDate.getHours() * 60 + startDate.getMinutes();
+          const scheduleStartTime = scheduleStart.getHours() * 60 + scheduleStart.getMinutes();
           
           if (startTime < scheduleStartTime) {
             errors.start_datetime = `El curso no puede iniciar antes del turno (${scheduleStart.toLocaleTimeString()})`;
@@ -404,6 +406,7 @@ const ScheduleCalendar: React.FC = () => {
         
         if (courseEndDate.getTime() === scheduleEndDate.getTime()) {
           const endTime = endDate.getHours() * 60 + endDate.getMinutes();
+          const scheduleEndTime = scheduleEnd.getHours() * 60 + scheduleEnd.getMinutes();
           
           if (endTime > scheduleEndTime) {
             errors.end_datetime = `El curso no puede terminar después del turno (${scheduleEnd.toLocaleTimeString()})`;
@@ -1599,18 +1602,12 @@ const ScheduleCalendar: React.FC = () => {
         <div className="calendar-controls">
           {/* Filtros para admins */}
           {isAdmin && (
-            <select
-              value={selectedMonitor || ''}
-              onChange={(e) => setSelectedMonitor(e.target.value ? parseInt(e.target.value) : null)}
-              className="filter-select"
-            >
-              <option value="">Todos los monitores</option>
-              {monitors.map(monitor => (
-                <option key={monitor.id} value={monitor.id}>
-                  {monitor.full_name}
-                </option>
-              ))}
-            </select>
+            <CustomSelect
+              value={selectedMonitor ?? ''}
+              placeholder="Todos los monitores"
+              options={monitors.map(m => ({ value: m.id, label: m.full_name }))}
+              onChange={(val) => setSelectedMonitor((val as number) ?? null)}
+            />
           )}
 
           {/* Navegación del calendario */}

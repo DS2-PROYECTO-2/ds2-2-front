@@ -780,50 +780,50 @@ export default function RoomManagement() {
                 </div>
                 <div className="computer-header">
                   <span className="computer-number">PC {computer.number}</span>
-                  <div className="computer-actions">
-                    {canReportFaults() && (
-                      <button 
-                        className="action-btn report-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleReportFault(computer);
-                        }}
-                        title="Reportar falla"
-                      >
-                        <AlertCircle size={12} />
-                      </button>
-                    )}
-                    {canEditComputers() && (
-                      <button 
-                        className="action-btn edit-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditComputer(computer);
-                        }}
-                        title="Editar equipo"
-                      >
-                        <Edit size={12} />
-                      </button>
-                    )}
-                    {canDeleteComputers() && (
-                      <button 
-                        className="action-btn delete-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteComputer(computer.id, selectedRoom.id);
-                        }}
-                        title="Eliminar equipo"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    )}
-                  </div>
                 </div>
                 <div className="computer-serial">{computer.serial}</div>
                 <div className={`status-badge ${computer.status}`}>
                   {computer.status === 'operational' && 'Operativo'}
                   {computer.status === 'maintenance' && 'En Mantenimiento'}
                   {computer.status === 'out_of_service' && 'Fuera de Servicio'}
+                </div>
+                <div className="computer-actions">
+                  {canReportFaults() && (
+                    <button 
+                      className="action-btn report-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReportFault(computer);
+                      }}
+                      title="Reportar falla"
+                    >
+                      <AlertCircle size={12} />
+                    </button>
+                  )}
+                  {canEditComputers() && (
+                    <button 
+                      className="action-btn edit-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditComputer(computer);
+                      }}
+                      title="Editar equipo"
+                    >
+                      <Edit size={12} />
+                    </button>
+                  )}
+                  {canDeleteComputers() && (
+                    <button 
+                      className="action-btn delete-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteComputer(computer.id, selectedRoom.id);
+                      }}
+                      title="Eliminar equipo"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  )}
                 </div>
                 
                 

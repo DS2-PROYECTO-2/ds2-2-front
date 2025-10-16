@@ -20,6 +20,7 @@ import type { User, UserFilters, CreateUserData, ApiError } from '../../types';
 import type { UpdateUserData } from '../../services/userManagementService';
 import { useAuth } from '../../hooks/useAuth';
 import '../../styles/UserManagement.css';
+import CustomSelect from '../reports/CustomSelect';
 
 const UserManagement: React.FC = () => {
   const { user } = useAuth();
@@ -691,8 +692,37 @@ const UserManagement: React.FC = () => {
 
       {/* Filtros */}
       <div className="filters-section">
-        <div className="filters-grid">
+        {/* Fila 1: Roles y Estados */}
+        <div className="filters-row">
           <div className="filter-group">
+            <Filter size={20} />
+            <CustomSelect<string>
+              value={(filters.role as string) || ''}
+              placeholder="Todos los roles"
+              options={[
+                { value: 'admin', label: 'Administrador' },
+                { value: 'monitor', label: 'Monitor' },
+              ]}
+              onChange={(val) => handleFilterChange('role', val || undefined)}
+            />
+          </div>
+
+          <div className="filter-group">
+            <CustomSelect<string>
+              value={filters.is_verified === undefined ? '' : String(filters.is_verified)}
+              placeholder="Todos los estados"
+              options={[
+                { value: 'true', label: 'Verificados' },
+                { value: 'false', label: 'No verificados' },
+              ]}
+              onChange={(val) => handleFilterChange('is_verified', val === '' ? undefined : val === 'true')}
+            />
+          </div>
+        </div>
+        
+        {/* Fila 2: Búsqueda */}
+        <div className="filters-row">
+          <div className="filter-group search-filter">
             <Search size={20} />
             <input
               type="text"
@@ -701,32 +731,6 @@ const UserManagement: React.FC = () => {
               onChange={(e) => handleFilterChange('search', e.target.value)}
               className="filter-input"
             />
-          </div>
-          
-          <div className="filter-group">
-            <Filter size={20} />
-            <select
-              value={filters.role || ''}
-              onChange={(e) => handleFilterChange('role', e.target.value || undefined)}
-              className="filter-select"
-            >
-              <option value="">Todos los roles</option>
-              <option value="admin">Administrador</option>
-              <option value="monitor">Monitor</option>
-            </select>
-          </div>
-
-
-          <div className="filter-group">
-            <select
-              value={filters.is_verified === undefined ? '' : filters.is_verified.toString()}
-              onChange={(e) => handleFilterChange('is_verified', e.target.value === '' ? undefined : e.target.value === 'true')}
-              className="filter-select"
-            >
-              <option value="">Todos los estados</option>
-              <option value="true">Verificados</option>
-              <option value="false">No verificados</option>
-            </select>
           </div>
         </div>
       </div>

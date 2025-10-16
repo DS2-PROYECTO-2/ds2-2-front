@@ -263,22 +263,34 @@
 /* Grid de equipos */
 .computers-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 15px;
+  width: 100%;
+}
+
+/* Vista de escritorio: cards más grandes y grilla amplia */
+@media (min-width: 1025px) {
+  .computers-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+  .computer-card {
+    min-height: 160px;
+    padding: 14px;
+  }
 }
 
 /* Tarjeta de equipo */
 .computer-card {
   background: white;
   border-radius: 12px;
-  padding: 8px; /* reduce padding */
+  padding: 10px; /* margen interno confortable */
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* sombra más ligera */
   border: 2px solid transparent;
-  min-height: 100px; /* reduce altura */
+  min-height: 110px; /* altura suficiente para contenido */
 }
 
 .computer-icon {
@@ -337,29 +349,31 @@
 
 .computer-actions {
   display: flex;
-  flex-wrap: wrap; /* permitir salto de línea para que no se oculte el botón */
-  gap: 6px;
-  opacity: 0;
+  flex-direction: row; /* Botones en línea horizontal */
+  justify-content: center; /* Centrar botones */
+  align-items: center;
+  gap: 6px; /* Reducir gap para que quepan en línea */
+  opacity: 1; /* SIEMPRE VISIBLE */
   transition: opacity 0.3s;
+  margin-top: 8px; /* Reducir espacio después del estado badge */
+  margin-bottom: 0px; /* Eliminar espacio antes del final de la tarjeta */
 }
 
+/* Eliminar hover - botones siempre visibles */
 .computer-card:hover .computer-actions {
   opacity: 1;
-}
-
-/* En dispositivos táctiles no hay hover, mostrar siempre acciones */
-@media (hover: none) {
-  .computer-actions {
-    opacity: 1;
-  }
 }
 
 .computer-actions .action-btn {
   background: rgba(0, 0, 0, 0.1);
   color: #666;
-  padding: 4px;
-  border-radius: 4px;
-  font-size: 10px;
+  padding: 6px 10px; /* Reducir padding para que quepan en línea */
+  border-radius: 5px;
+  font-size: 11px; /* Reducir tamaño de fuente */
+  font-weight: 600;
+  min-width: 35px; /* Reducir ancho mínimo */
+  text-align: center;
+  white-space: nowrap; /* Evitar salto de línea en texto */
 }
 
 .computer-actions .action-btn:hover {
@@ -367,18 +381,25 @@
 }
 
 .computer-actions .report-btn {
-  background: rgba(220, 38, 38, 0.1);
+  background: rgba(220, 38, 38, 0.15);
   color: #DC2626;
+  padding: 6px 10px; /* Reducir padding para que quepan en línea */
+  border-radius: 5px;
+  font-size: 11px; /* Reducir tamaño de fuente */
+  font-weight: 600;
+  min-width: 35px; /* Reducir ancho mínimo */
+  text-align: center;
+  white-space: nowrap; /* Evitar salto de línea en texto */
 }
 
 .computer-actions .report-btn:hover {
-  background: rgba(220, 38, 38, 0.2);
+  background: rgba(220, 38, 38, 0.25);
   color: #B91C1C;
 }
 
 /* Asegurar que las tarjetas reserven espacio para acciones y no tapen botones */
 .computer-card {
-  padding-bottom: 44px; /* reserva menor para acciones */
+  padding-bottom: 15px; /* Reducir espacio para eliminar espacio vacío */
 }
 
 /* Responsive: mejorar disposición de acciones en pantallas pequeñas */
@@ -390,6 +411,34 @@
   .computer-actions .report-btn {
     flex: 1 1 calc(50% - 6px);
     text-align: center;
+  }
+  .computers-grid { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+  .computer-card { min-height: 120px; }
+}
+
+/* Móvil pequeño: una columna y acciones compactas */
+@media (max-width: 480px) {
+  .computers-grid { grid-template-columns: 1fr; }
+  .computer-card { min-height: 130px; }
+  .computer-actions { gap: 8px; }
+  .computer-actions .action-btn,
+  .computer-actions .report-btn {
+    flex: 1 1 calc(33.33% - 8px); /* 3 botones por fila */
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+}
+
+/* Carrusel horizontal en pantallas muy estrechas: evita que se salgan y permite scroll */
+@media (max-width: 420px) {
+  .computers-grid {
+    grid-template-columns: none;           /* desactivar plantilla fija */
+    grid-auto-flow: column;                /* flujo horizontal */
+    grid-auto-columns: 220px;              /* ancho fijo por card */
+    overflow-x: auto;                      /* scroll horizontal */
+    -webkit-overflow-scrolling: touch;     /* scroll suave en iOS */
+    padding-bottom: 8px;                   /* espacio para scrollbar */
+    box-sizing: border-box;
   }
 }
 
@@ -411,6 +460,7 @@
   font-weight: 600 !important;
   text-align: center !important;
   margin-top: 6px !important;
+  margin-bottom: 8px !important; /* Espacio inferior para separar de los botones */
   color: white !important;
   text-transform: uppercase !important;
   letter-spacing: 0.1px !important;
@@ -1354,7 +1404,7 @@
 
 /* Asegurar que el modal tenga suficiente altura */
 .modal-content {
-  min-height: 500px;
+  min-height: auto;
   overflow-y: auto;
 }
 
@@ -1520,9 +1570,7 @@
     grid-template-columns: 1fr;
   }
 
-  .computers-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  }
+  .computers-grid { grid-template-columns: repeat(3, minmax(180px, 1fr)); }
 
   .room-detail-stats {
     grid-template-columns: 1fr;
@@ -1575,9 +1623,7 @@
     align-self: flex-end;
   }
 
-  .computers-grid {
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  }
+  .computers-grid { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
 
   .computer-card {
     padding: 10px;

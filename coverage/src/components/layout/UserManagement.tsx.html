@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">24.2% </span>
+                <span class="strong">24.56% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>250/1033</span>
+                <span class='fraction'>255/1038</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">24.2% </span>
+                <span class="strong">24.56% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>250/1033</span>
+                <span class='fraction'>255/1038</span>
             </div>
         
             
@@ -1361,7 +1361,11 @@
 <a name='L1296'></a><a href='#L1296'>1296</a>
 <a name='L1297'></a><a href='#L1297'>1297</a>
 <a name='L1298'></a><a href='#L1298'>1298</a>
-<a name='L1299'></a><a href='#L1299'>1299</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L1299'></a><a href='#L1299'>1299</a>
+<a name='L1300'></a><a href='#L1300'>1300</a>
+<a name='L1301'></a><a href='#L1301'>1301</a>
+<a name='L1302'></a><a href='#L1302'>1302</a>
+<a name='L1303'></a><a href='#L1303'>1303</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1381,6 +1385,7 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2054,6 +2059,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
@@ -2072,20 +2080,20 @@
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
@@ -2681,6 +2689,7 @@ import type { User, UserFilters, CreateUserData, ApiError } from '../../types';
 import type { UpdateUserData } from '../../services/userManagementService';
 import { useAuth } from '../../hooks/useAuth';
 import '../../styles/UserManagement.css';
+import CustomSelect from '../reports/CustomSelect';
 &nbsp;
 const UserManagement: React.FC = () =&gt; {
   const { user } = useAuth();
@@ -3352,8 +3361,37 @@ const UserManagement: React.FC = () =&gt; {
 &nbsp;
       {/* Filtros */}
       &lt;div className="filters-section"&gt;
-        &lt;div className="filters-grid"&gt;
+        {/* Fila 1: Roles y Estados */}
+        &lt;div className="filters-row"&gt;
           &lt;div className="filter-group"&gt;
+            &lt;Filter size={20} /&gt;
+            &lt;CustomSelect&lt;string&gt;
+              value={(filters.role as string) || ''}
+              placeholder="Todos los roles"
+              options={[
+                { value: 'admin', label: 'Administrador' },
+                { value: 'monitor', label: 'Monitor' },
+              ]}
+              onChange={<span class="fstat-no" title="function not covered" >(val) =&gt; handleFilterChange('role', val || undefined)}</span>
+            /&gt;
+          &lt;/div&gt;
+&nbsp;
+          &lt;div className="filter-group"&gt;
+            &lt;CustomSelect&lt;string&gt;
+              value={filters.is_verified === undefined ? <span class="branch-0 cbranch-no" title="branch not covered" >'' : String(filters.is_verified)}</span>
+              placeholder="Todos los estados"
+              options={[
+                { value: 'true', label: 'Verificados' },
+                { value: 'false', label: 'No verificados' },
+              ]}
+              onChange={<span class="fstat-no" title="function not covered" >(val) =&gt; handleFilterChange('is_verified', val === '' ? undefined : val === 'true')}</span>
+            /&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        
+        {/* Fila 2: Búsqueda */}
+        &lt;div className="filters-row"&gt;
+          &lt;div className="filter-group search-filter"&gt;
             &lt;Search size={20} /&gt;
             &lt;input
               type="text"
@@ -3362,32 +3400,6 @@ const UserManagement: React.FC = () =&gt; {
               onChange={(e) =&gt; handleFilterChange('search', e.target.value)}
               className="filter-input"
             /&gt;
-          &lt;/div&gt;
-          
-          &lt;div className="filter-group"&gt;
-            &lt;Filter size={20} /&gt;
-            &lt;select
-              value={filters.role || ''}
-              onChange={<span class="fstat-no" title="function not covered" >(e) =&gt; handleFilterChange('role', e.target.value || undefined)}</span>
-              className="filter-select"
-            &gt;
-              &lt;option value=""&gt;Todos los roles&lt;/option&gt;
-              &lt;option value="admin"&gt;Administrador&lt;/option&gt;
-              &lt;option value="monitor"&gt;Monitor&lt;/option&gt;
-            &lt;/select&gt;
-          &lt;/div&gt;
-&nbsp;
-&nbsp;
-          &lt;div className="filter-group"&gt;
-            &lt;select
-              value={filters.is_verified === undefined ? <span class="branch-0 cbranch-no" title="branch not covered" >'' : filters.is_verified.toString()}</span>
-              onChange={<span class="fstat-no" title="function not covered" >(e) =&gt; handleFilterChange('is_verified', e.target.value === '' ? undefined : e.target.value === 'true')}</span>
-              className="filter-select"
-            &gt;
-              &lt;option value=""&gt;Todos los estados&lt;/option&gt;
-              &lt;option value="true"&gt;Verificados&lt;/option&gt;
-              &lt;option value="false"&gt;No verificados&lt;/option&gt;
-            &lt;/select&gt;
           &lt;/div&gt;
         &lt;/div&gt;
       &lt;/div&gt;
@@ -3964,7 +3976,7 @@ export default UserManagement;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-14T06:02:35.645Z
+                at 2025-10-16T07:24:23.396Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

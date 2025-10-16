@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">22.8% </span>
+                <span class="strong">22.77% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>514/2254</span>
+                <span class='fraction'>513/2252</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">22.8% </span>
+                <span class="strong">22.77% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>514/2254</span>
+                <span class='fraction'>513/2252</span>
             </div>
         
             
@@ -2963,10 +2963,7 @@
 <a name='L2898'></a><a href='#L2898'>2898</a>
 <a name='L2899'></a><a href='#L2899'>2899</a>
 <a name='L2900'></a><a href='#L2900'>2900</a>
-<a name='L2901'></a><a href='#L2901'>2901</a>
-<a name='L2902'></a><a href='#L2902'>2902</a>
-<a name='L2903'></a><a href='#L2903'>2903</a>
-<a name='L2904'></a><a href='#L2904'>2904</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L2901'></a><a href='#L2901'>2901</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2984,6 +2981,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -3364,12 +3362,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -4571,12 +4571,6 @@
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -5897,6 +5891,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useSecurity } from '../../hooks/useSecurity';
 import { ApiErrorHandler } from '../../utils/errorHandler';
 import '../../styles/ScheduleCalendar.css';
+import CustomSelect from '../reports/CustomSelect';
 import '../../styles/CourseCalendar.css';
 &nbsp;
 interface Room {
@@ -6267,6 +6262,7 @@ const ScheduleCalendar: React.FC = () =&gt; {
         // Validar horas solo si las fechas coinciden
 <span class="cstat-no" title="statement not covered" >        if (courseStartDate.getTime() === scheduleStartDate.getTime()) {</span>
 <span class="cstat-no" title="statement not covered" >          const startTime = startDate.getHours() * 60 + startDate.getMinutes();</span>
+<span class="cstat-no" title="statement not covered" >          const scheduleStartTime = scheduleStart.getHours() * 60 + scheduleStart.getMinutes();</span>
           
 <span class="cstat-no" title="statement not covered" >          if (startTime &lt; scheduleStartTime) {</span>
 <span class="cstat-no" title="statement not covered" >            errors.start_datetime = `El curso no puede iniciar antes del turno (${scheduleStart.toLocaleTimeString()})`;</span>
@@ -6275,6 +6271,7 @@ const ScheduleCalendar: React.FC = () =&gt; {
         
 <span class="cstat-no" title="statement not covered" >        if (courseEndDate.getTime() === scheduleEndDate.getTime()) {</span>
 <span class="cstat-no" title="statement not covered" >          const endTime = endDate.getHours() * 60 + endDate.getMinutes();</span>
+<span class="cstat-no" title="statement not covered" >          const scheduleEndTime = scheduleEnd.getHours() * 60 + scheduleEnd.getMinutes();</span>
           
 <span class="cstat-no" title="statement not covered" >          if (endTime &gt; scheduleEndTime) {</span>
 <span class="cstat-no" title="statement not covered" >            errors.end_datetime = `El curso no puede terminar después del turno (${scheduleEnd.toLocaleTimeString()})`;</span>
@@ -7470,18 +7467,12 @@ const ScheduleCalendar: React.FC = () =&gt; {
         &lt;div className="calendar-controls"&gt;
           {/* Filtros para admins */}
           {isAdmin &amp;&amp; (
-            &lt;select
-              value={selectedMonitor || ''}
-              onChange={<span class="fstat-no" title="function not covered" >(e) =&gt; setSelectedMonitor(e.target.value ? parseInt(e.target.value) : null)}</span>
-              className="filter-select"
-            &gt;
-              &lt;option value=""&gt;Todos los monitores&lt;/option&gt;
-              {monitors.map(monitor =&gt; (
-<span class="cstat-no" title="statement not covered" >                &lt;option key={monitor.id} value={monitor.id}&gt;</span>
-<span class="cstat-no" title="statement not covered" >                  {monitor.full_name}</span>
-<span class="cstat-no" title="statement not covered" >                &lt;/option&gt;</span>
-              ))}
-            &lt;/select&gt;
+            &lt;CustomSelect
+              value={selectedMonitor ?? ''}
+              placeholder="Todos los monitores"
+              options={monitors.map(m =&gt; ({ value: m.id, label: m.full_name }))}
+              onChange={<span class="fstat-no" title="function not covered" >(val) =&gt; setSelectedMonitor((val as number) ?? null)}</span>
+            /&gt;
           )}
 &nbsp;
           {/* Navegación del calendario */}
@@ -8779,7 +8770,7 @@ export default ScheduleCalendar;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-14T06:02:35.645Z
+                at 2025-10-16T07:24:23.396Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

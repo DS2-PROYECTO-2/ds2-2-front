@@ -30,6 +30,7 @@ import roomService from '../../services/roomService';
 import userManagementService from '../../services/userManagementService';
 import monitorReportsService from '../../services/monitorReportsService';
 import '../../styles/ReportsView.css';
+import CustomSelect from './CustomSelect';
 import '../../styles/MonitorReports.css';
 
 interface Room {
@@ -975,36 +976,24 @@ const ReportsView: React.FC = () => {
           
           <div className="filter-group">
             <label>Sala:</label>
-            <select
-              value={selectedRoom || ''}
-              onChange={(e) => setSelectedRoom(e.target.value ? parseInt(e.target.value) : null)}
-              className="filter-select"
-            >
-              <option value="">Todas las salas</option>
-              {rooms.map(room => (
-                <option key={room.id} value={room.id}>
-                  {room.name}
-                </option>
-              ))}
-            </select>
+            <CustomSelect
+              value={selectedRoom ?? ''}
+              placeholder="Todas las salas"
+              options={rooms.map(r => ({ value: r.id, label: r.name }))}
+              onChange={(val) => setSelectedRoom(val as number | null)}
+            />
           </div>
           
           {/* 🔒 FILTRO DE MONITOR SOLO PARA ADMINISTRADORES */}
           {isAdmin && (
             <div className="filter-group">
               <label>Monitor:</label>
-              <select
-                value={selectedMonitor || ''}
-                onChange={(e) => setSelectedMonitor(e.target.value ? parseInt(e.target.value) : null)}
-                className="filter-select"
-              >
-                <option value="">Todos los monitores</option>
-                {monitors.map(monitor => (
-                  <option key={monitor.id} value={monitor.id}>
-                    {monitor.full_name}
-                  </option>
-                ))}
-              </select>
+              <CustomSelect
+                value={selectedMonitor ?? ''}
+                placeholder="Todos los monitores"
+                options={monitors.map(m => ({ value: m.id, label: m.full_name }))}
+                onChange={(val) => setSelectedMonitor(val as number | null)}
+              />
             </div>
           )}
           
