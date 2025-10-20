@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">22.77% </span>
+                <span class="strong">22.87% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>513/2252</span>
+                <span class='fraction'>517/2260</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">22.77% </span>
+                <span class="strong">22.87% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>513/2252</span>
+                <span class='fraction'>517/2260</span>
             </div>
         
             
@@ -2963,7 +2963,22 @@
 <a name='L2898'></a><a href='#L2898'>2898</a>
 <a name='L2899'></a><a href='#L2899'>2899</a>
 <a name='L2900'></a><a href='#L2900'>2900</a>
-<a name='L2901'></a><a href='#L2901'>2901</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L2901'></a><a href='#L2901'>2901</a>
+<a name='L2902'></a><a href='#L2902'>2902</a>
+<a name='L2903'></a><a href='#L2903'>2903</a>
+<a name='L2904'></a><a href='#L2904'>2904</a>
+<a name='L2905'></a><a href='#L2905'>2905</a>
+<a name='L2906'></a><a href='#L2906'>2906</a>
+<a name='L2907'></a><a href='#L2907'>2907</a>
+<a name='L2908'></a><a href='#L2908'>2908</a>
+<a name='L2909'></a><a href='#L2909'>2909</a>
+<a name='L2910'></a><a href='#L2910'>2910</a>
+<a name='L2911'></a><a href='#L2911'>2911</a>
+<a name='L2912'></a><a href='#L2912'>2912</a>
+<a name='L2913'></a><a href='#L2913'>2913</a>
+<a name='L2914'></a><a href='#L2914'>2914</a>
+<a name='L2915'></a><a href='#L2915'>2915</a>
+<a name='L2916'></a><a href='#L2916'>2916</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -3362,6 +3377,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -3673,6 +3689,13 @@
 <span class="cline-any cline-yes">30x</span>
 <span class="cline-any cline-yes">510x</span>
 <span class="cline-any cline-yes">465x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">62x</span>
+<span class="cline-any cline-yes">62x</span>
+<span class="cline-any cline-yes">62x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">62x</span>
 <span class="cline-any cline-yes">62x</span>
 <span class="cline-any cline-yes">62x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -3693,6 +3716,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">30x</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -6262,6 +6292,7 @@ const ScheduleCalendar: React.FC = () =&gt; {
         // Validar horas solo si las fechas coinciden
 <span class="cstat-no" title="statement not covered" >        if (courseStartDate.getTime() === scheduleStartDate.getTime()) {</span>
 <span class="cstat-no" title="statement not covered" >          const startTime = startDate.getHours() * 60 + startDate.getMinutes();</span>
+          // Calcular la hora de inicio del turno en minutos
 <span class="cstat-no" title="statement not covered" >          const scheduleStartTime = scheduleStart.getHours() * 60 + scheduleStart.getMinutes();</span>
           
 <span class="cstat-no" title="statement not covered" >          if (startTime &lt; scheduleStartTime) {</span>
@@ -6573,8 +6604,15 @@ const ScheduleCalendar: React.FC = () =&gt; {
   const getSchedulesForDay = (date: Date | null) =&gt; {
     if (!date) return [];
     return schedules.filter(schedule =&gt; {
-      const scheduleDate = new Date(schedule.start_datetime).toDateString();
-      const dateMatch = scheduleDate === date.toDateString();
+      // Usar comparación de fechas en zona horaria de Bogotá para evitar problemas de UTC
+      const scheduleDate = new Date(schedule.start_datetime);
+      const scheduleDateBogota = new Date(scheduleDate.toLocaleString("en-US", {timeZone: "America/Bogota"}));
+      const dateBogota = new Date(date.toLocaleString("en-US", {timeZone: "America/Bogota"}));
+      
+      // Comparar solo la fecha (sin hora) para evitar problemas de zona horaria
+      const scheduleDateOnly = new Date(scheduleDateBogota.getFullYear(), scheduleDateBogota.getMonth(), scheduleDateBogota.getDate());
+      const dateOnly = new Date(dateBogota.getFullYear(), dateBogota.getMonth(), dateBogota.getDate());
+      const dateMatch = scheduleDateOnly.getTime() === dateOnly.getTime();
       
       // Aplicar filtro de monitor si está seleccionado
       if (selectedMonitor) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
@@ -6594,8 +6632,15 @@ const ScheduleCalendar: React.FC = () =&gt; {
   const getCoursesForDay = <span class="fstat-no" title="function not covered" >(date: Date | null) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    if (!date) return [];</span>
 <span class="cstat-no" title="statement not covered" >    return courses.filter(course =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >      const courseDate = new Date(course.start_datetime).toDateString();</span>
-<span class="cstat-no" title="statement not covered" >      const dateMatch = courseDate === date.toDateString();</span>
+      // Usar comparación de fechas en zona horaria de Bogotá para evitar problemas de UTC
+<span class="cstat-no" title="statement not covered" >      const courseDate = new Date(course.start_datetime);</span>
+<span class="cstat-no" title="statement not covered" >      const courseDateBogota = new Date(courseDate.toLocaleString("en-US", {timeZone: "America/Bogota"}));</span>
+<span class="cstat-no" title="statement not covered" >      const dateBogota = new Date(date.toLocaleString("en-US", {timeZone: "America/Bogota"}));</span>
+      
+      // Comparar solo la fecha (sin hora) para evitar problemas de zona horaria
+<span class="cstat-no" title="statement not covered" >      const courseDateOnly = new Date(courseDateBogota.getFullYear(), courseDateBogota.getMonth(), courseDateBogota.getDate());</span>
+<span class="cstat-no" title="statement not covered" >      const dateOnly = new Date(dateBogota.getFullYear(), dateBogota.getMonth(), dateBogota.getDate());</span>
+<span class="cstat-no" title="statement not covered" >      const dateMatch = courseDateOnly.getTime() === dateOnly.getTime();</span>
       
       // Aplicar filtro de monitor si está seleccionado
 <span class="cstat-no" title="statement not covered" >      if (selectedMonitor) {</span>
@@ -8770,7 +8815,7 @@ export default ScheduleCalendar;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-16T07:24:23.396Z
+                at 2025-10-20T04:51:05.497Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
