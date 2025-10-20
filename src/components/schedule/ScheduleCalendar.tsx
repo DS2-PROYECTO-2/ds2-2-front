@@ -397,6 +397,7 @@ const ScheduleCalendar: React.FC = () => {
         // Validar horas solo si las fechas coinciden
         if (courseStartDate.getTime() === scheduleStartDate.getTime()) {
           const startTime = startDate.getHours() * 60 + startDate.getMinutes();
+          // Calcular la hora de inicio del turno en minutos
           const scheduleStartTime = scheduleStart.getHours() * 60 + scheduleStart.getMinutes();
           
           if (startTime < scheduleStartTime) {
@@ -708,8 +709,15 @@ const ScheduleCalendar: React.FC = () => {
   const getSchedulesForDay = (date: Date | null) => {
     if (!date) return [];
     return schedules.filter(schedule => {
-      const scheduleDate = new Date(schedule.start_datetime).toDateString();
-      const dateMatch = scheduleDate === date.toDateString();
+      // Usar comparación de fechas en zona horaria de Bogotá para evitar problemas de UTC
+      const scheduleDate = new Date(schedule.start_datetime);
+      const scheduleDateBogota = new Date(scheduleDate.toLocaleString("en-US", {timeZone: "America/Bogota"}));
+      const dateBogota = new Date(date.toLocaleString("en-US", {timeZone: "America/Bogota"}));
+      
+      // Comparar solo la fecha (sin hora) para evitar problemas de zona horaria
+      const scheduleDateOnly = new Date(scheduleDateBogota.getFullYear(), scheduleDateBogota.getMonth(), scheduleDateBogota.getDate());
+      const dateOnly = new Date(dateBogota.getFullYear(), dateBogota.getMonth(), dateBogota.getDate());
+      const dateMatch = scheduleDateOnly.getTime() === dateOnly.getTime();
       
       // Aplicar filtro de monitor si está seleccionado
       if (selectedMonitor) {
@@ -729,8 +737,15 @@ const ScheduleCalendar: React.FC = () => {
   const getCoursesForDay = (date: Date | null) => {
     if (!date) return [];
     return courses.filter(course => {
-      const courseDate = new Date(course.start_datetime).toDateString();
-      const dateMatch = courseDate === date.toDateString();
+      // Usar comparación de fechas en zona horaria de Bogotá para evitar problemas de UTC
+      const courseDate = new Date(course.start_datetime);
+      const courseDateBogota = new Date(courseDate.toLocaleString("en-US", {timeZone: "America/Bogota"}));
+      const dateBogota = new Date(date.toLocaleString("en-US", {timeZone: "America/Bogota"}));
+      
+      // Comparar solo la fecha (sin hora) para evitar problemas de zona horaria
+      const courseDateOnly = new Date(courseDateBogota.getFullYear(), courseDateBogota.getMonth(), courseDateBogota.getDate());
+      const dateOnly = new Date(dateBogota.getFullYear(), dateBogota.getMonth(), dateBogota.getDate());
+      const dateMatch = courseDateOnly.getTime() === dateOnly.getTime();
       
       // Aplicar filtro de monitor si está seleccionado
       if (selectedMonitor) {
