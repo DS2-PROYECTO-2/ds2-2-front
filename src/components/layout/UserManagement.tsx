@@ -20,6 +20,7 @@ import type { User, UserFilters, CreateUserData, ApiError } from '../../types';
 import type { UpdateUserData } from '../../services/userManagementService';
 import { useAuth } from '../../hooks/useAuth';
 import '../../styles/UserManagement.css';
+import '../../styles/UserFilters.css';
 import CustomSelect from '../reports/CustomSelect';
 
 const UserManagement: React.FC = () => {
@@ -691,7 +692,7 @@ const UserManagement: React.FC = () => {
       </div>
 
       {/* Filtros */}
-      <div className="filters-section">
+      <div className="filters-section um-filters um-filters--inline">
         {/* Fila 1: Roles y Estados */}
         <div className="filters-row">
           <div className="filter-group">

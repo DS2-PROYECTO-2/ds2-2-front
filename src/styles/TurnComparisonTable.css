@@ -78,11 +78,12 @@
 }
 
 .filters-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem 1rem;
   width: 100%;
   max-width: 100%;
+  align-items: center;
   overflow: visible; /* permitir dropdowns largos */
 }
 
@@ -98,11 +99,7 @@
 }
 
 .filters-row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(220px, 1fr));
-  gap: 0.75rem 1rem;
-  align-items: center;
-  width: 100%;
+  display: contents; /* los hijos ocupan la grilla del contenedor */
 }
 
 .filter-group {
@@ -350,6 +347,25 @@ div.checkbox-group label {
 .clear-filters-button:active {
   transform: translateY(0) !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Asegurar visibilidad del botón en grid: forzar a ocupar una fila y alinearlo al borde derecho */
+.turn-comparison-container .clear-filters-button {
+  grid-column: 1 / -1 !important;
+  justify-self: end !important;
+  margin-top: 0.25rem !important;
+}
+
+/* En escritorio, fija el botón en la esquina inferior derecha del header rojo */
+@media (min-width: 769px) {
+  .turn-comparison-header { position: relative; }
+  .turn-comparison-container .clear-filters-button {
+    position: absolute !important;
+    right: 1rem !important;
+    bottom: 1rem !important;
+    grid-column: auto !important; /* ignora grid cuando está absoluto */
+    margin-top: 0 !important;
+  }
 }
 
 /* SOBRESCRIBIR ESTILOS GLOBALES DE ROOMMANAGEMENT.CSS */

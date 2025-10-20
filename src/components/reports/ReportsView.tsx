@@ -30,6 +30,7 @@ import roomService from '../../services/roomService';
 import userManagementService from '../../services/userManagementService';
 import monitorReportsService from '../../services/monitorReportsService';
 import '../../styles/ReportsView.css';
+import '../../styles/UserFilters.css';
 import CustomSelect from './CustomSelect';
 import '../../styles/MonitorReports.css';
 
@@ -907,7 +908,7 @@ const ReportsView: React.FC = () => {
       )}
         
         {/* Filtros */}
-        <div className="reports-filters">
+        <div className="reports-filters um-filters um-filters--inline">
            <div className="filter-group">
              <label>Período:</label>
              <select

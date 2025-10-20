@@ -7,6 +7,7 @@ import { usePassiveUpdates } from '../../hooks/usePassiveUpdates';
 import userManagementService from '../../services/userManagementService';
 import roomService from '../../services/roomService';
 import '../../styles/TurnComparisonTable.css';
+import '../../styles/UserFilters.css';
 
 interface TurnComparisonData {
   id?: number;
@@ -129,12 +130,12 @@ const TurnComparisonTable: React.FC = () => {
         fromDate = dateFrom;
         toDate = dateTo;
       } else {
-        // Por defecto, mes actual
+        // Por defecto, AÑO actual
         const today = new Date();
-        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        fromDate = firstDayOfMonth.toISOString().split('T')[0];
-        toDate = lastDayOfMonth.toISOString().split('T')[0];
+        const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+        const lastDayOfYear = new Date(today.getFullYear(), 11, 31);
+        fromDate = firstDayOfYear.toISOString().split('T')[0];
+        toDate = lastDayOfYear.toISOString().split('T')[0];
       }
       
       const params = new URLSearchParams({
@@ -190,11 +191,11 @@ const TurnComparisonTable: React.FC = () => {
     }
   }, [dateFrom, dateTo, selectedUser, selectedRoom, selectedYear, selectedMonth, showAll]);
 
-  // Cargar datos del mes actual por defecto (sin activar filtros visualmente)
+  // Cargar datos del AÑO actual por defecto (sin activar filtros visualmente)
   useEffect(() => {
     const today = new Date();
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+    const lastDayOfYear = new Date(today.getFullYear(), 11, 31);
     
     // Cargar datos del mes actual internamente sin establecer los estados de filtro
     const loadCurrentMonthData = async () => {
@@ -202,8 +203,8 @@ const TurnComparisonTable: React.FC = () => {
       setError(null);
 
       try {
-        const fromDate = firstDayOfMonth.toISOString().split('T')[0];
-        const toDate = lastDayOfMonth.toISOString().split('T')[0];
+        const fromDate = firstDayOfYear.toISOString().split('T')[0];
+        const toDate = lastDayOfYear.toISOString().split('T')[0];
         
         const params = new URLSearchParams({
           date_from: fromDate,
@@ -282,12 +283,12 @@ const TurnComparisonTable: React.FC = () => {
           fromDate = dateFrom;
           toDate = dateTo;
         } else {
-          // Por defecto, mes actual
-          const today = new Date();
-          const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-          const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-          fromDate = firstDayOfMonth.toISOString().split('T')[0];
-          toDate = lastDayOfMonth.toISOString().split('T')[0];
+        // Por defecto, AÑO actual
+        const today = new Date();
+        const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+        const lastDayOfYear = new Date(today.getFullYear(), 11, 31);
+        fromDate = firstDayOfYear.toISOString().split('T')[0];
+        toDate = lastDayOfYear.toISOString().split('T')[0];
         }
         
         const params = new URLSearchParams({
@@ -559,7 +560,7 @@ const TurnComparisonTable: React.FC = () => {
       <div className="turn-comparison-header">
         <h3>📊 Comparación de Turnos vs Registros</h3>
         
-        <div className="filters-container">
+        <div className="filters-container um-filters um-filters--inline">
           <div className="filters-row">
             <div className="filter-group">
               <label>Desde:</label>
@@ -763,7 +764,10 @@ const TurnComparisonTable: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                (showAllRecords ? data : data.slice(0, 10)).map((item, index) => (
+                (showAllRecords ? data : [...data]
+                  .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+                  .slice(0, 10)
+                ).map((item, index) => (
                   <tr key={item.id || index} className="comparison-row">
                     <td className="user-cell">{item.usuario}</td>
                     <td className="room-cell">{item.sala}</td>

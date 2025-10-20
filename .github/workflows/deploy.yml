@@ -8,7 +8,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -49,6 +49,7 @@ jobs:
         vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
         working-directory: ./
         scope: ${{ secrets.VERCEL_SCOPE }}
+        vercel-args: '--confirm --prod'
 
     - name: Deploy to Vercel (Preview)
       if: github.ref == 'refs/heads/develop'
@@ -59,4 +60,4 @@ jobs:
         vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
         working-directory: ./
         scope: ${{ secrets.VERCEL_SCOPE }}
-        vercel-args: '--prod=false'
+        vercel-args: '--confirm'
