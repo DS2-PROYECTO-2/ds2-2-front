@@ -1,0 +1,443 @@
+/* CSS Único para Filtros de Exportación de Monitores */
+
+/* Contenedor principal de exportación */
+.export-container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Header de exportación */
+.export-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.export-header h3 {
+  color: #1e293b;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.export-header p {
+  color: #64748b;
+  font-size: 1rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Filtros de exportación */
+.export-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.export-filters-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Grupos de filtros */
+.export-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.export-filter-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Inputs básicos */
+.export-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #374151;
+  background: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.export-input:focus {
+  outline: none;
+  border-color: #49699b;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.export-input::placeholder {
+  color: #9ca3af;
+}
+
+/* Select básico */
+.export-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #374151;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.export-select:focus {
+  outline: none;
+  border-color: #0f5cd8;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Selector de monitores personalizado */
+.export-monitor-selector {
+  position: relative;
+  width: 100%;
+}
+
+.export-monitor-trigger {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.export-monitor-trigger:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.export-monitor-trigger:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.export-monitor-arrow {
+  color: #6b7280;
+  font-size: 0.75rem;
+  transition: transform 0.2s ease;
+}
+
+.export-monitor-trigger[aria-expanded="true"] .export-monitor-arrow {
+  transform: rotate(180deg);
+}
+
+/* Dropdown de monitores */
+.export-monitor-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  margin-top: 0.25rem;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.export-monitor-list {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.export-monitor-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
+}
+
+.export-monitor-item:hover {
+  background: #f8fafc;
+}
+
+.export-monitor-item input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+.export-monitor-name {
+  font-size: 0.875rem;
+  color: #374151;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Acciones de monitores */
+.export-monitor-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.export-monitor-btn {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.export-monitor-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.export-monitor-btn--select {
+  color: #059669;
+  border-color: #d1fae5;
+}
+
+.export-monitor-btn--select:hover {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.export-monitor-btn--clear {
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.export-monitor-btn--clear:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+/* Acciones de exportación */
+.export-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #f1f5f9;
+}
+
+.export-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.export-btn--primary {
+  background: #ee4b0a;
+  color: #ffffff;
+}
+
+.export-btn--primary:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.export-btn--primary:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.export-btn--loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.export-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: export-spin 1s linear infinite;
+}
+
+@keyframes export-spin {
+  to { transform: rotate(360deg); }
+}
+
+.export-status {
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.export-status--success {
+  color: #059669;
+}
+
+.export-status--error {
+  color: #dc2626;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .export-container {
+    padding: 1.5rem;
+  }
+  
+  .export-filters-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .export-monitor-list {
+    max-height: 150px;
+  }
+  
+  .export-monitor-actions {
+    flex-direction: column;
+  }
+  
+  .export-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 480px) {
+  .export-container {
+    padding: 1rem;
+  }
+  
+  .export-header h3 {
+    font-size: 1.25rem;
+  }
+  
+  .export-monitor-list {
+    max-height: 120px;
+    padding: 0.25rem;
+  }
+  
+  .export-monitor-item {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .export-monitor-actions {
+    padding: 0.5rem;
+  }
+}
+
+/* Monitor info tip */
+.export-monitor-info {
+  padding: 0.75rem;
+  background: #f0f9ff;
+  border-bottom: 1px solid #e5e7eb;
+  color: #0369a1;
+  font-size: 0.875rem;
+  line-height: 1.25;
+}
+
+.export-monitor-info small {
+  display: block;
+  margin: 0;
+}
+
+/* Estilos para botones de acción en listados de asistencia */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.btn-icon:hover {
+  transform: scale(1.05);
+}
+
+.download-button {
+  color: #4CAF50;
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.download-button:hover {
+  background-color: rgba(76, 175, 80, 0.2);
+  color: #45a049;
+}
+
+.btn-danger {
+  color: #f44336;
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.btn-danger:hover {
+  background-color: rgba(244, 67, 54, 0.2);
+  color: #d32f2f;
+}
+
+/* Asegurar que los botones sean visibles */
+.action-buttons .btn-icon {
+  opacity: 1;
+  visibility: visible;
+  display: flex !important;
+}
+
+/* Evitar que otros estilos interfieran */
+.action-buttons .btn-icon * {
+  pointer-events: none;
+}
+
