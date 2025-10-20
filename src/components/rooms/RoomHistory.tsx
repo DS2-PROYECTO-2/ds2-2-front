@@ -38,19 +38,19 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
     setBackendFiltered(false);
   };
 
-  // Función para cargar con rango por defecto (todo el mes actual)
+  // Función para cargar con rango por defecto (todo el año actual)
   const loadWithDefaultRange = useCallback(async () => {
     const today = new Date();
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+    const lastDayOfYear = new Date(today.getFullYear(), 11, 31);
     
     // Usar formato local sin conversión UTC
     const formatDate = (date: Date) => {
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     };
     
-    const fromFormatted = formatDate(firstDayOfMonth);
-    const toFormatted = formatDate(lastDayOfMonth);
+    const fromFormatted = formatDate(firstDayOfYear);
+    const toFormatted = formatDate(lastDayOfYear);
     
     return getAllEntriesUnpaginated({
       from: fromFormatted,
@@ -89,6 +89,26 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
   }, [user?.role, loadWithDefaultRange]);
 
 
+  // Cargar todo el historial ignorando rango por defecto (útil para "Mostrar todo")
+  const loadAllHistorical = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [roomsData, entriesData] = await Promise.all([
+        roomService.getRooms(),
+        user?.role === 'admin' ? getAllEntriesUnpaginated({}) : getMyEntries()
+      ]);
+      setRooms(roomsData);
+      setEntries(entriesData);
+      setBackendFiltered(false);
+    } catch (err) {
+      setError(parseErr(err));
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.role]);
+
+
   // Función para cargar con filtros (solo para admin)
   const loadWithFilters = useCallback(async () => {
     if (user?.role !== 'admin') return;
@@ -122,6 +142,15 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
 
   useEffect(() => { 
     if (user) {  // Solo cargar si hay usuario autenticado
+      // Limpiar filtros por defecto en primer render para evitar estados residuales
+      setFilterFrom('');
+      setFilterTo('');
+      setFilterRoomId('');
+      setFilterUser('');
+      setFilterDocument('');
+      setShowAll(false);
+      setBackendFiltered(false);
+
       // Si es una actualización por reloadKey (admin), mostrar animación
       if (reloadKey && reloadKey > 0) {
         load(true); // true = mostrar animación de actualización
@@ -158,6 +187,13 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
     };
   }, [load]);
 
+  // Cuando el usuario selecciona "Mostrar todo", cargar todo el historial desde backend
+  useEffect(() => {
+    if (showAll) {
+      loadAllHistorical();
+    }
+  }, [showAll, loadAllHistorical]);
+
   // Actualizaciones reactivas sin polling molesto
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -189,8 +225,14 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
   // Recargar cuando cambien los filtros (solo para admin)
   useEffect(() => {
     if (user?.role === 'admin' && !showAll) {
-      // Solo aplicar filtros si NO estamos en modo "mostrar todo"
-      loadWithFilters();
+      const hasAnyFilter = Boolean(filterRoomId || filterFrom || filterTo || filterDocument);
+      // Solo aplicar filtros si hay al menos un filtro activo; de lo contrario
+      // mantener la carga por defecto (mes actual) y el límite local.
+      if (hasAnyFilter) {
+        loadWithFilters();
+      } else {
+        setBackendFiltered(false);
+      }
     }
   }, [filterRoomId, filterFrom, filterTo, filterDocument, loadWithFilters, user?.role, showAll]);
 
@@ -211,13 +253,23 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
     }
   }, [highlightedEntryId]);
 
+  // Límite por defecto para filas del historial
+  const DEFAULT_HISTORY_LIMIT = 20;
+
   // Filtro local para todos los usuarios (backend + frontend para mejor compatibilidad)
   const filtered = useMemo(() => {
     let filteredEntries = entries;
     
-    // Limitar a 10 registros por defecto si no se está mostrando todo
+    // Ordenar por fecha de inicio descendente para tomar los "últimos" registros
+    filteredEntries = [...filteredEntries].sort((a, b) => {
+      const ad = new Date(a.startedAt).getTime();
+      const bd = new Date(b.startedAt).getTime();
+      return bd - ad;
+    });
+
+    // Limitar a DEFAULT_HISTORY_LIMIT registros por defecto si no se está mostrando todo
     if (!showAll && !backendFiltered) {
-      filteredEntries = filteredEntries.slice(0, 10);
+      filteredEntries = filteredEntries.slice(0, DEFAULT_HISTORY_LIMIT);
     }
     
     // Aplicar filtro de sala
@@ -349,7 +401,7 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
                 fontSize: '0.875rem'
               }}
             >
-              📋 Mostrar solo 10 registros
+              📋 Mostrar solo 20 registros
             </button>
           )}
         </div>
@@ -436,8 +488,8 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
         <div 
           className="table-scroll"
           style={{
-            maxHeight: showAll ? '400px' : 'none',
-            overflowY: showAll ? 'auto' : 'visible'
+            maxHeight: showAll ? 'none' : '400px',
+            overflowY: showAll ? 'visible' : 'auto'
           }}
         >
         <table className="table">
