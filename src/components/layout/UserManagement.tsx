@@ -692,7 +692,7 @@ const UserManagement: React.FC = () => {
       </div>
 
       {/* Filtros */}
-      <div className="filters-section um-filters">
+      <div className="filters-section um-filters um-filters--inline">
         {/* Fila 1: Roles y Estados */}
         <div className="filters-row">
           <div className="filter-group">
