@@ -1,3 +1,4 @@
+import CustomSelect from './CustomSelect';
 import React, { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '../../utils/api';
 import { useAuth } from '../../hooks/useAuth';
@@ -579,72 +580,35 @@ const TurnComparisonTable: React.FC = () => {
               />
             </div>
             <div className="filter-group">
-              <label>Usuario:</label>
-              <select
-                value={selectedUser}
-                onChange={(e) => setSelectedUser(e.target.value)}
-                className="filter-select"
-              >
-                <option value="">Todos los usuarios</option>
-                {users.map(user => (
-                  <option key={user.id} value={user.id}>
-                    {user.full_name} ({user.username})
-                  </option>
-                ))}
-              </select>
+              <label>Sala:</label>
+              <CustomSelect<string>
+                value={selectedRoom ?? ''}
+                placeholder="Todas las salas"
+                options={rooms.map(r => ({ value: String(r.id), label: r.name }))}
+                onChange={(val) => setSelectedRoom(val ?? '')}
+              />
             </div>
           </div>
           <div className="filters-row">
             <div className="filter-group">
-              <label>Sala:</label>
-              <select
-                value={selectedRoom}
-                onChange={(e) => setSelectedRoom(e.target.value)}
-                className="filter-select"
-              >
-                <option value="">Todas las salas</option>
-                {rooms.map(room => (
-                  <option key={room.id} value={room.id}>
-                    {room.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="filter-group">
               <label>Año:</label>
-              <select
-                value={selectedYear}
-                onChange={(e) => {
-                  setSelectedYear(e.target.value);
-                  // Limpiar mes cuando cambie el año
-                  setSelectedMonth('');
-                }}
-                className="filter-select"
-              >
-                <option value="">Todos los años</option>
-                {years.map(year => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
+              <CustomSelect<string>
+                value={selectedYear ?? ''}
+                placeholder="Todos los años"
+                options={years.map(y => ({ value: String(y), label: String(y) }))}
+                onChange={(val) => { setSelectedYear(val ?? ''); setSelectedMonth(''); }}
+              />
             </div>
             <div className="filter-group">
               <label>Mes:</label>
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="filter-select"
-                disabled={!selectedYear}
-              >
-                <option value="">Todos los meses</option>
-                {months.map(month => (
-                  <option key={month.value} value={month.value}>
-                    {month.label}
-                  </option>
-                ))}
-              </select>
+              <CustomSelect<string>
+                value={selectedMonth ?? ''}
+                placeholder="Todos los meses"
+                options={months.map(m => ({ value: String(m.value), label: m.label }))}
+                onChange={(val) => setSelectedMonth(val ?? '')}
+                className={!selectedYear ? 'cs-disabled' : ''}
+              />
             </div>
-          </div>
-          <div className="filters-row">
             <div className="filter-group checkbox-group">
               <input
                 type="checkbox"
@@ -656,6 +620,18 @@ const TurnComparisonTable: React.FC = () => {
               <label htmlFor="showAllCheckbox" className="checkbox-label">
                 Mostrar todos los registros
               </label>
+            </div>
+          </div>
+          
+          <div className="filters-row">
+            <div className="filter-group user-filter">
+              <label>Usuario:</label>
+              <CustomSelect<string>
+                value={selectedUser ?? ''}
+                placeholder="Todos los usuarios"
+                options={users.map(u => ({ value: String(u.id), label: `${u.full_name} (${u.username})` }))}
+                onChange={(val) => setSelectedUser(val ?? '')}
+              />
             </div>
             <button
               onClick={clearAllFilters}

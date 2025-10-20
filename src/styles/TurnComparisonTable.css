@@ -83,25 +83,35 @@
   gap: 1rem;
   width: 100%;
   max-width: 100%;
+  overflow: visible; /* permitir dropdowns largos */
+}
+
+/* Forzar que los controles no se estiren al 100% por estilos globales */
+.turn-comparison-container .filters-row .filter-group,
+.turn-comparison-container .filters-row .filter-group * {
+  box-sizing: border-box;
+}
+
+.turn-comparison-container .filters-row .filter-group {
+  width: auto !important;
+  flex: 0 0 auto !important;
 }
 
 .filters-row {
-  display: flex;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  gap: 0.75rem 1rem;
   align-items: center;
-  flex-wrap: wrap;
-  justify-content: space-between;
   width: 100%;
 }
 
 .filter-group {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: auto 1fr; /* etiqueta + control responsivo */
   align-items: center;
   gap: 0.5rem;
-  flex: 1 1 auto;
-  min-width: fit-content;
-  max-width: 300px;
+  width: 100% !important;
+  min-width: 0; /* permitir que el 1fr calcule adecuadamente */
 }
 
 .filter-group label {
@@ -112,16 +122,16 @@
   min-width: fit-content;
 }
 
-.date-input {
+.turn-comparison-container .filters-row .filter-group .date-input {
   padding: 0.5rem 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 0.375rem;
   background: white;
   color: #1f2937;
   font-size: 0.875rem;
-  width: 100%;
-  min-width: 120px;
-  max-width: 180px;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
 }
 
 .date-input::placeholder {
@@ -134,16 +144,62 @@
   background: white;
 }
 
-.filter-select {
+.turn-comparison-container .filters-row .filter-group .filter-select {
   padding: 0.5rem 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 0.375rem;
   background: white;
   color: #1f2937;
   font-size: 0.875rem;
-  width: 100%;
-  min-width: 100px;
-  max-width: 250px;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+/* El selector de Usuario se adapta a su contenido */
+.turn-comparison-container .filters-row .filter-group:has(label:first-child:contains("Usuario")) .filter-select {
+  width: auto !important;
+  min-width: 200px !important;
+  max-width: 100% !important;
+}
+
+/* Fallback compatible sin :has/:contains, usando un id en el select */
+#userFilterSelect {
+  width: auto !important;
+  min-width: 200px !important;
+  max-width: 100% !important;
+}
+
+/* Etiquetas: que no se corten ni se rompan */
+.turn-comparison-container .filters-row .filter-group label {
+  white-space: nowrap;
+}
+
+/* El checkbox-group mantiene su layout horizontal */
+.turn-comparison-container .filters-row .filter-group.checkbox-group {
+  display: flex !important;
+  grid-template-columns: none !important;
+  width: 100% !important;
+}
+
+/* Contenedor específico del filtro Usuario: que se ajuste a su contenido sin recortar */
+.turn-comparison-container .filters-row .filter-group.user-filter {
+  grid-template-columns: auto 1fr; /* etiqueta + select que crece */
+  width: auto !important;
+  min-width: 220px !important;
+  max-width: 100% !important;
+}
+
+.turn-comparison-container .filters-row .filter-group.user-filter label {
+  margin-right: 0.5rem;
+}
+
+/* Mantener cada fila compacta: checkbox y botón no ocupan toda la línea */
+.turn-comparison-container .filters-row:last-of-type {
+  align-items: center;
+}
+
+.turn-comparison-container .filters-row:last-of-type .filter-group.checkbox-group {
+  width: auto !important;
 }
 
 .filter-select:focus {
@@ -189,7 +245,7 @@
   height: 42px !important;
   min-height: 42px !important;
   max-height: 42px !important;
-  width: 100% !important;
+  width: auto !important; /* no ocupar toda la fila */
   min-width: 180px !important;
   max-width: 250px !important;
   box-sizing: border-box !important;
@@ -238,7 +294,7 @@ div.checkbox-group {
   box-sizing: border-box !important;
   overflow: visible !important;
   min-width: 180px !important;
-  width: 100% !important;
+  width: auto !important;
   max-width: 250px !important;
   vertical-align: top !important;
   margin: 0 !important;
@@ -282,6 +338,7 @@ div.checkbox-group label {
   max-width: 180px !important;
   flex: 0 1 auto !important;
   margin: 0 !important;
+  margin-left: 0 !important;
 }
 
 .clear-filters-button:hover {
@@ -423,6 +480,7 @@ div.checkbox-group label {
 
 .comparison-table {
   width: 100%;
+  min-width: 900px; /* evita colapso y habilita scroll horizontal */
   border-collapse: collapse;
   font-size: 0.875rem;
 }
@@ -535,11 +593,11 @@ td .status-badge {
 .status-on-time {
     background: #67f00c !important;
     color: #000000 !important;
-    
     font-size: 0.9rem !important;
     font-weight: 900 !important;
     padding: 0.4rem 0.9rem !important;
-    width: 110px !important;
+    width: auto !important;
+    min-width: 100px !important;
     margin: 0 auto !important;
     vertical-align: middle !important;
 }
@@ -551,7 +609,8 @@ td .status-badge {
   font-size: 0.9rem !important;
   font-weight: 900 !important;
   padding: 0.4rem 0.9rem !important;
-  width: 134px !important;
+  width: auto !important;
+  min-width: 120px !important;
   margin: 0 auto !important;
   vertical-align: middle !important;
 }
@@ -563,7 +622,8 @@ td .status-badge {
   font-size: 0.9rem !important;
   font-weight: 900 !important;
   padding: 0.4rem 0.9rem !important;
-  width: 70px !important;
+  width: auto !important;
+  min-width: 72px !important;
   margin: 0 auto !important;
   vertical-align: middle !important;
 }
@@ -575,7 +635,8 @@ td .status-badge {
     font-size: 0.9rem !important;
     font-weight: 900 !important;
     padding: 0.4rem 0.9rem !important;
-    width: 130px !important;
+    width: auto !important;
+    min-width: 120px !important;
     margin: 0 auto !important;
     vertical-align: middle !important;
 }
@@ -618,7 +679,8 @@ td .status-badge {
   }
 
   .turn-comparison-container .filters-row {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr !important; /* una sola columna en móvil */
     gap: 0.75rem;
   }
 
@@ -637,6 +699,7 @@ td .status-badge {
 
   .turn-comparison-container .comparison-table {
     font-size: 0.8rem;
+    min-width: 720px; /* reducir ancho mínimo en móviles */
   }
 
   .turn-comparison-container .comparison-table th,
@@ -652,6 +715,51 @@ td .status-badge {
   .turn-comparison-container .end-time {
     font-size: 0.75rem;
   }
+
+  /* Botón borrar filtros ocupa fila y evita overflow */
+  .turn-comparison-container .clear-filters-button {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-top: 0.25rem !important;
+    grid-column: 1 / -1 !important; /* ocupar ancho completo de la grilla */
+  }
+
+  /* Reducir mínimos de celdas de rangos para caber en móvil */
+  .turn-comparison-container .assigned-cell,
+  .turn-comparison-container .actual-cell {
+    min-width: 140px;
+  }
+
+  /* Checkbox group a ancho completo para evitar recortes */
+  .turn-comparison-container .filters-row .filter-group .checkbox-group,
+  .turn-comparison-container div.checkbox-group {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+  }
+
+  /* Badges más compactos */
+  .turn-comparison-container .status-badge,
+  .turn-comparison-container .status-on-time,
+  .turn-comparison-container .status-early,
+  .turn-comparison-container .status-late,
+  .turn-comparison-container .status-no-registration {
+    font-size: 0.75rem !important;
+    padding: 0.35rem 0.6rem !important;
+    width: auto !important;
+    min-width: 0 !important;
+  }
+}
+
+/* Alinear correctamente la fila del filtro de usuario y botón */
+.turn-comparison-container .filters-row:nth-of-type(3) {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.turn-comparison-container .filters-row:nth-of-type(3) .clear-filters-button {
+  justify-self: end;
 }
 
 @media (max-width: 480px) {
@@ -667,5 +775,15 @@ td .status-badge {
 
   .turn-comparison-container .filter-group label {
     min-width: 60px;
+  }
+
+  /* Tabla aún más compacta en móviles pequeños */
+  .turn-comparison-container .comparison-table th,
+  .turn-comparison-container .comparison-table td {
+    padding: 0.5rem 0.4rem;
+  }
+
+  .turn-comparison-container .comparison-table {
+    font-size: 0.75rem;
   }
 }

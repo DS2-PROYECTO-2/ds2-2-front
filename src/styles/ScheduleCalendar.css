@@ -1331,7 +1331,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
   min-width: 0;
-  align-items: start; /* Alinear campos por la parte superior */
+  align-items: end; /* Alinear campos por la parte inferior para que estén al mismo nivel */
 }
 
 .form-row .form-group {

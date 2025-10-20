@@ -28,6 +28,24 @@
   box-sizing: border-box;
 }
 
+/* Medios fluidos por defecto */
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Tablas ocupan ancho completo dentro de su contenedor */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Contenedor auxiliar para permitir scroll horizontal suave en vistas reducidas */
+.overflow-auto-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 body {
   font-family: var(--font-family);
   background-color: var(--background);

@@ -1770,23 +1770,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -1805,6 +1788,23 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2677,50 +2677,50 @@ export default function RoomManagement() {
 <span class="cstat-no" title="statement not covered" >                &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >                &lt;div className="computer-header"&gt;</span>
 <span class="cstat-no" title="statement not covered" >                  &lt;span className="computer-number"&gt;PC {computer.number}&lt;/span&gt;</span>
-<span class="cstat-no" title="statement not covered" >                  &lt;div className="computer-actions"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                    {canReportFaults() &amp;&amp; (</span>
-<span class="cstat-no" title="statement not covered" >                      &lt;button </span>
-<span class="cstat-no" title="statement not covered" >                        className="action-btn report-btn"</span>
-<span class="cstat-no" title="statement not covered" >                        onClick={(e) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >                          e.stopPropagation();</span>
-<span class="cstat-no" title="statement not covered" >                          handleReportFault(computer);</span>
-<span class="cstat-no" title="statement not covered" >                        }}</span>
-<span class="cstat-no" title="statement not covered" >                        title="Reportar falla"</span>
-                      &gt;
-<span class="cstat-no" title="statement not covered" >                        &lt;AlertCircle size={12} /&gt;</span>
-<span class="cstat-no" title="statement not covered" >                      &lt;/button&gt;</span>
-                    )}
-<span class="cstat-no" title="statement not covered" >                    {canEditComputers() &amp;&amp; (</span>
-<span class="cstat-no" title="statement not covered" >                      &lt;button </span>
-<span class="cstat-no" title="statement not covered" >                        className="action-btn edit-btn"</span>
-<span class="cstat-no" title="statement not covered" >                        onClick={(e) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >                          e.stopPropagation();</span>
-<span class="cstat-no" title="statement not covered" >                          handleEditComputer(computer);</span>
-<span class="cstat-no" title="statement not covered" >                        }}</span>
-<span class="cstat-no" title="statement not covered" >                        title="Editar equipo"</span>
-                      &gt;
-<span class="cstat-no" title="statement not covered" >                        &lt;Edit size={12} /&gt;</span>
-<span class="cstat-no" title="statement not covered" >                      &lt;/button&gt;</span>
-                    )}
-<span class="cstat-no" title="statement not covered" >                    {canDeleteComputers() &amp;&amp; (</span>
-<span class="cstat-no" title="statement not covered" >                      &lt;button </span>
-<span class="cstat-no" title="statement not covered" >                        className="action-btn delete-btn"</span>
-<span class="cstat-no" title="statement not covered" >                        onClick={(e) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >                          e.stopPropagation();</span>
-<span class="cstat-no" title="statement not covered" >                          handleDeleteComputer(computer.id, selectedRoom.id);</span>
-<span class="cstat-no" title="statement not covered" >                        }}</span>
-<span class="cstat-no" title="statement not covered" >                        title="Eliminar equipo"</span>
-                      &gt;
-<span class="cstat-no" title="statement not covered" >                        &lt;Trash2 size={12} /&gt;</span>
-<span class="cstat-no" title="statement not covered" >                      &lt;/button&gt;</span>
-                    )}
-<span class="cstat-no" title="statement not covered" >                  &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >                &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >                &lt;div className="computer-serial"&gt;{computer.serial}&lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >                &lt;div className={`status-badge ${computer.status}`}&gt;</span>
 <span class="cstat-no" title="statement not covered" >                  {computer.status === 'operational' &amp;&amp; 'Operativo'}</span>
 <span class="cstat-no" title="statement not covered" >                  {computer.status === 'maintenance' &amp;&amp; 'En Mantenimiento'}</span>
 <span class="cstat-no" title="statement not covered" >                  {computer.status === 'out_of_service' &amp;&amp; 'Fuera de Servicio'}</span>
+<span class="cstat-no" title="statement not covered" >                &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;div className="computer-actions"&gt;</span>
+<span class="cstat-no" title="statement not covered" >                  {canReportFaults() &amp;&amp; (</span>
+<span class="cstat-no" title="statement not covered" >                    &lt;button </span>
+<span class="cstat-no" title="statement not covered" >                      className="action-btn report-btn"</span>
+<span class="cstat-no" title="statement not covered" >                      onClick={(e) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >                        e.stopPropagation();</span>
+<span class="cstat-no" title="statement not covered" >                        handleReportFault(computer);</span>
+<span class="cstat-no" title="statement not covered" >                      }}</span>
+<span class="cstat-no" title="statement not covered" >                      title="Reportar falla"</span>
+                    &gt;
+<span class="cstat-no" title="statement not covered" >                      &lt;AlertCircle size={12} /&gt;</span>
+<span class="cstat-no" title="statement not covered" >                    &lt;/button&gt;</span>
+                  )}
+<span class="cstat-no" title="statement not covered" >                  {canEditComputers() &amp;&amp; (</span>
+<span class="cstat-no" title="statement not covered" >                    &lt;button </span>
+<span class="cstat-no" title="statement not covered" >                      className="action-btn edit-btn"</span>
+<span class="cstat-no" title="statement not covered" >                      onClick={(e) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >                        e.stopPropagation();</span>
+<span class="cstat-no" title="statement not covered" >                        handleEditComputer(computer);</span>
+<span class="cstat-no" title="statement not covered" >                      }}</span>
+<span class="cstat-no" title="statement not covered" >                      title="Editar equipo"</span>
+                    &gt;
+<span class="cstat-no" title="statement not covered" >                      &lt;Edit size={12} /&gt;</span>
+<span class="cstat-no" title="statement not covered" >                    &lt;/button&gt;</span>
+                  )}
+<span class="cstat-no" title="statement not covered" >                  {canDeleteComputers() &amp;&amp; (</span>
+<span class="cstat-no" title="statement not covered" >                    &lt;button </span>
+<span class="cstat-no" title="statement not covered" >                      className="action-btn delete-btn"</span>
+<span class="cstat-no" title="statement not covered" >                      onClick={(e) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >                        e.stopPropagation();</span>
+<span class="cstat-no" title="statement not covered" >                        handleDeleteComputer(computer.id, selectedRoom.id);</span>
+<span class="cstat-no" title="statement not covered" >                      }}</span>
+<span class="cstat-no" title="statement not covered" >                      title="Eliminar equipo"</span>
+                    &gt;
+<span class="cstat-no" title="statement not covered" >                      &lt;Trash2 size={12} /&gt;</span>
+<span class="cstat-no" title="statement not covered" >                    &lt;/button&gt;</span>
+                  )}
 <span class="cstat-no" title="statement not covered" >                &lt;/div&gt;</span>
                 
                 
@@ -2818,7 +2818,7 @@ export default function RoomManagement() {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-14T06:02:35.645Z
+                at 2025-10-20T04:51:05.497Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">1.75% </span>
+                <span class="strong">1.89% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>15/855</span>
+                <span class='fraction'>16/846</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">1.75% </span>
+                <span class="strong">1.89% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>15/855</span>
+                <span class='fraction'>16/846</span>
             </div>
         
             
@@ -1300,18 +1300,7 @@
 <a name='L1235'></a><a href='#L1235'>1235</a>
 <a name='L1236'></a><a href='#L1236'>1236</a>
 <a name='L1237'></a><a href='#L1237'>1237</a>
-<a name='L1238'></a><a href='#L1238'>1238</a>
-<a name='L1239'></a><a href='#L1239'>1239</a>
-<a name='L1240'></a><a href='#L1240'>1240</a>
-<a name='L1241'></a><a href='#L1241'>1241</a>
-<a name='L1242'></a><a href='#L1242'>1242</a>
-<a name='L1243'></a><a href='#L1243'>1243</a>
-<a name='L1244'></a><a href='#L1244'>1244</a>
-<a name='L1245'></a><a href='#L1245'>1245</a>
-<a name='L1246'></a><a href='#L1246'>1246</a>
-<a name='L1247'></a><a href='#L1247'>1247</a>
-<a name='L1248'></a><a href='#L1248'>1248</a>
-<a name='L1249'></a><a href='#L1249'>1249</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L1238'></a><a href='#L1238'>1238</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1334,6 +1323,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -2292,12 +2282,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -2305,12 +2289,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -2591,6 +2569,7 @@ import roomService from '../../services/roomService';
 import userManagementService from '../../services/userManagementService';
 import monitorReportsService from '../../services/monitorReportsService';
 import '../../styles/ReportsView.css';
+import CustomSelect from './CustomSelect';
 import '../../styles/MonitorReports.css';
 &nbsp;
 interface Room {
@@ -3536,36 +3515,24 @@ const ReportsView: React.FC = <span class="fstat-no" title="function not covered
           
 <span class="cstat-no" title="statement not covered" >          &lt;div className="filter-group"&gt;</span>
 <span class="cstat-no" title="statement not covered" >            &lt;label&gt;Sala:&lt;/label&gt;</span>
-<span class="cstat-no" title="statement not covered" >            &lt;select</span>
-<span class="cstat-no" title="statement not covered" >              value={selectedRoom || ''}</span>
-<span class="cstat-no" title="statement not covered" >              onChange={(e) =&gt; setSelectedRoom(e.target.value ? parseInt(e.target.value) : null)}</span>
-<span class="cstat-no" title="statement not covered" >              className="filter-select"</span>
-            &gt;
-<span class="cstat-no" title="statement not covered" >              &lt;option value=""&gt;Todas las salas&lt;/option&gt;</span>
-<span class="cstat-no" title="statement not covered" >              {rooms.map(room =&gt; (</span>
-<span class="cstat-no" title="statement not covered" >                &lt;option key={room.id} value={room.id}&gt;</span>
-<span class="cstat-no" title="statement not covered" >                  {room.name}</span>
-<span class="cstat-no" title="statement not covered" >                &lt;/option&gt;</span>
-<span class="cstat-no" title="statement not covered" >              ))}</span>
-<span class="cstat-no" title="statement not covered" >            &lt;/select&gt;</span>
+<span class="cstat-no" title="statement not covered" >            &lt;CustomSelect</span>
+<span class="cstat-no" title="statement not covered" >              value={selectedRoom ?? ''}</span>
+<span class="cstat-no" title="statement not covered" >              placeholder="Todas las salas"</span>
+<span class="cstat-no" title="statement not covered" >              options={rooms.map(r =&gt; ({ value: r.id, label: r.name }))}</span>
+<span class="cstat-no" title="statement not covered" >              onChange={(val) =&gt; setSelectedRoom(val as number | null)}</span>
+<span class="cstat-no" title="statement not covered" >            /&gt;</span>
 <span class="cstat-no" title="statement not covered" >          &lt;/div&gt;</span>
           
           {/* 🔒 FILTRO DE MONITOR SOLO PARA ADMINISTRADORES */}
 <span class="cstat-no" title="statement not covered" >          {isAdmin &amp;&amp; (</span>
 <span class="cstat-no" title="statement not covered" >            &lt;div className="filter-group"&gt;</span>
 <span class="cstat-no" title="statement not covered" >              &lt;label&gt;Monitor:&lt;/label&gt;</span>
-<span class="cstat-no" title="statement not covered" >              &lt;select</span>
-<span class="cstat-no" title="statement not covered" >                value={selectedMonitor || ''}</span>
-<span class="cstat-no" title="statement not covered" >                onChange={(e) =&gt; setSelectedMonitor(e.target.value ? parseInt(e.target.value) : null)}</span>
-<span class="cstat-no" title="statement not covered" >                className="filter-select"</span>
-              &gt;
-<span class="cstat-no" title="statement not covered" >                &lt;option value=""&gt;Todos los monitores&lt;/option&gt;</span>
-<span class="cstat-no" title="statement not covered" >                {monitors.map(monitor =&gt; (</span>
-<span class="cstat-no" title="statement not covered" >                  &lt;option key={monitor.id} value={monitor.id}&gt;</span>
-<span class="cstat-no" title="statement not covered" >                    {monitor.full_name}</span>
-<span class="cstat-no" title="statement not covered" >                  &lt;/option&gt;</span>
-<span class="cstat-no" title="statement not covered" >                ))}</span>
-<span class="cstat-no" title="statement not covered" >              &lt;/select&gt;</span>
+<span class="cstat-no" title="statement not covered" >              &lt;CustomSelect</span>
+<span class="cstat-no" title="statement not covered" >                value={selectedMonitor ?? ''}</span>
+<span class="cstat-no" title="statement not covered" >                placeholder="Todos los monitores"</span>
+<span class="cstat-no" title="statement not covered" >                options={monitors.map(m =&gt; ({ value: m.id, label: m.full_name }))}</span>
+<span class="cstat-no" title="statement not covered" >                onChange={(val) =&gt; setSelectedMonitor(val as number | null)}</span>
+<span class="cstat-no" title="statement not covered" >              /&gt;</span>
 <span class="cstat-no" title="statement not covered" >            &lt;/div&gt;</span>
           )}
           
@@ -3814,7 +3781,7 @@ export default ReportsView;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-14T06:02:35.645Z
+                at 2025-10-20T04:51:05.497Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

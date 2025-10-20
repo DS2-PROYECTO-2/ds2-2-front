@@ -196,6 +196,11 @@
     overflow: hidden;
   }
 
+  /* Estado cuando el sidebar está abierto en móvil */
+  .dashboard-layout.sidebar-open {
+    overflow: hidden;
+  }
+
   /* Layout para vista de perfil (sin sidebar derecho) */
   .dashboard-layout.profile-view {
     grid-template-columns: 200px 1fr;
@@ -220,6 +225,25 @@
     position: relative;
     z-index: 1000;
     
+  }
+
+  /* Botón cerrar (oculto por defecto en escritorio) */
+  .sidebar-close-btn { display: none; }
+
+  /* Sidebar off-canvas en móvil */
+  @media (max-width: 1024px) {
+    .left-sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: 260px;
+      transform: translateX(-100%);
+      transition: transform 300ms ease-in-out;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .dashboard-layout.sidebar-open .left-sidebar {
+      transform: translateX(0);
+    }
   }
 
   /* Vignette y brillo superior para mayor profundidad */
@@ -305,6 +329,66 @@
     width: 100%;
     position: relative;
     z-index: 1;
+  }
+
+  /* Header móvil */
+  .mobile-header {
+    display: none;
+  }
+  @media (max-width: 1024px) {
+    .mobile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .hamburger-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--gray-200);
+      background: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .hamburger-bar {
+      width: 18px;
+      height: 2px;
+      background: #333;
+      display: block;
+      margin: 2px 0;
+    }
+    .mobile-title { margin: 0; font-weight: 600; color: #1f2937; }
+    .mobile-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--primary-red);
+      color: #fff;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  }
+
+  /* Overlay móvil */
+  .mobile-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 900;
   }
   
   .content-panel {
@@ -479,12 +563,93 @@
   
   /* Responsive */
   @media (max-width: 1024px) {
+    /* Colapsar a una sola columna; el sidebar izquierdo será off-canvas */
     .dashboard-layout {
-      grid-template-columns: 180px 1fr 260px;
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
     }
-    
     .dashboard-layout.profile-view {
-      grid-template-columns: 180px 1fr;
+      grid-template-columns: 1fr;
+    }
+    /* Ocultar sidebar derecho en tablet/móvil para dar todo el ancho al contenido */
+    .right-sidebar { display: none; }
+    /* Desactivar animación que sobreescribe transform en móvil */
+    .left-sidebar { animation: none; }
+  /* Forzar modo off-canvas en móvil, evitando que otras reglas lo anulen */
+    .dashboard-layout .left-sidebar {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    width: 260px !important;
+    height: 100vh !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important; /* evitar scroll horizontal */
+      touch-action: pan-y !important; /* solo scroll vertical */
+    transform: translateX(-100%) !important;
+    transition: transform 300ms ease-in-out !important;
+      display: flex !important;
+      flex-direction: column !important; /* layout vertical */
+      align-items: stretch !important;
+  }
+  .dashboard-layout.sidebar-open .left-sidebar {
+    transform: translateX(0) !important;
+    /* Forzar navegación vertical dentro del sidebar */
+    .left-sidebar .sidebar-nav {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 0.5rem !important;
+      overflow-x: hidden !important;
+    }
+
+    /* Evitar reglas previas que ponían el sidebar en fila */
+    .left-sidebar { flex-direction: column !important; justify-content: flex-start !important; }
+  }
+
+    /* Botón cerrar dentro del sidebar en móvil */
+    .sidebar-close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      font-size: 20px;
+      line-height: 32px;
+      text-align: center;
+      cursor: pointer;
+      display: inline-flex; /* visible solo en móvil/tablet */
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Notificaciones en sidebar móvil */
+    .left-sidebar .bell-button {
+      width: 34px;
+      height: 34px;
+    }
+    .left-sidebar .notification-dropdown {
+      position: fixed; /* Evitar recorte dentro del sidebar */
+      left: 16px;
+      top: 92px;
+      width: calc(260px - 32px); /* ocupar ancho interno del sidebar con márgenes */
+      max-height: 70vh;
+      overflow-y: auto;
+      z-index: 1100;
+    }
+
+    /* Botón Limpiar/Marcar todo en dropdown (mejor tacto y acomodo) */
+    .notification-dropdown .notification-actions {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .notification-dropdown .mark-all-read-btn {
+      width: 100%;
+      text-align: center;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
     }
   }
   
@@ -572,36 +737,53 @@
 }
 
 
-/* Responsive (cuando el sidebar es horizontal) */
+/* Responsive móvil: navegación vertical en sidebar */
 @media (max-width: 768px) {
   .left-sidebar {
-    position: relative;       /* ya lo tienes */
-    flex-direction: row;      /* ya lo tienes */
-    align-items: center;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 260px;
+    flex-direction: column;
+    align-items: stretch;
     gap: 1rem;
+    overflow-y: auto;
   }
 
   .sidebar-nav {
-    flex-direction: row;      /* ya lo tienes */
-    gap: 1rem;                /* ya lo tienes */
-    flex: 1;                  /* que ocupe el ancho disponible */
-    justify-content: space-around;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+    justify-content: flex-start;
   }
 
+  .sidebar-button { width: 100%; }
+
   .sidebar-footer {
-    position: static;         /* quita lo absoluto */
+    position: static;
     left: auto;
     right: auto;
     bottom: auto;
-    justify-content: center;  /* o 'flex-end' si lo quieres a la derecha */
-    margin-left: auto;        /* empuja el botón hacia la derecha si prefieres */
-    z-index: 0;               /* evita solapar sombras */
+    justify-content: center;
+    margin-left: 0;
+    z-index: 0;
   }
 
   .logout-button {
-    width: 50px;
-    height: 50px;
+    width: 160px;
+    height: 44px;
   }
+
+  /* Botones de filtros (RoomHistory, paneles) */
+  .panel-filters .primary-btn,
+  .panel-filters .secondary-btn,
+  .panel-header .primary-btn {
+    width: 100%;
+    height: 44px;
+    font-size: 0.95rem;
+  }
+  .panel-header { flex-direction: column; align-items: stretch; gap: 0.75rem; }
 }
 
 .room-panel { 

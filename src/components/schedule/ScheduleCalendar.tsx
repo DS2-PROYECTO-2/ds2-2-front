@@ -26,6 +26,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useSecurity } from '../../hooks/useSecurity';
 import { ApiErrorHandler } from '../../utils/errorHandler';
 import '../../styles/ScheduleCalendar.css';
+import CustomSelect from '../reports/CustomSelect';
 import '../../styles/CourseCalendar.css';
 
 interface Room {
@@ -396,6 +397,8 @@ const ScheduleCalendar: React.FC = () => {
         // Validar horas solo si las fechas coinciden
         if (courseStartDate.getTime() === scheduleStartDate.getTime()) {
           const startTime = startDate.getHours() * 60 + startDate.getMinutes();
+          // Calcular la hora de inicio del turno en minutos
+          const scheduleStartTime = scheduleStart.getHours() * 60 + scheduleStart.getMinutes();
           
           if (startTime < scheduleStartTime) {
             errors.start_datetime = `El curso no puede iniciar antes del turno (${scheduleStart.toLocaleTimeString()})`;
@@ -404,6 +407,7 @@ const ScheduleCalendar: React.FC = () => {
         
         if (courseEndDate.getTime() === scheduleEndDate.getTime()) {
           const endTime = endDate.getHours() * 60 + endDate.getMinutes();
+          const scheduleEndTime = scheduleEnd.getHours() * 60 + scheduleEnd.getMinutes();
           
           if (endTime > scheduleEndTime) {
             errors.end_datetime = `El curso no puede terminar después del turno (${scheduleEnd.toLocaleTimeString()})`;
@@ -705,8 +709,15 @@ const ScheduleCalendar: React.FC = () => {
   const getSchedulesForDay = (date: Date | null) => {
     if (!date) return [];
     return schedules.filter(schedule => {
-      const scheduleDate = new Date(schedule.start_datetime).toDateString();
-      const dateMatch = scheduleDate === date.toDateString();
+      // Usar comparación de fechas en zona horaria de Bogotá para evitar problemas de UTC
+      const scheduleDate = new Date(schedule.start_datetime);
+      const scheduleDateBogota = new Date(scheduleDate.toLocaleString("en-US", {timeZone: "America/Bogota"}));
+      const dateBogota = new Date(date.toLocaleString("en-US", {timeZone: "America/Bogota"}));
+      
+      // Comparar solo la fecha (sin hora) para evitar problemas de zona horaria
+      const scheduleDateOnly = new Date(scheduleDateBogota.getFullYear(), scheduleDateBogota.getMonth(), scheduleDateBogota.getDate());
+      const dateOnly = new Date(dateBogota.getFullYear(), dateBogota.getMonth(), dateBogota.getDate());
+      const dateMatch = scheduleDateOnly.getTime() === dateOnly.getTime();
       
       // Aplicar filtro de monitor si está seleccionado
       if (selectedMonitor) {
@@ -726,8 +737,15 @@ const ScheduleCalendar: React.FC = () => {
   const getCoursesForDay = (date: Date | null) => {
     if (!date) return [];
     return courses.filter(course => {
-      const courseDate = new Date(course.start_datetime).toDateString();
-      const dateMatch = courseDate === date.toDateString();
+      // Usar comparación de fechas en zona horaria de Bogotá para evitar problemas de UTC
+      const courseDate = new Date(course.start_datetime);
+      const courseDateBogota = new Date(courseDate.toLocaleString("en-US", {timeZone: "America/Bogota"}));
+      const dateBogota = new Date(date.toLocaleString("en-US", {timeZone: "America/Bogota"}));
+      
+      // Comparar solo la fecha (sin hora) para evitar problemas de zona horaria
+      const courseDateOnly = new Date(courseDateBogota.getFullYear(), courseDateBogota.getMonth(), courseDateBogota.getDate());
+      const dateOnly = new Date(dateBogota.getFullYear(), dateBogota.getMonth(), dateBogota.getDate());
+      const dateMatch = courseDateOnly.getTime() === dateOnly.getTime();
       
       // Aplicar filtro de monitor si está seleccionado
       if (selectedMonitor) {
@@ -1599,18 +1617,12 @@ const ScheduleCalendar: React.FC = () => {
         <div className="calendar-controls">
           {/* Filtros para admins */}
           {isAdmin && (
-            <select
-              value={selectedMonitor || ''}
-              onChange={(e) => setSelectedMonitor(e.target.value ? parseInt(e.target.value) : null)}
-              className="filter-select"
-            >
-              <option value="">Todos los monitores</option>
-              {monitors.map(monitor => (
-                <option key={monitor.id} value={monitor.id}>
-                  {monitor.full_name}
-                </option>
-              ))}
-            </select>
+            <CustomSelect
+              value={selectedMonitor ?? ''}
+              placeholder="Todos los monitores"
+              options={monitors.map(m => ({ value: m.id, label: m.full_name }))}
+              onChange={(val) => setSelectedMonitor((val as number) ?? null)}
+            />
           )}
 
           {/* Navegación del calendario */}
