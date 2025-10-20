@@ -27,9 +27,27 @@
 
 .reports-filter-item input[type="date"],
 .reports-filter-item input[type="text"] {
-  padding: 0.25rem 0.4rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--gray-300);
+  border-radius: 9999px; /* estilo moderno consistente */
+  height: 40px;
+  font-size: 0.875rem;
+  color: #111827;
+  background: #fff;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.reports-filter-item input[type="date"]::placeholder,
+.reports-filter-item input[type="text"]::placeholder {
+  color: #6b7280; /* gris-500 */
+}
+
+.reports-filter-item input[type="date"]:focus,
+.reports-filter-item input[type="text"]:focus {
+  outline: none;
+  border-color: #3b82f6; /* azul-500 */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 
