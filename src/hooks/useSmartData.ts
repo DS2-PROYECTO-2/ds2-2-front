@@ -189,7 +189,7 @@ export function useSmartData<T>(options: SmartDataOptions<T>) {
       cacheManager.invalidate(cacheKey);
       loadData(true);
     }
-  }, dependencies);
+  }, [cacheKey, loadData, dependencies.length]);
 
   // Pre-carga en background
   useEffect(() => {

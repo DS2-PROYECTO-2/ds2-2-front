@@ -122,4 +122,17 @@ export const apiClient = {
     });
     return handleResponse(res);
   },
+
+  async postFormData<TRes = unknown>(endpoint: string, formData: FormData): Promise<TRes> {
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'POST',
+      headers: {
+        ...getAuthHeaders(),
+        // NO establecer Content-Type - se establece automáticamente con FormData
+      },
+      credentials: 'omit',
+      body: formData,
+    });
+    return handleResponse(res);
+  },
 };

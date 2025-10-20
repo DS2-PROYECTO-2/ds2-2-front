@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { User, Shield, CheckCircle, Calendar } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import type { User as AppUser } from '../../context/AuthContext';
+import '../../styles/ActivityCards.css';
 
 const RightSidebar: React.FC = () => {
   const { user } = useAuth();
@@ -79,13 +80,13 @@ const RightSidebar: React.FC = () => {
         </div>
 
         {/* Actividad Reciente */}
-        <div className="profile-stats">
+        <div className="activity-cards-container">
           <h5>Actividad Reciente</h5>
-          <div className="stat-item">
+          <div className="activity-card">
             <Calendar size={14} />
             <span>Miembro desde: {formatDate(user.created_at)}</span>
           </div>
-          <div className="stat-item">
+          <div className="activity-card">
             <Shield size={14} />
             <span>Rol: {user.role === 'admin' ? 'Administrador' : 'Monitor'}</span>
           </div>

@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  Search, 
-  Filter, 
   Plus, 
   Edit, 
   Trash2, 
@@ -20,6 +18,7 @@ import type { User, UserFilters, CreateUserData, ApiError } from '../../types';
 import type { UpdateUserData } from '../../services/userManagementService';
 import { useAuth } from '../../hooks/useAuth';
 import '../../styles/UserManagement.css';
+import '../../styles/UserManagementFilters.css';
 import CustomSelect from '../reports/CustomSelect';
 
 const UserManagement: React.FC = () => {
@@ -683,54 +682,57 @@ const UserManagement: React.FC = () => {
         </button>
       </div>
 
-      {/* Botón Limpiar Filtros */}
-      <div className="clear-filters-container">
-        <button onClick={clearFilters} className="btn-clear-filters">
-          Limpiar Filtros
-        </button>
-      </div>
+      {/* Filtros de Gestión de Usuarios */}
+      <div className="user-management-filters-container">
+        <div className="user-management-filters">
+          <div className="user-management-filters-row">
+            <div className="user-management-filter-group">
+              <label className="user-management-filter-label">Rol:</label>
+              <CustomSelect<string>
+                value={(filters.role as string) || ''}
+                placeholder="Todos los roles"
+                options={[
+                  { value: 'admin', label: 'Administrador' },
+                  { value: 'monitor', label: 'Monitor' },
+                ]}
+                onChange={(val) => handleFilterChange('role', val || undefined)}
+              />
+            </div>
 
-      {/* Filtros */}
-      <div className="filters-section">
-        {/* Fila 1: Roles y Estados */}
-        <div className="filters-row">
-          <div className="filter-group">
-            <Filter size={20} />
-            <CustomSelect<string>
-              value={(filters.role as string) || ''}
-              placeholder="Todos los roles"
-              options={[
-                { value: 'admin', label: 'Administrador' },
-                { value: 'monitor', label: 'Monitor' },
-              ]}
-              onChange={(val) => handleFilterChange('role', val || undefined)}
-            />
+            <div className="user-management-filter-group">
+              <label className="user-management-filter-label">Estado:</label>
+              <CustomSelect<string>
+                value={filters.is_verified === undefined ? '' : String(filters.is_verified)}
+                placeholder="Todos los estados"
+                options={[
+                  { value: 'true', label: 'Verificados' },
+                  { value: 'false', label: 'No verificados' },
+                ]}
+                onChange={(val) => handleFilterChange('is_verified', val === '' ? undefined : val === 'true')}
+              />
+            </div>
           </div>
-
-          <div className="filter-group">
-            <CustomSelect<string>
-              value={filters.is_verified === undefined ? '' : String(filters.is_verified)}
-              placeholder="Todos los estados"
-              options={[
-                { value: 'true', label: 'Verificados' },
-                { value: 'false', label: 'No verificados' },
-              ]}
-              onChange={(val) => handleFilterChange('is_verified', val === '' ? undefined : val === 'true')}
-            />
+          
+          <div className="user-management-filters-row">
+            <div className="user-management-filter-group">
+              <label className="user-management-filter-label">Búsqueda:</label>
+              <input
+                type="text"
+                placeholder="Buscar por nombre, email o cédula..."
+                value={filters.search || ''}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+                className="user-management-input"
+              />
+            </div>
           </div>
-        </div>
-        
-        {/* Fila 2: Búsqueda */}
-        <div className="filters-row">
-          <div className="filter-group search-filter">
-            <Search size={20} />
-            <input
-              type="text"
-              placeholder="Buscar por nombre, email o cédula..."
-              value={filters.search || ''}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-              className="filter-input"
-            />
+          
+          <div className="user-management-actions">
+            <button 
+              onClick={clearFilters} 
+              className="user-management-btn user-management-btn--clear"
+            >
+              🗑️ Limpiar Filtros
+            </button>
           </div>
         </div>
       </div>

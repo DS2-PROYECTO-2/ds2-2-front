@@ -32,6 +32,8 @@ import monitorReportsService from '../../services/monitorReportsService';
 import '../../styles/ReportsView.css';
 import CustomSelect from './CustomSelect';
 import '../../styles/MonitorReports.css';
+import '../../styles/ExportFilters.css';
+import '../../styles/ChartsFilters.css';
 
 interface Room {
   id: number;
@@ -103,6 +105,404 @@ const ReportsView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isFiltering, setIsFiltering] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Estados para exportación de monitores
+  const [exportFormat, setExportFormat] = useState<'pdf'>('pdf');
+  const [exportTitle, setExportTitle] = useState('');
+  const [selectedMonitorsForExport, setSelectedMonitorsForExport] = useState<number[]>([]);
+  const [exportStartDate, setExportStartDate] = useState('');
+  const [exportEndDate, setExportEndDate] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
+  const [, setExportJobId] = useState<string | null>(null);
+  const [exportStatus, setExportStatus] = useState<'idle' | 'processing' | 'completed' | 'error'>('idle');
+  const [showMonitorList, setShowMonitorList] = useState(false);
+  const [exportCheckCount, setExportCheckCount] = useState(0);
+  const [showRetryButton, setShowRetryButton] = useState(false);
+  const [retryCountdown, setRetryCountdown] = useState(0);
+
+  // Función para descargar archivo directamente (exportación síncrona)
+  const downloadExportFile = async (blob: Blob, title: string) => {
+    try {
+      console.log('Descargando archivo directamente...');
+      console.log('Tamaño del blob:', blob.size, 'bytes');
+      console.log('Tipo del blob:', blob.type);
+      
+      // Validar que el blob no esté vacío
+      if (blob.size === 0) {
+        throw new Error('El archivo está vacío. No se pudo generar correctamente.');
+      }
+      
+      // Determinar el Content-Type correcto si no está definido
+      if (!blob.type) {
+        const contentType = 'application/pdf';
+        
+        // Recrear el blob con el Content-Type correcto
+        const newBlob = new Blob([blob], { type: contentType });
+        blob = newBlob;
+      }
+      
+      // Validación para archivos PDF
+      console.log('Validando archivo PDF...');
+      console.log('Tamaño del archivo:', blob.size, 'bytes');
+      
+      // Verificar tamaño mínimo para PDF
+      if (blob.size < 1000) {
+        throw new Error('El archivo PDF es demasiado pequeño y puede estar corrupto');
+      }
+      
+      console.log('Validación PDF completada:', {
+        tamaño: blob.size,
+        tipo: 'PDF'
+      });
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      const fileName = `${title || 'export_monitores'}_${new Date().toISOString().split('T')[0]}.pdf`;
+      
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      console.log('Archivo descargado exitosamente:', fileName);
+    } catch (error) {
+      console.error('Error al descargar archivo:', error);
+      
+      let errorMessage = `Error al descargar el archivo: ${error instanceof Error ? error.message : 'Error desconocido'}`;
+      
+      // Mensaje específico para archivos PDF dañados
+      if (error instanceof Error && 
+          (error.message.includes('corrupto') || error.message.includes('vacío') || error.message.includes('pequeño'))) {
+        errorMessage = `❌ El archivo PDF está dañado o incompleto.\n\n💡 Soluciones:\n• Verifica que el backend esté funcionando correctamente\n• Contacta al administrador del sistema`;
+      }
+      
+      setError(errorMessage + '. Por favor intente nuevamente.');
+    }
+  };
+
+  // Función para iniciar exportación de monitores
+  const handleExportMonitors = async () => {
+    if (!exportTitle.trim()) {
+      alert('Por favor ingrese un título para el reporte');
+      return;
+    }
+
+    setIsExporting(true);
+    setExportStatus('processing');
+    setError(null);
+    setExportCheckCount(0);
+    setShowRetryButton(false);
+    setRetryCountdown(0);
+
+    try {
+      const exportData = {
+        format: exportFormat,
+        title: exportTitle,
+        // Si no se seleccionaron monitores específicos, exportar TODOS con datos completos
+        include_all_data: selectedMonitorsForExport.length === 0,
+        ...(selectedMonitorsForExport.length > 0 && { monitor_ids: selectedMonitorsForExport }),
+        ...(exportStartDate && { start_date: exportStartDate }),
+        ...(exportEndDate && { end_date: exportEndDate })
+      };
+
+      const response = await apiClient.post('/api/export/monitors/export/', exportData) as {
+        export_job_id?: string;
+        job_id?: string;
+        id?: string;
+        data?: {
+          export_job_id?: string;
+          job_id?: string;
+          id?: string;
+          job?: string;
+        } | string | Blob;
+        status?: number;
+        statusText?: string;
+        headers?: Record<string, string>;
+      };
+      
+      console.log('Respuesta completa del backend:', response);
+      console.log('Datos de la respuesta:', response.data);
+      
+      // Intentar diferentes formatos de respuesta
+      let jobId = null;
+      
+      // Primero verificar si la respuesta está en el objeto raíz
+      if (response.export_job_id) {
+        jobId = response.export_job_id;
+      }
+      else if (response.job_id) {
+        jobId = response.job_id;
+      }
+      else if (response.id) {
+        jobId = response.id;
+      }
+      else if (typeof response === 'string') {
+        jobId = response;
+      }
+      // Luego verificar en response.data
+      else if (response.data) {
+        // Formato 1: response.data.export_job_id
+        if (response.data.export_job_id) {
+          jobId = response.data.export_job_id;
+        }
+        // Formato 2: response.data.job_id
+        else if (response.data.job_id) {
+          jobId = response.data.job_id;
+        }
+        // Formato 3: response.data.id
+        else if (response.data.id) {
+          jobId = response.data.id;
+        }
+        // Formato 4: response.data directamente
+        else if (typeof response.data === 'string') {
+          jobId = response.data;
+        }
+        // Formato 5: response.data.job
+        else if (response.data.job) {
+          jobId = response.data.job;
+        }
+      }
+      
+      if (jobId) {
+        console.log('Job ID encontrado:', jobId);
+        setExportJobId(jobId);
+        checkExportStatus(jobId);
+      } else {
+        // Verificar si la respuesta contiene directamente el archivo (exportación síncrona)
+        if (response.data && (response.data instanceof Blob || response.data.type)) {
+          console.log('Exportación síncrona detectada, descargando archivo directamente');
+          downloadExportFile(response.data, exportTitle);
+          setExportStatus('completed');
+          setIsExporting(false);
+        } else {
+          console.error('No se encontró job_id en la respuesta:', response);
+          console.error('Estructura de la respuesta:', {
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers,
+            data: response.data
+          });
+          throw new Error(`No se recibió ID de trabajo de exportación. Respuesta recibida: ${JSON.stringify(response.data)}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error al iniciar exportación:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      setError(`Error al iniciar la exportación: ${errorMessage}. Por favor verifique que el backend esté funcionando correctamente.`);
+      setExportStatus('error');
+      setIsExporting(false);
+    }
+  };
+
+  // Función para verificar el estado de la exportación
+  const checkExportStatus = async (jobId: string) => {
+    try {
+      const response = await apiClient.get(`/api/export/jobs/${jobId}/status/`) as {
+        status?: string;
+        data?: {
+          status?: string;
+        } | string;
+        error_message?: string;
+      };
+      
+      console.log('Respuesta de verificación de estado:', response);
+      console.log('Datos de verificación:', response.data);
+      
+      // Intentar diferentes formatos de respuesta para el status
+      let status = null;
+      
+      // Primero verificar en el objeto raíz
+      if (response.status) {
+        status = response.status;
+      }
+      // Luego verificar en response.data
+      else if (response.data && response.data.status) {
+        status = response.data.status;
+      }
+      // También verificar si response.data es directamente el status
+      else if (response.data && typeof response.data === 'string') {
+        status = response.data;
+      }
+      
+      console.log('Status encontrado:', status);
+      
+      if (status === 'completed') {
+        setExportStatus('completed');
+        setIsExporting(false);
+        downloadExport(jobId);
+      } else if (status === 'failed' || status === 'error') {
+        setExportStatus('error');
+        setIsExporting(false);
+        
+        // Intentar obtener el mensaje de error específico del backend
+        let errorMessage = 'Error al procesar la exportación';
+        let shouldShowRetry = false;
+        
+        if (response.error_message) {
+          const backendError = response.error_message;
+          errorMessage = `Error del servidor: ${backendError}`;
+          
+          // Detectar errores específicos que pueden resolverse con reintentos
+          if (backendError.includes('WinError 32') || 
+              backendError.includes('está siendo utilizado por otro proceso') ||
+              backendError.includes('PermissionError') ||
+              backendError.includes('acceso al archivo')) {
+            errorMessage = `⚠️ Error de permisos de archivo: ${backendError}\n\n💡 Soluciones:\n• Espera 30 segundos y reintenta (el antivirus puede estar escaneando)\n• Ejecuta el backend como administrador\n• Desactiva temporalmente Windows Defender\n• Cierra cualquier programa que pueda estar usando archivos PDF/Excel\n• Intenta exportar nuevamente`;
+            shouldShowRetry = true;
+          }
+        } else if (response.data && response.data.error_message) {
+          const backendError = response.data.error_message;
+          errorMessage = `Error del servidor: ${backendError}`;
+          
+          if (backendError.includes('WinError 32') || 
+              backendError.includes('está siendo utilizado por otro proceso') ||
+              backendError.includes('PermissionError') ||
+              backendError.includes('acceso al archivo')) {
+            errorMessage = `⚠️ Error de permisos de archivo: ${backendError}\n\n💡 Soluciones:\n• Espera 30 segundos y reintenta (el antivirus puede estar escaneando)\n• Ejecuta el backend como administrador\n• Desactiva temporalmente Windows Defender\n• Cierra cualquier programa que pueda estar usando archivos PDF/Excel\n• Intenta exportar nuevamente`;
+            shouldShowRetry = true;
+          }
+        }
+        
+        setError(errorMessage);
+        console.error('Error específico del backend:', response.error_message || response.data?.error_message);
+        
+        // Si es un error de permisos, mostrar el botón de reintento después de un delay
+        if (shouldShowRetry) {
+          setRetryCountdown(30); // 30 segundos de countdown
+          const countdownInterval = setInterval(() => {
+            setRetryCountdown(prev => {
+              if (prev <= 1) {
+                clearInterval(countdownInterval);
+                setShowRetryButton(true);
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+        }
+      } else {
+        // Verificar si hemos excedido el límite de verificaciones (máximo 30 intentos = 1 minuto)
+        if (exportCheckCount >= 30) {
+          console.log('Timeout: Se excedió el tiempo máximo de espera para la exportación');
+          setExportStatus('error');
+          setIsExporting(false);
+          setError('Timeout: La exportación está tomando demasiado tiempo. Por favor intente nuevamente.');
+          setExportCheckCount(0);
+        } else {
+          // Seguir verificando cada 2 segundos
+          console.log(`Status en progreso, verificando nuevamente en 2 segundos... (intento ${exportCheckCount + 1}/30)`);
+          setExportCheckCount(prev => prev + 1);
+          setTimeout(() => checkExportStatus(jobId), 2000);
+        }
+      }
+    } catch (error) {
+      console.error('Error al verificar estado de exportación:', error);
+      setExportStatus('error');
+      setIsExporting(false);
+      setError('Error al verificar el estado de la exportación');
+    }
+  };
+
+  // Función para descargar el archivo exportado
+  const downloadExport = async (jobId: string) => {
+    try {
+      console.log('Iniciando descarga del archivo...');
+      const response = await apiClient.get(`/api/export/jobs/${jobId}/download/`) as {
+        data?: string | Blob | ArrayBuffer;
+        status?: number;
+        statusText?: string;
+        headers?: Record<string, string>;
+      };
+      
+      console.log('Respuesta de descarga recibida:', response);
+      console.log('Tipo de respuesta:', typeof response);
+      console.log('Tipo de response.data:', typeof response.data);
+      console.log('Tamaño de response.data:', response.data?.length || response.data?.size || 'desconocido');
+      
+      // El backend está devolviendo el contenido del PDF directamente en response (no en response.data)
+      let fileData = response;
+      
+      // Si response es un string (contenido del PDF), usarlo directamente
+      if (typeof fileData === 'string') {
+        console.log('PDF recibido como string, procesando...');
+        console.log('Tamaño del string PDF:', fileData.length, 'caracteres');
+      } else if (response.data) {
+        console.log('PDF recibido en response.data, procesando...');
+        fileData = response.data;
+      } else {
+        console.log('Estructura de respuesta inesperada:', Object.keys(response));
+        throw new Error('No se pudo encontrar el contenido del archivo en la respuesta');
+      }
+      
+      // Si response.data es un string (contenido del PDF), convertirlo a Uint8Array
+      if (typeof fileData === 'string') {
+        console.log('Convirtiendo string a Uint8Array...');
+        const encoder = new TextEncoder();
+        fileData = encoder.encode(fileData);
+      }
+      
+      // Validar que hay datos
+      if (!fileData || fileData.length === 0) {
+        throw new Error('El archivo está vacío o no se pudo generar correctamente');
+      }
+      
+      console.log('Datos del archivo procesados, tamaño:', fileData.length, 'bytes');
+      
+      // Content-Type para PDF
+      const contentType = 'application/pdf';
+      
+      // Crear blob con el Content-Type correcto
+      const blob = new Blob([fileData], { type: contentType });
+      
+      // Validar que el blob se creó correctamente
+      if (blob.size === 0) {
+        throw new Error('No se pudo crear el archivo. El contenido está vacío');
+      }
+      
+      console.log('Blob creado exitosamente, tamaño:', blob.size, 'bytes');
+      
+      // Validación para archivos PDF
+      console.log('Validación PDF:', {
+        tamaño: fileData.length,
+        tipo: 'PDF'
+      });
+      
+      // Crear URL y descargar
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Nombre de archivo para PDF
+      const fileName = `${exportTitle || 'export_monitores'}_${new Date().toISOString().split('T')[0]}.pdf`;
+      link.download = fileName;
+      
+      // Agregar al DOM y hacer click
+      document.body.appendChild(link);
+      link.click();
+      
+      // Limpiar
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      console.log('Archivo descargado exitosamente:', fileName);
+      
+      // Resetear estado
+      setExportJobId(null);
+      setExportStatus('idle');
+      setExportTitle('');
+      setSelectedMonitorsForExport([]);
+      setExportStartDate('');
+      setExportEndDate('');
+      
+    } catch (error) {
+      console.error('Error al descargar archivo:', error);
+      setError(`Error al descargar el archivo: ${error instanceof Error ? error.message : 'Error desconocido'}. Por favor intente nuevamente.`);
+      setExportStatus('error');
+    }
+  };
 
   // ✅ Función para manejar cambios de período
   const handlePeriodChange = (newPeriod: 'week' | 'month' | 'all') => {
@@ -899,106 +1299,304 @@ const ReportsView: React.FC = () => {
         </div>
 
 
+      {/* Contenedor de Exportación de Monitores - Solo para Administradores */}
+      {isAdmin && (
+        <div className="export-container">
+          <div className="export-header">
+            <h3>📊 Exportar Datos de Monitores</h3>
+            <p>Exporte información detallada de monitores en formato PDF o Excel</p>
+          </div>
+          
+          <div className="export-filters">
+            <div className="export-filters-row">
+              <div className="export-filter-group">
+                <label className="export-filter-label">Título del Reporte:</label>
+                <input
+                  type="text"
+                  value={exportTitle}
+                  onChange={(e) => setExportTitle(e.target.value)}
+                  placeholder="Ej: Reporte de Monitores Enero 2024"
+                  className="export-input"
+                />
+              </div>
+              
+              <div className="export-filter-group">
+                <label className="export-filter-label">Formato:</label>
+                <select
+                  value={exportFormat}
+                  onChange={(e) => setExportFormat(e.target.value as 'pdf')}
+                  className="export-select"
+                  disabled
+                >
+                  <option value="pdf">PDF</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="export-filters-row">
+              <div className="export-filter-group">
+                <label className="export-filter-label">Fecha Inicio (opcional):</label>
+                <input
+                  type="date"
+                  value={exportStartDate}
+                  onChange={(e) => setExportStartDate(e.target.value)}
+                  className="export-input"
+                />
+              </div>
+              
+              <div className="export-filter-group">
+                <label className="export-filter-label">Fecha Fin (opcional):</label>
+                <input
+                  type="date"
+                  value={exportEndDate}
+                  onChange={(e) => setExportEndDate(e.target.value)}
+                  className="export-input"
+                />
+              </div>
+            </div>
+            
+            <div className="export-filters-row">
+              <div className="export-filter-group">
+                <label className="export-filter-label">Monitores Específicos (opcional):</label>
+                <div className="export-monitor-selector">
+                  <button
+                    type="button"
+                    className="export-monitor-trigger"
+                    onClick={() => setShowMonitorList(!showMonitorList)}
+                  >
+                    {selectedMonitorsForExport.length === 0 
+                      ? '📊 Todos los monitores (datos completos)' 
+                      : `${selectedMonitorsForExport.length} monitor(es) seleccionado(s)`
+                    }
+                    <span className="export-monitor-arrow">▼</span>
+                  </button>
+                  
+                  {showMonitorList && (
+                    <div className="export-monitor-dropdown">
+                      <div className="export-monitor-info">
+                        <small>💡 <strong>Tip:</strong> Si no seleccionas monitores específicos, se exportarán TODOS con datos completos</small>
+                      </div>
+                      <div className="export-monitor-list">
+                        {monitors.map(monitor => (
+                          <label key={monitor.id} className="export-monitor-item">
+                            <input
+                              type="checkbox"
+                              checked={selectedMonitorsForExport.includes(monitor.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedMonitorsForExport([...selectedMonitorsForExport, monitor.id]);
+                                } else {
+                                  setSelectedMonitorsForExport(selectedMonitorsForExport.filter(id => id !== monitor.id));
+                                }
+                              }}
+                            />
+                            <span className="export-monitor-name">{monitor.full_name}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div className="export-monitor-actions">
+                        <button
+                          type="button"
+                          className="export-monitor-btn export-monitor-btn--select"
+                          onClick={() => setSelectedMonitorsForExport(monitors.map(m => m.id))}
+                        >
+                          Seleccionar Todos
+                        </button>
+                        <button
+                          type="button"
+                          className="export-monitor-btn export-monitor-btn--clear"
+                          onClick={() => setSelectedMonitorsForExport([])}
+                        >
+                          Limpiar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="export-actions">
+            <button
+              onClick={handleExportMonitors}
+              disabled={isExporting || !exportTitle.trim()}
+              className={`export-btn export-btn--primary ${isExporting ? 'export-btn--loading' : ''}`}
+            >
+              {isExporting ? (
+                <>
+                  <div className="export-spinner"></div>
+                  {exportStatus === 'processing' ? 'Procesando...' : 'Exportando...'}
+                </>
+              ) : (
+                <>
+                  📄 Exportar Datos
+                </>
+              )}
+            </button>
+            
+            {exportStatus === 'completed' && (
+              <div className="export-status export-status--success">
+                ✅ Exportación completada exitosamente
+              </div>
+            )}
+            
+            {exportStatus === 'error' && (
+              <div className="export-status export-status--error">
+                ❌ Error en la exportación
+                {error && (
+                  <div style={{ 
+                    marginTop: '0.5rem', 
+                    fontSize: '0.875rem', 
+                    color: '#dc2626',
+                    whiteSpace: 'pre-line',
+                    textAlign: 'left'
+                  }}>
+                    {error}
+                  </div>
+                )}
+                {retryCountdown > 0 && (
+                  <div style={{
+                    marginTop: '0.75rem',
+                    textAlign: 'center',
+                    fontSize: '0.875rem',
+                    color: '#6b7280'
+                  }}>
+                    ⏳ Esperando {retryCountdown} segundos para que el sistema libere los archivos...
+                  </div>
+                )}
+                {showRetryButton && (
+                  <button
+                    onClick={handleExportMonitors}
+                    className="export-btn export-btn--retry"
+                    style={{
+                      background: '#f59e0b',
+                      color: 'white',
+                      border: 'none',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '0.375rem',
+                      cursor: 'pointer',
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      marginTop: '0.75rem',
+                      display: 'block',
+                      marginLeft: 'auto',
+                      marginRight: 'auto'
+                    }}
+                  >
+                    🔄 Reintentar Exportación
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Advertencia de semana */}
       {selectedPeriod === 'week' && !selectedWeek && (
-        <div className="week-warning-top">
+        <div className="charts-warning-top">
           ⚠️ Debe seleccionar una semana para ver los datos
         </div>
       )}
         
-        {/* Filtros */}
-        <div className="reports-filters">
-           <div className="filter-group">
-             <label>Período:</label>
-             <select
-               value={selectedPeriod}
-               onChange={(e) => handlePeriodChange(e.target.value as 'week' | 'month' | 'all')}
-               className="filter-select"
-             >
-               <option value="week">Semana</option>
-               <option value="month">Mes</option>
-               <option value="all">Totales</option>
-             </select>
-           </div>
-          
-          {selectedPeriod === 'week' && (
-            <div className="filter-group">
-              <label>Seleccionar semana:</label>
-              <input
-                type="week"
-                value={selectedWeek}
-                onChange={(e) => handleWeekChange(e.target.value)}
-                className="filter-input"
-                placeholder="Seleccionar semana"
-                required
-              />
-            </div>
-          )}
-          
-          {selectedPeriod === 'month' && (
-            <>
-              <div className="filter-group">
-                <label>Año:</label>
+        {/* Filtros de Gráficas */}
+        <div className="charts-filters-container">
+          <div className="charts-filters">
+            <div className="charts-filters-row">
+              <div className="charts-filter-group">
+                <label className="charts-filter-label">Período:</label>
                 <select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                  className="filter-select"
+                  value={selectedPeriod}
+                  onChange={(e) => handlePeriodChange(e.target.value as 'week' | 'month' | 'all')}
+                  className="charts-select"
                 >
-                  {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
+                  <option value="week">Semana</option>
+                  <option value="month">Mes</option>
+                  <option value="all">Totales</option>
                 </select>
               </div>
               
-              <div className="filter-group">
-                <label>Mes:</label>
-                <select
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                  className="filter-select"
-                >
-                  <option value={1}>Enero</option>
-                  <option value={2}>Febrero</option>
-                  <option value={3}>Marzo</option>
-                  <option value={4}>Abril</option>
-                  <option value={5}>Mayo</option>
-                  <option value={6}>Junio</option>
-                  <option value={7}>Julio</option>
-                  <option value={8}>Agosto</option>
-                  <option value={9}>Septiembre</option>
-                  <option value={10}>Octubre</option>
-                  <option value={11}>Noviembre</option>
-                  <option value={12}>Diciembre</option>
-                </select>
-              </div>
-            </>
-          )}
-          
-          <div className="filter-group">
-            <label>Sala:</label>
-            <CustomSelect
-              value={selectedRoom ?? ''}
-              placeholder="Todas las salas"
-              options={rooms.map(r => ({ value: r.id, label: r.name }))}
-              onChange={(val) => setSelectedRoom(val as number | null)}
-            />
-          </div>
-          
-          {/* 🔒 FILTRO DE MONITOR SOLO PARA ADMINISTRADORES */}
-          {isAdmin && (
-            <div className="filter-group">
-              <label>Monitor:</label>
-              <CustomSelect
-                value={selectedMonitor ?? ''}
-                placeholder="Todos los monitores"
-                options={monitors.map(m => ({ value: m.id, label: m.full_name }))}
-                onChange={(val) => setSelectedMonitor(val as number | null)}
-              />
+              {selectedPeriod === 'week' && (
+                <div className="charts-filter-group">
+                  <label className="charts-filter-label">Seleccionar semana:</label>
+                  <input
+                    type="week"
+                    value={selectedWeek}
+                    onChange={(e) => handleWeekChange(e.target.value)}
+                    className="charts-input"
+                    placeholder="Seleccionar semana"
+                    required
+                  />
+                </div>
+              )}
+              
+              {selectedPeriod === 'month' && (
+                <>
+                  <div className="charts-filter-group">
+                    <label className="charts-filter-label">Año:</label>
+                    <select
+                      value={selectedYear}
+                      onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                      className="charts-select"
+                    >
+                      {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="charts-filter-group">
+                    <label className="charts-filter-label">Mes:</label>
+                    <select
+                      value={selectedMonth}
+                      onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                      className="charts-select"
+                    >
+                      <option value={1}>Enero</option>
+                      <option value={2}>Febrero</option>
+                      <option value={3}>Marzo</option>
+                      <option value={4}>Abril</option>
+                      <option value={5}>Mayo</option>
+                      <option value={6}>Junio</option>
+                      <option value={7}>Julio</option>
+                      <option value={8}>Agosto</option>
+                      <option value={9}>Septiembre</option>
+                      <option value={10}>Octubre</option>
+                      <option value={11}>Noviembre</option>
+                      <option value={12}>Diciembre</option>
+                    </select>
+                  </div>
+                </>
+              )}
             </div>
-          )}
-          
-          {/* 📊 INDICADOR PARA MONITORES */}
-      </div>
+            
+            <div className="charts-filters-row">
+              <div className="charts-filter-group">
+                <label className="charts-filter-label">Sala:</label>
+                <CustomSelect
+                  value={selectedRoom ?? ''}
+                  placeholder="Todas las salas"
+                  options={rooms.map(r => ({ value: r.id, label: r.name }))}
+                  onChange={(val) => setSelectedRoom(val as number | null)}
+                />
+              </div>
+              
+              {/* 🔒 FILTRO DE MONITOR SOLO PARA ADMINISTRADORES */}
+              {isAdmin && (
+                <div className="charts-filter-group">
+                  <label className="charts-filter-label">Monitor:</label>
+                  <CustomSelect
+                    value={selectedMonitor ?? ''}
+                    placeholder="Todos los monitores"
+                    options={monitors.map(m => ({ value: m.id, label: m.full_name }))}
+                    onChange={(val) => setSelectedMonitor(val as number | null)}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
       {/* Cards de Estadísticas */}
       <div className="stats-cards">

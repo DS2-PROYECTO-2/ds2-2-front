@@ -518,33 +518,92 @@
   .profile-stats {
     border-top: none;
     padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
   }
 
   .profile-stats h5 {
-    margin: 0 0 0.75rem 0;
+    margin: 0;
     font-size: 0.85rem;
     font-weight: 600;
     color: #374151;
+    text-align: center;
   }
 
   .stat-item {
     display: flex;
-    align-items: flex-start;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     font-size: 0.8rem;
     color: #6b7280;
     margin-bottom: 0.5rem;
     line-height: 1.3;
+    text-align: center;
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    width: 100%;
+    max-width: 360px;
+    min-height: 80px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
 
   .stat-item:last-child {
     margin-bottom: 0;
   }
 
+  /* Espaciado entre tarjetas de actividad */
+  .profile-stats .stat-item + .stat-item {
+    margin-top: 0.5rem;
+  }
+
   .stat-item svg {
     color: #9ca3af;
     flex-shrink: 0;
-    margin-top: 0.1rem;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Texto dentro de las tarjetas */
+  .stat-item span {
+    display: block;
+    text-align: center;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    max-width: 100%;
+    white-space: normal;
+    line-height: 1.4;
+    font-weight: 500;
+    padding: 0.25rem 0;
+  }
+
+  /* Responsive para las tarjetas de actividad */
+  @media (max-width: 768px) {
+    .stat-item {
+      max-width: 320px;
+      min-height: 70px;
+      font-size: 0.75rem;
+      padding: 0.8rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .stat-item {
+      max-width: 280px;
+      min-height: 60px;
+      font-size: 0.7rem;
+      padding: 0.6rem;
+    }
   }
 
   /* Placeholder para cuando no hay usuario */
@@ -565,14 +624,17 @@
   @media (max-width: 1024px) {
     /* Colapsar a una sola columna; el sidebar izquierdo será off-canvas */
     .dashboard-layout {
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr 280px;
       grid-template-rows: auto 1fr;
     }
     .dashboard-layout.profile-view {
       grid-template-columns: 1fr;
     }
-    /* Ocultar sidebar derecho en tablet/móvil para dar todo el ancho al contenido */
-    .right-sidebar { display: none; }
+    /* Mantener sidebar derecho visible pero más pequeño */
+    .right-sidebar { 
+      width: 280px;
+      padding: 1rem;
+    }
     /* Desactivar animación que sobreescribe transform en móvil */
     .left-sidebar { animation: none; }
   /* Forzar modo off-canvas en móvil, evitando que otras reglas lo anulen */
@@ -655,8 +717,8 @@
   
   @media (max-width: 768px) {
     .dashboard-layout {
-      grid-template-columns: 1fr;
-      grid-template-rows: auto 1fr auto;
+      grid-template-columns: 1fr 240px;
+      grid-template-rows: auto 1fr;
     }
 
     .main-content {
@@ -681,7 +743,20 @@
     }
     
     .right-sidebar {
-      padding: 1rem;
+      padding: 0.75rem;
+      width: 240px;
+    }
+  }
+
+  /* Ocultar sidebar derecho solo en pantallas muy pequeñas */
+  @media (max-width: 480px) {
+    .dashboard-layout {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+    }
+    
+    .right-sidebar { 
+      display: none; 
     }
   }
 

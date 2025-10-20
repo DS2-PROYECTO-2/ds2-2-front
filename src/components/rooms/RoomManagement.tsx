@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Monitor, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Plus, Edit, Trash2, Monitor, AlertTriangle, CheckCircle, AlertCircle, Upload, Download, Trash, X } from 'lucide-react';
 import type { Room, Computer, Report } from '../../types/index';
 import { roomManagementService } from '../../services/roomManagementService';
 import { useAuth } from '../../hooks/useAuth';
 import { getMyActiveEntry } from '../../services/roomEntryService';
+import { apiClient } from '../../utils/api';
 import RoomModal from './RoomModal';
 import ComputerModal from './ComputerModal';
 import ReportModal from './ReportModal';
@@ -80,6 +81,24 @@ export default function RoomManagement() {
   const [error, setError] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [activeEntryRoomId, setActiveEntryRoomId] = useState<number | null>(null);
+  
+  // Estados para listados de asistencia
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+  const [attendanceList, setAttendanceList] = useState<Array<{
+    id: number;
+    title: string;
+    date: string;
+    uploaded_by_name?: string;
+    reviewed: boolean;
+  }>>([]);
+  const [loadingAttendance, setLoadingAttendance] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [attendanceForm, setAttendanceForm] = useState({
+    title: '',
+    date: '',
+    description: '',
+    file: null as File | null
+  });
 
   // Cargar datos de la API
   useEffect(() => {
@@ -195,6 +214,52 @@ export default function RoomManagement() {
     }
     setPendingByComputerId(map);
   }, [reports]);
+
+  // Función para cargar listados de asistencia
+  const loadAttendanceList = useCallback(async () => {
+    try {
+      setLoadingAttendance(true);
+      const response = await apiClient.get('/api/attendance/attendances/');
+      
+      // Manejar diferentes estructuras de respuesta
+      let attendanceData = [];
+      if (Array.isArray(response)) {
+        attendanceData = response;
+      } else if (response && Array.isArray(response.results)) {
+        attendanceData = response.results;
+      } else if (response && Array.isArray(response.data)) {
+        attendanceData = response.data;
+      } else if (response && Array.isArray(response.attendances)) {
+        attendanceData = response.attendances;
+      }
+      
+      console.log('Listados de asistencia cargados:', attendanceData);
+      setAttendanceList(attendanceData);
+    } catch (error) {
+      console.error('Error cargando listados de asistencia:', error);
+      
+      // Verificar si es un error HTML del backend
+      if (error && typeof error === 'object' && 'data' in error) {
+        const errorData = error as { data?: { _isHtmlError?: boolean } };
+        if (errorData.data?._isHtmlError) {
+          showNotification('El endpoint de asistencia no está disponible en el backend. Contacta al administrador.', 'error');
+          setAttendanceList([]); // Lista vacía como fallback
+          return;
+        }
+      }
+      
+      showNotification('Error cargando listados de asistencia', 'error');
+    } finally {
+      setLoadingAttendance(false);
+    }
+  }, []);
+
+  // Cargar listados de asistencia al montar el componente
+  useEffect(() => {
+    loadAttendanceList();
+  }, [loadAttendanceList]);
+
+
 
 
   const getRoomStats = (room: Room) => {
@@ -606,11 +671,25 @@ export default function RoomManagement() {
           <h1>Sistema de Gestión de Salas de Cómputo</h1>
           <p className="subtitle">Haz clic en una sala para ver sus equipos</p>
         </div>
-        {canCreateRooms() && (
-          <button className="create-room-btn" onClick={handleCreateRoom}>
-            <Plus size={20} />
-            Nueva Sala
-          </button>
+        <div className="header-buttons">
+          {canCreateRooms() && (
+            <button className="create-room-btn" onClick={handleCreateRoom}>
+              <Plus size={20} />
+              Nueva Sala
+            </button>
+          )}
+          {(user?.role === 'monitor' || user?.role === 'admin') && (
+            <button className="upload-attendance-btn" onClick={() => setShowAttendanceModal(true)}>
+              <Upload size={20} />
+              Subir Listado
+            </button>
+          )}
+        </div>
+        {/* Debug: Mostrar información del usuario */}
+        {process.env.NODE_ENV === 'development' && (
+          <div style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
+            Debug - Usuario: {user?.username}, Rol: {user?.role}
+          </div>
         )}
       </header>
 
@@ -715,12 +794,20 @@ export default function RoomManagement() {
             <h1>{selectedRoom.name}</h1>
             <p className="subtitle">Gestión de equipos de la sala</p>
           </div>
-          {canCreateComputers() && (
-            <button className="create-room-btn" onClick={() => handleCreateComputer(selectedRoom.id)}>
-              <Plus size={20} />
-              Nuevo Equipo
-            </button>
-          )}
+          <div className="header-buttons">
+            {canCreateComputers() && (
+              <button className="create-room-btn" onClick={() => handleCreateComputer(selectedRoom.id)}>
+                <Plus size={20} />
+                Nuevo Equipo
+              </button>
+            )}
+            {(user?.role === 'monitor' || user?.role === 'admin') && (
+              <button className="upload-attendance-btn" onClick={() => setShowAttendanceModal(true)}>
+                <Upload size={20} />
+                Subir Listado
+              </button>
+            )}
+          </div>
         </header>
 
         <div className="room-detail-stats">
@@ -866,6 +953,199 @@ export default function RoomManagement() {
     );
   }
 
+
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setAttendanceForm(prev => ({ ...prev, file }));
+    }
+  };
+
+  const handleSubmitAttendance = async () => {
+    if (!attendanceForm.title || !attendanceForm.date || !attendanceForm.file) {
+      showNotification('Por favor completa todos los campos requeridos', 'error');
+      return;
+    }
+
+    try {
+      setUploadingFile(true);
+      const formData = new FormData();
+      formData.append('title', attendanceForm.title);
+      formData.append('date', attendanceForm.date);
+      formData.append('file', attendanceForm.file);
+      if (attendanceForm.description) {
+        formData.append('description', attendanceForm.description);
+      }
+
+      await apiClient.postFormData('/api/attendance/attendances/', formData);
+
+      showNotification('Listado de asistencia subido exitosamente', 'success');
+      setAttendanceForm({ title: '', date: '', description: '', file: null });
+      setShowAttendanceModal(false);
+      loadAttendanceList();
+    } catch (error) {
+      console.error('Error subiendo listado:', error);
+      
+      // Verificar si es un error HTML del backend
+      if (error && typeof error === 'object' && 'data' in error) {
+        const errorData = error as { data?: { _isHtmlError?: boolean } };
+        if (errorData.data?._isHtmlError) {
+          showNotification('El endpoint de asistencia no está disponible en el backend. Contacta al administrador.', 'error');
+          return;
+        }
+      }
+      
+      showNotification('Error subiendo listado de asistencia', 'error');
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const handleDownloadAttendance = async (attendance: {
+    id: number;
+    title: string;
+    date: string;
+    uploaded_by_name?: string;
+    reviewed: boolean;
+  }) => {
+    try {
+      setLoadingAttendance(true);
+      console.log('Descargando listado:', attendance);
+      
+      // Usar fetch directamente para mejor manejo de archivos
+      const token = localStorage.getItem('authToken');
+      const baseUrl = (import.meta as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL || 'http://127.0.0.1:8000';
+      const response = await fetch(`${baseUrl}/api/attendance/attendances/${attendance.id}/download/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': token ? `Token ${token}` : '',
+          'Accept': 'application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, */*'
+        }
+      });
+      
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      // Verificar el Content-Type antes de procesar
+      const contentType = response.headers.get('content-type');
+      console.log('Content-Type recibido:', contentType);
+      
+      if (contentType && contentType.includes('text/html')) {
+        throw new Error('El backend está devolviendo HTML en lugar del archivo PDF. El endpoint de descarga no está funcionando correctamente.');
+      }
+      
+      // Obtener el blob directamente
+      const blob = await response.blob();
+      console.log('Blob size:', blob.size);
+      console.log('Blob type:', blob.type);
+      
+      if (blob.size === 0) {
+        throw new Error('El archivo está vacío');
+      }
+      
+      // Verificar que el blob sea un PDF válido
+      const arrayBuffer = await blob.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      const pdfHeader = String.fromCharCode(...uint8Array.slice(0, 4));
+      console.log('PDF header:', pdfHeader);
+      
+      if (pdfHeader !== '%PDF') {
+        console.warn('El archivo no parece ser un PDF válido. Header:', pdfHeader);
+        
+        // Si es HTML, mostrar el contenido para debugging
+        if (pdfHeader === '<!do' || pdfHeader === '<htm') {
+          const htmlContent = new TextDecoder().decode(arrayBuffer);
+          console.error('El backend devolvió HTML en lugar de PDF:', htmlContent);
+          throw new Error('El backend devolvió una página HTML en lugar del archivo PDF. Verifica que el endpoint de descarga esté funcionando correctamente.');
+        }
+      }
+      
+      // Determinar el tipo de archivo basado en el Content-Type de la respuesta
+      const fileName = attendance.title || 'listado_asistencia';
+      
+      // Crear blob con el tipo MIME correcto
+      const finalBlob = new Blob([blob], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(finalBlob);
+      
+      // Crear enlace de descarga
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${fileName}.pdf`;
+      link.style.display = 'none';
+      
+      // Agregar al DOM, hacer clic y limpiar
+      document.body.appendChild(link);
+      link.click();
+      
+      // Limpiar después de un breve delay
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 100);
+      
+      showNotification('Listado descargado exitosamente. Si no se abre automáticamente, revisa la carpeta de descargas.', 'success');
+      
+      // Opcional: También abrir en nueva pestaña para verificar
+      if (window.confirm('¿Deseas abrir el PDF en una nueva pestaña para verificar que se descargó correctamente?')) {
+        const newWindow = window.open();
+        if (newWindow) {
+          newWindow.document.write(`
+            <html>
+              <head><title>PDF Viewer</title></head>
+              <body style="margin:0; padding:0;">
+                <iframe src="${url}" width="100%" height="100%" style="border:none;"></iframe>
+              </body>
+            </html>
+          `);
+        }
+      }
+    } catch (error) {
+      console.error('Error descargando listado:', error);
+      
+      // Verificar si es un error 404 (endpoint no encontrado)
+      if (error && typeof error === 'object' && 'status' in error) {
+        const errorWithStatus = error as { status?: number };
+        if (errorWithStatus.status === 404) {
+          showNotification('El endpoint de descarga no está implementado en el backend. Contacta al administrador para habilitar esta funcionalidad.', 'error');
+          return;
+        }
+      }
+      
+      // Verificar si es un error HTML del backend
+      if (error && typeof error === 'object' && 'data' in error) {
+        const errorData = error as { data?: { _isHtmlError?: boolean } };
+        if (errorData.data?._isHtmlError) {
+          showNotification('El endpoint de descarga no está disponible en el backend. Contacta al administrador.', 'error');
+          return;
+        }
+      }
+      
+      showNotification('Error descargando listado', 'error');
+    } finally {
+      setLoadingAttendance(false);
+    }
+  };
+
+  const handleDeleteAttendance = async (id: number) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar este listado?')) {
+      return;
+    }
+
+    try {
+      await apiClient.delete(`/api/attendance/attendances/${id}/`);
+      showNotification('Listado eliminado exitosamente', 'success');
+      loadAttendanceList();
+    } catch (error) {
+      console.error('Error eliminando listado:', error);
+      showNotification('Error eliminando listado', 'error');
+    }
+  };
+
   return (
     <>
       {currentView === 'rooms' ? renderRoomsView() : renderRoomDetailView()}
@@ -903,6 +1183,146 @@ export default function RoomManagement() {
           onSave={handleSaveFaultReport}
           onClose={() => setShowFaultReportModal(false)}
         />
+      )}
+
+      {/* Modal de Listados de Asistencia */}
+      {showAttendanceModal && (
+        <div 
+          className="modal-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowAttendanceModal(false);
+            }
+          }}
+        >
+          <div className="modal-content attendance-modal">
+            <div className="modal-header">
+              <h2>Gestión de Listados de Asistencia</h2>
+              <button 
+                className="modal-close-btn" 
+                onClick={() => setShowAttendanceModal(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              {/* Formulario para subir listado */}
+              <div className="attendance-upload-section">
+                <h3>Subir Nuevo Listado</h3>
+                <div className="form-group">
+                  <label>Título del Listado:</label>
+                  <input
+                    type="text"
+                    value={attendanceForm.title}
+                    onChange={(e) => setAttendanceForm(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="Ej: Listado de Asistencia - Enero 2025"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Fecha:</label>
+                  <input
+                    type="date"
+                    value={attendanceForm.date}
+                    onChange={(e) => setAttendanceForm(prev => ({ ...prev, date: e.target.value }))}
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Descripción (opcional):</label>
+                  <textarea
+                    value={attendanceForm.description}
+                    onChange={(e) => setAttendanceForm(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Descripción adicional del listado"
+                    rows={3}
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Archivo (PDF/Excel):</label>
+                  <input
+                    type="file"
+                    accept=".pdf,.xlsx,.xls"
+                    onChange={handleFileUpload}
+                    className="file-input"
+                  />
+                  {attendanceForm.file && (
+                    <p className="file-selected">Archivo seleccionado: {attendanceForm.file.name}</p>
+                  )}
+                </div>
+                
+                <button
+                  className="btn-primary"
+                  onClick={handleSubmitAttendance}
+                  disabled={uploadingFile || !attendanceForm.title || !attendanceForm.date || !attendanceForm.file}
+                >
+                  {uploadingFile ? 'Subiendo...' : 'Subir Listado'}
+                </button>
+              </div>
+              
+              {/* Tabla de listados existentes - Solo para admins */}
+              {user?.role === 'admin' && (
+                <div className="attendance-list-section">
+                  <h3>Listados Subidos</h3>
+                  <button 
+                    className="btn-secondary"
+                    onClick={loadAttendanceList}
+                    disabled={loadingAttendance}
+                  >
+                    {loadingAttendance ? 'Cargando...' : 'Actualizar Lista'}
+                  </button>
+                  
+                  <div className="attendance-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Título</th>
+                          <th>Fecha</th>
+                          <th>Subido por</th>
+                          <th>Estado</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {attendanceList.map((attendance) => (
+                          <tr key={attendance.id}>
+                            <td>{attendance.title}</td>
+                            <td>{new Date(attendance.date).toLocaleDateString()}</td>
+                            <td>{attendance.uploaded_by_name || 'N/A'}</td>
+                            <td>
+                              <span className={`status-badge ${attendance.reviewed ? 'reviewed' : 'pending'}`}>
+                                {attendance.reviewed ? 'Revisado' : 'Pendiente'}
+                              </span>
+                            </td>
+                            <td>
+                              <div className="action-buttons attendance-actions">
+                                <button
+                                  className="btn-icon download-button attendance-action"
+                                  onClick={() => handleDownloadAttendance(attendance)}
+                                  title="Descargar"
+                                >
+                                  <Download size={16} />
+                                </button>
+                                <button
+                                  className="btn-icon btn-danger attendance-action"
+                                  onClick={() => handleDeleteAttendance(attendance.id)}
+                                  title="Eliminar"
+                                >
+                                  <Trash size={16} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Notificaciones */}

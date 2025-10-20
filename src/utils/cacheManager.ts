@@ -235,7 +235,7 @@ export function useCache<T>(
 
   React.useEffect(() => {
     fetchData();
-  }, [fetchData, ...(options.dependencies || [])]);
+  }, [fetchData, options.dependencies]);
 
   return { data, loading, error, refetch, invalidate };
 }

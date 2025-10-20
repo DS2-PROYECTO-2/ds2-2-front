@@ -3,6 +3,7 @@ import { X, AlertTriangle, CheckCircle, User, Calendar, FileText } from 'lucide-
 import type { Computer, Report } from '../../types/index';
 import { useAuth } from '../../hooks/useAuth';
 import '../../styles/ReportModal.css';
+import '../../styles/FaultReportsFilters.css';
 
 interface ReportModalProps {
   computer: Computer;
@@ -90,33 +91,56 @@ const ReportModal: React.FC<ReportModalProps> = ({ computer, reports, onClose, o
             <FileText size={20} />
             Reportes de Fallas
           </h3>
-          <div className="reports-filters">
-            {user?.role === 'monitor' && (
-              <label className="reports-filter-item">
-                <input
-                  type="checkbox"
-                  checked={showMineOnly}
-                  onChange={(e) => setShowMineOnly(e.target.checked)}
-                />
-                <span>Solo mis reportes</span>
-              </label>
-            )}
-            {user?.role === 'admin' && (
-              <>
-                <label className="reports-filter-item">
-                  <span>Desde</span>
-                  <input type="date" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)} />
-                </label>
-                <label className="reports-filter-item">
-                  <span>Hasta</span>
-                  <input type="date" value={filterTo} onChange={(e) => setFilterTo(e.target.value)} />
-                </label>
-                <label className="reports-filter-item">
-                  <span>Usuario</span>
-                  <input type="text" placeholder="Nombre o correo" value={filterUser} onChange={(e) => setFilterUser(e.target.value)} />
-                </label>
-              </>
-            )}
+          <div className="fault-reports-filters-container">
+            <div className="fault-reports-filters">
+              {user?.role === 'monitor' && (
+                <div className="fault-reports-filters-row">
+                  <div className="fault-reports-filter-group">
+                    <label className="fault-reports-filter-item">
+                      <input
+                        type="checkbox"
+                        checked={showMineOnly}
+                        onChange={(e) => setShowMineOnly(e.target.checked)}
+                        className="fault-reports-checkbox"
+                      />
+                      <span className="fault-reports-checkbox-label">Solo mis reportes</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+              {user?.role === 'admin' && (
+                <div className="fault-reports-filters-row">
+                  <div className="fault-reports-filter-group">
+                    <label className="fault-reports-filter-label">Desde:</label>
+                    <input 
+                      type="date" 
+                      value={filterFrom} 
+                      onChange={(e) => setFilterFrom(e.target.value)}
+                      className="fault-reports-input"
+                    />
+                  </div>
+                  <div className="fault-reports-filter-group">
+                    <label className="fault-reports-filter-label">Hasta:</label>
+                    <input 
+                      type="date" 
+                      value={filterTo} 
+                      onChange={(e) => setFilterTo(e.target.value)}
+                      className="fault-reports-input"
+                    />
+                  </div>
+                  <div className="fault-reports-filter-group">
+                    <label className="fault-reports-filter-label">Usuario:</label>
+                    <input 
+                      type="text" 
+                      placeholder="Nombre o correo" 
+                      value={filterUser} 
+                      onChange={(e) => setFilterUser(e.target.value)}
+                      className="fault-reports-input"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           
           {reports.length === 0 ? (

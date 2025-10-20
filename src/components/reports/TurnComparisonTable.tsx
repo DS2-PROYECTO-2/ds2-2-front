@@ -7,6 +7,7 @@ import { usePassiveUpdates } from '../../hooks/usePassiveUpdates';
 import userManagementService from '../../services/userManagementService';
 import roomService from '../../services/roomService';
 import '../../styles/TurnComparisonTable.css';
+import '../../styles/TurnComparisonFilters.css';
 
 interface TurnComparisonData {
   id?: number;
@@ -78,6 +79,9 @@ const TurnComparisonTable: React.FC = () => {
       {value: 10, label: 'Octubre'}, {value: 11, label: 'Noviembre'}, {value: 12, label: 'Diciembre'}
     ];
     setMonths(monthOptions);
+    
+    // Establecer año actual por defecto para mostrar datos recientes
+    setSelectedYear(String(currentYear));
   }, []);
 
   // Cargar usuarios y salas
@@ -146,6 +150,17 @@ const TurnComparisonTable: React.FC = () => {
       if (selectedUser) params.append('user_id', selectedUser);
       if (selectedRoom) params.append('room_id', selectedRoom);
       if (showAll) params.append('show_all', 'true');
+      
+      // Limitar registros por defecto a 20, mostrar todos solo con filtros o showAll
+      if (showAll || selectedUser || selectedRoom || (selectedYear && selectedMonth)) {
+        // Mostrar todos los registros cuando hay filtros activos
+        params.append('page_size', '10000');
+        params.append('page', '1');
+      } else {
+        // Limitar a 20 registros por defecto
+        params.append('page_size', '20');
+        params.append('page', '1');
+      }
 
       const response = await apiClient.get(`/api/rooms/reports/turn-comparison/?${params.toString()}`) as TurnComparisonResponse;
       
@@ -193,17 +208,17 @@ const TurnComparisonTable: React.FC = () => {
   // Cargar datos del mes actual por defecto (sin activar filtros visualmente)
   useEffect(() => {
     const today = new Date();
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+    const lastDayOfYear = new Date(today.getFullYear(), 11, 31);
     
-    // Cargar datos del mes actual internamente sin establecer los estados de filtro
-    const loadCurrentMonthData = async () => {
+    // Cargar datos del año actual internamente sin establecer los estados de filtro
+    const loadCurrentYearData = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        const fromDate = firstDayOfMonth.toISOString().split('T')[0];
-        const toDate = lastDayOfMonth.toISOString().split('T')[0];
+        const fromDate = firstDayOfYear.toISOString().split('T')[0];
+        const toDate = lastDayOfYear.toISOString().split('T')[0];
         
         const params = new URLSearchParams({
           date_from: fromDate,
@@ -250,7 +265,7 @@ const TurnComparisonTable: React.FC = () => {
       }
     };
 
-    loadCurrentMonthData();
+    loadCurrentYearData();
   }, []);
 
   // Recargar datos cuando cambien los filtros
@@ -558,29 +573,32 @@ const TurnComparisonTable: React.FC = () => {
     <div className="turn-comparison-container">
       <div className="turn-comparison-header">
         <h3>📊 Comparación de Turnos vs Registros</h3>
-        
-        <div className="filters-container">
-          <div className="filters-row">
-            <div className="filter-group">
-              <label>Desde:</label>
+      </div>
+      
+      {/* Filtros de Comparación */}
+      <div className="turn-comparison-filters-container">
+        <div className="turn-comparison-filters">
+          <div className="turn-comparison-filters-row">
+            <div className="turn-comparison-filter-group">
+              <label className="turn-comparison-filter-label">Desde:</label>
               <input
                 type="date"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                className="date-input"
+                className="turn-comparison-input"
               />
             </div>
-            <div className="filter-group">
-              <label>Hasta:</label>
+            <div className="turn-comparison-filter-group">
+              <label className="turn-comparison-filter-label">Hasta:</label>
               <input
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                className="date-input"
+                className="turn-comparison-input"
               />
             </div>
-            <div className="filter-group">
-              <label>Sala:</label>
+            <div className="turn-comparison-filter-group">
+              <label className="turn-comparison-filter-label">Sala:</label>
               <CustomSelect<string>
                 value={selectedRoom ?? ''}
                 placeholder="Todas las salas"
@@ -589,9 +607,10 @@ const TurnComparisonTable: React.FC = () => {
               />
             </div>
           </div>
-          <div className="filters-row">
-            <div className="filter-group">
-              <label>Año:</label>
+          
+          <div className="turn-comparison-filters-row">
+            <div className="turn-comparison-filter-group">
+              <label className="turn-comparison-filter-label">Año:</label>
               <CustomSelect<string>
                 value={selectedYear ?? ''}
                 placeholder="Todos los años"
@@ -599,8 +618,8 @@ const TurnComparisonTable: React.FC = () => {
                 onChange={(val) => { setSelectedYear(val ?? ''); setSelectedMonth(''); }}
               />
             </div>
-            <div className="filter-group">
-              <label>Mes:</label>
+            <div className="turn-comparison-filter-group">
+              <label className="turn-comparison-filter-label">Mes:</label>
               <CustomSelect<string>
                 value={selectedMonth ?? ''}
                 placeholder="Todos los meses"
@@ -609,23 +628,8 @@ const TurnComparisonTable: React.FC = () => {
                 className={!selectedYear ? 'cs-disabled' : ''}
               />
             </div>
-            <div className="filter-group checkbox-group">
-              <input
-                type="checkbox"
-                checked={showAll}
-                onChange={(e) => setShowAll(e.target.checked)}
-                className="checkbox-input"
-                id="showAllCheckbox"
-              />
-              <label htmlFor="showAllCheckbox" className="checkbox-label">
-                Mostrar todos los registros
-              </label>
-            </div>
-          </div>
-          
-          <div className="filters-row">
-            <div className="filter-group user-filter">
-              <label>Usuario:</label>
+            <div className="turn-comparison-filter-group">
+              <label className="turn-comparison-filter-label">Usuario:</label>
               <CustomSelect<string>
                 value={selectedUser ?? ''}
                 placeholder="Todos los usuarios"
@@ -633,9 +637,29 @@ const TurnComparisonTable: React.FC = () => {
                 onChange={(val) => setSelectedUser(val ?? '')}
               />
             </div>
+          </div>
+          
+          <div className="turn-comparison-filters-row">
+            <div className="turn-comparison-filter-group">
+              <label className="turn-comparison-filter-label">
+                <input
+                  type="checkbox"
+                  checked={showAll}
+                  onChange={(e) => setShowAll(e.target.checked)}
+                  className="turn-comparison-checkbox"
+                  id="showAllCheckbox"
+                />
+                <span className="turn-comparison-checkbox-label">
+                  Mostrar todos los registros
+                </span>
+              </label>
+            </div>
+          </div>
+          
+          <div className="turn-comparison-actions">
             <button
               onClick={clearAllFilters}
-              className="clear-filters-button"
+              className="turn-comparison-btn turn-comparison-btn--clear"
               type="button"
             >
               🗑️ Borrar Filtros
@@ -644,27 +668,23 @@ const TurnComparisonTable: React.FC = () => {
         </div>
       </div>
 
+      {/* Información sobre filtros */}
+      {data.length === 0 && !loading && !error && (
+        <div className="turn-comparison-warning-top">
+          💡 <strong>Consejo:</strong> Si no ves datos, intenta:
+          <br />• Usar el botón "📊 Cargar Todos los Datos" para ver todos los registros
+          <br />• Ajustar los filtros de fecha (año/mes) o usar fechas específicas
+          <br />• Verificar que existan turnos y registros en el sistema
+        </div>
+      )}
+
       {/* Botón para mostrar todos los registros */}
-      {data.length > 10 && (
+      {data.length > 20 && (
         <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
           {!showAllRecords && (
             <button 
               onClick={() => setShowAllRecords(true)}
-              style={{
-                background: '#4caf50',
-                color: 'white',
-                border: 'none',
-                padding: '0.5rem 0.75rem',
-                borderRadius: '0.375rem',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                height: '42px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
+              className="turn-comparison-btn turn-comparison-btn--primary"
             >
               📋 Mostrar todos los registros ({data.length} total)
             </button>
@@ -672,23 +692,9 @@ const TurnComparisonTable: React.FC = () => {
           {showAllRecords && (
             <button 
               onClick={() => setShowAllRecords(false)}
-              style={{
-                background: '#ff9800',
-                color: 'white',
-                border: 'none',
-                padding: '0.5rem 0.75rem',
-                borderRadius: '0.375rem',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                height: '42px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
+              className="turn-comparison-btn turn-comparison-btn--secondary"
             >
-              📋 Mostrar solo 10 registros
+              📋 Mostrar solo 20 registros
             </button>
           )}
         </div>
@@ -741,7 +747,7 @@ const TurnComparisonTable: React.FC = () => {
             overflowY: showAllRecords ? 'auto' : 'visible'
           }}
         >
-          <table className="comparison-table">
+          <table className="turn-comparison-table">
             <thead>
               <tr>
                 <th>Monitor</th>
@@ -763,7 +769,7 @@ const TurnComparisonTable: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                (showAllRecords ? data : data.slice(0, 10)).map((item, index) => (
+                (showAllRecords ? data : data.slice(0, 20)).map((item, index) => (
                   <tr key={item.id || index} className="comparison-row">
                     <td className="user-cell">{item.usuario}</td>
                     <td className="room-cell">{item.sala}</td>

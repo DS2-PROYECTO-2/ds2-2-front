@@ -38,10 +38,10 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
     setBackendFiltered(false);
   };
 
-  // Función para cargar con rango por defecto (todo el mes actual)
+  // Función para cargar con rango por defecto (últimos 3 meses para tener más datos)
   const loadWithDefaultRange = useCallback(async () => {
     const today = new Date();
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const threeMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 3, 1);
     const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
     
     // Usar formato local sin conversión UTC
@@ -49,13 +49,17 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     };
     
-    const fromFormatted = formatDate(firstDayOfMonth);
+    const fromFormatted = formatDate(threeMonthsAgo);
     const toFormatted = formatDate(lastDayOfMonth);
     
-    return getAllEntriesUnpaginated({
+    // Obtener todos los registros y limitar en el frontend a 20
+    const allEntries = await getAllEntriesUnpaginated({
       from: fromFormatted,
       to: toFormatted
     });
+    
+    // Limitar a los primeros 20 registros
+    return allEntries.slice(0, 20);
   }, []);
 
   // Función para cargar datos básicos (con rango por defecto para admin)
@@ -67,12 +71,18 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
     }
     setError(null);
     try {
-      const [roomsData, entriesData] = await Promise.all([
-        roomService.getRooms(),
-        user?.role === 'admin' 
-          ? loadWithDefaultRange()  // Admin con rango por defecto (todo el mes actual)
-          : getMyEntries()          // Monitor ve solo los suyos
-      ]);
+      let entriesData;
+      
+      if (user?.role === 'admin') {
+        // Admin con rango por defecto limitado a 20
+        entriesData = await loadWithDefaultRange();
+      } else {
+        // Monitor: obtener sus entradas y limitar a 20
+        const allMyEntries = await getMyEntries();
+        entriesData = allMyEntries.slice(0, 20);
+      }
+      
+      const roomsData = await roomService.getRooms();
       
       setRooms(roomsData);
       setEntries(entriesData);
@@ -194,6 +204,44 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
     }
   }, [filterRoomId, filterFrom, filterTo, filterDocument, loadWithFilters, user?.role, showAll]);
 
+  // Manejar cuando se activa "mostrar todo"
+  useEffect(() => {
+    if (showAll) {
+      setLoading(true);
+      setError(null);
+      const loadAllEntries = async () => {
+        try {
+          let entriesData;
+          
+          if (user?.role === 'admin') {
+            // Admin: mostrar todos los registros con filtros
+            entriesData = await getAllEntriesUnpaginated({
+              from: filterFrom || undefined,
+              to: filterTo || undefined,
+              room: filterRoomId || undefined,
+              document: filterDocument || undefined
+            });
+          } else {
+            // Monitor: mostrar todas sus entradas
+            entriesData = await getMyEntries();
+          }
+          
+          const roomsData = await roomService.getRooms();
+          
+          setRooms(roomsData);
+          setEntries(entriesData);
+          setBackendFiltered(true);
+        } catch (err) {
+          setError(parseErr(err));
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      loadAllEntries();
+    }
+  }, [user?.role, showAll, filterFrom, filterTo, filterRoomId, filterDocument]);
+
   useEffect(() => {
     const handler = (e: Event) => {
       const { id } = (e as CustomEvent).detail || {};
@@ -214,11 +262,6 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
   // Filtro local para todos los usuarios (backend + frontend para mejor compatibilidad)
   const filtered = useMemo(() => {
     let filteredEntries = entries;
-    
-    // Limitar a 10 registros por defecto si no se está mostrando todo
-    if (!showAll && !backendFiltered) {
-      filteredEntries = filteredEntries.slice(0, 10);
-    }
     
     // Aplicar filtro de sala
     if (filterRoomId) {
@@ -277,7 +320,7 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
     }
     
     return filteredEntries;
-  }, [entries, filterFrom, filterTo, filterRoomId, filterUser, filterDocument, backendFiltered, showAll]);
+  }, [entries, filterFrom, filterTo, filterRoomId, filterUser, filterDocument, backendFiltered]);
 
   return (
     <div className="room-panel">
@@ -427,8 +470,25 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
           ) : filterTo ? (
             `📅 Mostrando registros hasta el ${filterTo}`
           ) : (
-            `📅 Mostrando registros del mes actual (${new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })})`
+            `📅 Mostrando registros de los últimos 3 meses (${entries.length} total, ${filtered.length} filtrados)`
           )}
+        </div>
+      )}
+
+      {/* Mensaje de diagnóstico cuando no hay registros */}
+      {filtered.length === 0 && entries.length > 0 && (
+        <div style={{
+          padding: '0.75rem 1rem',
+          background: '#fef3c7',
+          border: '1px solid #f59e0b',
+          borderRadius: '6px',
+          marginBottom: '1rem',
+          fontSize: '0.875rem',
+          color: '#92400e'
+        }}>
+          ⚠️ <strong>Diagnóstico:</strong> Hay {entries.length} registros cargados, pero los filtros no muestran resultados.
+          <br />• Verifica que los filtros de fecha, sala, usuario o documento sean correctos
+          <br />• Intenta limpiar los filtros con el botón "Limpiar filtros"
         </div>
       )}
 
@@ -486,6 +546,23 @@ const RoomHistory: React.FC<Props> = ({ reloadKey }) => {
           </table>
         </div>
       </div>
+
+      {/* Mostrar información del total de registros */}
+      {filtered.length > 0 && (
+        <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+          <div style={{
+            background: '#f0f9ff',
+            color: '#0369a1',
+            padding: '0.75rem',
+            borderRadius: '0.5rem',
+            border: '1px solid #bae6fd',
+            fontSize: '0.875rem',
+            fontWeight: '500'
+          }}>
+            📊 Mostrando {filtered.length} registros de entrada y salida
+          </div>
+        </div>
+      )}
     </div>
   );
 };

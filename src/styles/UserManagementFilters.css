@@ -1,0 +1,362 @@
+/* CSS Único para Filtros de Gestión de Usuarios */
+
+/* Contenedor principal de filtros de gestión de usuarios */
+.user-management-filters-container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Filtros de gestión de usuarios */
+.user-management-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.user-management-filters-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+}
+
+/* Grupos de filtros */
+.user-management-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.user-management-filter-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Inputs básicos */
+.user-management-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #374151;
+  background: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.user-management-input:focus {
+  outline: none;
+  border-color: #49699b;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.user-management-input::placeholder {
+  color: #9ca3af;
+}
+
+/* Select básico */
+.user-management-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #374151;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-management-select:focus {
+  outline: none;
+  border-color: #0f5cd8;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Botones de acción para gestión de usuarios */
+.user-management-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 0.75rem;
+}
+
+.user-management-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-management-btn--primary {
+  background: #3b82f6;
+  color: #ffffff;
+  border-color: #3b82f6;
+}
+
+.user-management-btn--primary:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.user-management-btn--secondary {
+  background: #ffffff;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.user-management-btn--secondary:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.user-management-btn--clear {
+  background: #ffffff;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.user-management-btn--clear:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+/* Estados de carga para gestión de usuarios */
+.user-management-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.user-management-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: user-management-spin 1s linear infinite;
+}
+
+@keyframes user-management-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Mensajes de estado para gestión de usuarios */
+.user-management-status {
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-management-status--success {
+  color: #059669;
+}
+
+.user-management-status--error {
+  color: #dc2626;
+}
+
+.user-management-status--warning {
+  color: #d97706;
+}
+
+/* Advertencias específicas para gestión de usuarios */
+.user-management-warning {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: #92400e;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.user-management-warning-top {
+  background: #e0f2fe;
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #0c4a6e;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  text-align: left;
+  line-height: 1.6;
+}
+
+/* Tabla de usuarios */
+.user-management-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.user-management-table th,
+.user-management-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.user-management-table th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.user-management-table td {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.user-management-table tr:hover {
+  background: #f9fafb;
+}
+
+/* Estados de los usuarios */
+.user-management-status-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.user-management-status-badge--active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.user-management-status-badge--inactive {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.user-management-status-badge--pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* Roles de usuarios */
+.user-management-role-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.user-management-role-badge--admin {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.user-management-role-badge--monitor {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+/* Botones de acción en tabla */
+.user-management-action-btn {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin: 0 0.125rem;
+}
+
+.user-management-action-btn--edit {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #f59e0b;
+}
+
+.user-management-action-btn--edit:hover {
+  background: #fde68a;
+}
+
+.user-management-action-btn--delete {
+  background: #fecaca;
+  color: #991b1b;
+  border-color: #f87171;
+}
+
+.user-management-action-btn--delete:hover {
+  background: #fca5a5;
+}
+
+.user-management-action-btn--view {
+  background: #dbeafe;
+  color: #1e40af;
+  border-color: #60a5fa;
+}
+
+.user-management-action-btn--view:hover {
+  background: #bfdbfe;
+}
+
+/* Responsive para gestión de usuarios */
+@media (max-width: 768px) {
+  .user-management-filters-container {
+    padding: 0.75rem;
+  }
+  
+  .user-management-filters-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .user-management-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .user-management-table {
+    font-size: 0.75rem;
+  }
+  
+  .user-management-table th,
+  .user-management-table td {
+    padding: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-management-filters-container {
+    padding: 0.5rem;
+  }
+  
+  .user-management-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.7rem;
+  }
+  
+  .user-management-table {
+    font-size: 0.7rem;
+  }
+  
+  .user-management-table th,
+  .user-management-table td {
+    padding: 0.375rem;
+  }
+}
+
+

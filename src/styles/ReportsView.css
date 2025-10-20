@@ -5,6 +5,9 @@
   margin: 0 auto;
 }
 
+/* Estilos de exportación movidos a ExportFilters.css */
+/* Estilos de filtros de gráficas movidos a ChartsFilters.css */
+
 /* Contenedores y tablas responsivas (scroll horizontal) */
 .reports-table-container {
   width: 100%;
