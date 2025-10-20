@@ -49,7 +49,7 @@ jobs:
         vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
         working-directory: ./
         scope: ${{ secrets.VERCEL_SCOPE }}
-        vercel-args: '--confirm --prebuilt --prod'
+        vercel-args: '--confirm --prod'
 
     - name: Deploy to Vercel (Preview)
       if: github.ref == 'refs/heads/develop'
@@ -60,4 +60,4 @@ jobs:
         vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
         working-directory: ./
         scope: ${{ secrets.VERCEL_SCOPE }}
-        vercel-args: '--confirm --prebuilt'
+        vercel-args: '--confirm'
